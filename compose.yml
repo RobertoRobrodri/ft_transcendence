@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  nginx:
+    build: ./front/
+    container_name: nginx
+    volumes:
+      - static:/static
+    ports:
+      - 80:80
+    depends_on:
+      - web
+
+  web:
+    build: ./back/
+    container_name: django
+    volumes:
+      - static:/static  
+    expose:
+      - 8000
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    container_name: db
+    volumes:
+      - ddbb:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+volumes:
+  ddbb:
+  static:
