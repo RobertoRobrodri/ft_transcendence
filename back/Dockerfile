@@ -1,12 +1,12 @@
 FROM python:3.11.5-slim-bullseye
 
-COPY requirements.txt .
+COPY . .
 
 RUN apt-get update && \
 	apt-get install -y libpq-dev && \
 	pip3 install -r requirements.txt && \
 	rm requirements.txt
 
-COPY . .
+WORKDIR core
 
 CMD ./script.sh
