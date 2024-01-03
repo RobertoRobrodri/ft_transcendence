@@ -20,7 +20,7 @@ services:
       - db
 
   db:
-    image: postgres
+    build: ./db/
     container_name: db
     volumes:
       - ddbb:/var/lib/postgresql/data
