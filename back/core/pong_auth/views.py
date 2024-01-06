@@ -2,33 +2,29 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, logout
 from .serializers import UserSerializer, UserTokenObtainPairSerializer
 
 class UserRegistrationView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
     serializer_class = UserSerializer
 
-
+#Token Obtain Base sets permission_classes and authentication_classes to allow any
 class UserLoginView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        user = authenticate(username=username, password=password)
-        if user:
-            login_serializer = self.serializer_class(data=request.data)
-            if login_serializer.is_valid():
-                user_serializer = UserSerializer(user)
-                return Response({
-                        'token' : login_serializer.validated_data.get('access'),
-                        'refresh' : login_serializer.validated_data.get('refresh'),
-                        'user' : user_serializer.data,
-                        'message': 'Login successful',
-                    },
-                    status=status.HTTP_200_OK)
+        # TokenObtainPairSerializer takes care of authentication and generating both tokens
+        login_serializer = self.serializer_class(data=request.data)
+        if login_serializer.is_valid():
+            return Response({
+                    'token' : login_serializer.validated_data.get('access'),
+                    'refresh' : login_serializer.validated_data.get('refresh'),
+                    'message': 'Login successful',
+                },
+                status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # We are not using logout because we are not using sessions
