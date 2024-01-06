@@ -8,30 +8,28 @@ from django.contrib.auth.decorators import login_required
 from .serializers import UserRegistrationSerializer
 
 class UserRegistrationView(generics.CreateAPIView):
-    queryset = User.objects.all()
+#    queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            password = serializer.validated_data['password']
-            User.objects.create_user(username=username, password=password)
-            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#    def post (self, request):
+#        serializer = self.get_serializer(data=request.data)
+#        if serializer.is_valid():
+#            serializer.save()
+#            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+#        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserLoginView(generics.RetrieveAPIView):
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        user = authenticate(username=username, password=password)
-        if user:
-            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-@login_required
-class UserLogoutView(APIView):
-    def post(self, request):
-        logout(request)
-        return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+#class UserLoginView(generics.RetrieveAPIView):
+#    def post(self, request):
+#        username = request.data.get('username')
+#        password = request.data.get('password')
+#
+#        user = authenticate(username=username, password=password)
+#        if user:
+#            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+#        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+#
+#@login_required
+#class UserLogoutView(APIView):
+#    def post(self, request):
+#        logout(request)
+#        return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)

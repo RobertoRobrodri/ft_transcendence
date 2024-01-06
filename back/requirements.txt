@@ -3,3 +3,4 @@ asgiref==3.7.2
 sqlparse==0.4.4
 psycopg2-binary==2.9.9
 djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.1
