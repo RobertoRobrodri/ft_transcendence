@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import CustomUser
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.validators import UniqueValidator
+from django.contrib.auth import get_user_model
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -11,7 +13,18 @@ class UserSerializer(serializers.ModelSerializer):
         # In case new fields are needed, create a custom model that inherits from User and add fields
         fields = ('username', 'password', 'email')
         # DO NOT SEND THE PASSWORD
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            },
+            'email': {
+                'validators': [
+                    UniqueValidator(
+                        queryset=CustomUser.objects.all()
+                    )
+                ]
+            }
+        }
     
     def create(self, validated_data):
         user = CustomUser(
