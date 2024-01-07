@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/pong_auth/', include('pong_auth.urls'))
+    path('api/pong/', include('pong.urls'))
 ]
