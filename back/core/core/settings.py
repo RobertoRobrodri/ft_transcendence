@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
 	'rest_framework_simplejwt',
     #include your apps
-    'pong_auth',
+    'pong',
 ]
 
 REST_FRAMEWORK = {
@@ -124,7 +124,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'pong_auth.CustomUser'
+AUTH_USER_MODEL = 'pong.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
