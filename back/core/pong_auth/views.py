@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, logout
+from .models import CustomUser
+from django.contrib.auth import authenticate
 from .serializers import UserSerializer, UserTokenObtainPairSerializer
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -31,5 +31,6 @@ class UserLoginView(TokenObtainPairView):
 class UserLogoutView(generics.GenericAPIView):
     def post(self, request,*args, **kwargs):
         user = request.user
+        # Front has to delete the access token!!!
         RefreshToken.for_user(user)
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
