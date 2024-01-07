@@ -1,5 +1,7 @@
 #!/bin/bash
 
+python3 manage.py makemigrations --no-input
+
 python3 manage.py migrate --no-input
 
 #We are not going to use static since nginx will handle the frontend
