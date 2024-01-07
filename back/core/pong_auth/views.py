@@ -1,37 +1,35 @@
-from rest_framework import generics
-from rest_framework.views import APIView
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, logout
-from django.contrib.auth.decorators import login_required
-from .serializers import UserRegistrationSerializer
+from .serializers import UserSerializer, UserTokenObtainPairSerializer
 
 class UserRegistrationView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserRegistrationSerializer
+    permission_classes = [AllowAny]
+    serializer_class = UserSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            password = serializer.validated_data['password']
-            User.objects.create_user(username=username, password=password)
-            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#Token Obtain Base sets permission_classes and authentication_classes to allow any
+class UserLoginView(TokenObtainPairView):
+    serializer_class = UserTokenObtainPairSerializer
 
-class UserLoginView(generics.RetrieveAPIView):
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        user = authenticate(username=username, password=password)
-        if user:
-            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+    def post(self, request, *args, **kwargs):
+        # TokenObtainPairSerializer takes care of authentication and generating both tokens
+        login_serializer = self.serializer_class(data=request.data)
+        if login_serializer.is_valid():
+            return Response({
+                    'token' : login_serializer.validated_data.get('access'),
+                    'refresh' : login_serializer.validated_data.get('refresh'),
+                    'message': 'Login successful',
+                },
+                status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-@login_required
-class UserLogoutView(APIView):
-    def post(self, request):
-        logout(request)
+# We are not using logout because we are not using sessions
+class UserLogoutView(generics.GenericAPIView):
+    def post(self, request,*args, **kwargs):
+        user = request.user
+        RefreshToken.for_user(user)
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
