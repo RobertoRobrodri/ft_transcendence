@@ -4,27 +4,23 @@ services:
   nginx:
     build: ./front/
     container_name: nginx
-    volumes:
-      - static:/static
     ports:
       - 80:80
     depends_on:
-      - web
+      - django
 
-  web:
+  django:
     build: ./back/
     container_name: django
-    volumes:
-      - static:/static  
-    expose:
-      - 8000
+    ports:
+      - 8000:8000
     env_file:
       - .env
     depends_on:
       - db
 
   db:
-    image: postgres
+    build: ./db/
     container_name: db
     volumes:
       - ddbb:/var/lib/postgresql/data
@@ -33,4 +29,3 @@ services:
 
 volumes:
   ddbb:
-  static:
