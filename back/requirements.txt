@@ -4,5 +4,6 @@ sqlparse==0.4.4
 psycopg2-binary==2.9.9
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
+drf-yasg==1.21.7
 # Image Handling, verify if we can use it
 # pillow==10.2.0

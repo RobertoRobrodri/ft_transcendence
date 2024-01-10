@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     #extras
     'rest_framework',
 	'rest_framework_simplejwt',
+	'drf_yasg', #swagger documentation
     #include your apps
     'pong',
 ]
