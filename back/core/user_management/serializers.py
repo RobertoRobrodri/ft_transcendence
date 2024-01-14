@@ -9,5 +9,24 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         # In case new fields are needed, create a custom model that inherits from User and add fields
-        fields = ('username', 'password', 'email', 'score')
+        fields = ('username', 'email', 'score')
         lookup_field = 'username'
+
+class UserPasswordManagerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        # In case new fields are needed, create a custom model that inherits from User and add fields
+        fields = ('password', )
+        lookup_field = 'username'
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            },
+        }
+    
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
