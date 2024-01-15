@@ -6,7 +6,7 @@
 /*   By: guilmira <guilmira@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 12:20:55 by guilmira          #+#    #+#             */
-/*   Updated: 2024/01/11 16:40:50 by guilmira         ###   ########.fr       */
+/*   Updated: 2024/01/15 12:38:56 by guilmira         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ let lastTimeStamp = 0;
 
 const palaLeft = new Pala();
 const palaRight = new Pala(new Vector(canvas.width - palaWidth, canvas.height - palaLength));
-const playerLeft = new Player("Player1", 0, new Vector(canvas.width / 2 - 100, canvas.height / 2 + 100));
+const playerLeft = new Player("Player1", 0, new Vector(canvas.width / 2 - 100, canvas.height / 2 - 100));
 const playerRight = new Player("Player2", 0, new Vector(canvas.width / 2 + 100, canvas.height / 2 + 100));
 const mainBall = new Ball();
 const e = new CanvasEntity(new Vector(0, 0));
@@ -59,7 +59,7 @@ function perFrame(timeStamp)
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	
 	playerLeft.score = mainBall.arrayScores[0];
-	playerLeft.score = mainBall.arrayScores[1];
+	playerRight.score = mainBall.arrayScores[1];
 	drawScores();
 
 	palaLeft.drawSelf();
