@@ -6,10 +6,11 @@
 /*   By: guilmira <guilmira@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 12:20:55 by guilmira          #+#    #+#             */
-/*   Updated: 2024/01/15 12:38:56 by guilmira         ###   ########.fr       */
+/*   Updated: 2024/01/15 17:24:31 by guilmira         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+https://www.youtube.com/watch?v=cw8-KFVXpTE&ab_channel=DennisIvy
 
 /* Pong developed in JS Canvas. Specs:
 	-OX, OY axis origin in upper left corner. 
