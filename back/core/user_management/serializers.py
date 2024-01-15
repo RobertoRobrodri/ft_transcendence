@@ -8,15 +8,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        # In case new fields are needed, create a custom model that inherits from User and add fields
-        fields = ('username', 'email', 'score', 'status', 'profile_picture')
+        fields = ('username', 'email', 'score', 'status')
         lookup_field = 'username'
 
 class UserPasswordManagerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        # In case new fields are needed, create a custom model that inherits from User and add fields
         fields = ('password', )
         lookup_field = 'username'
         extra_kwargs = {
@@ -28,5 +26,20 @@ class UserPasswordManagerSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
+    
+class UserUpdateProfilePictureSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ('profile_picture', )
+        lookup_field = 'username'
+
+    def update(self, instance, validated_data):
+        previous_profile_picture = instance.profile_picture
+        if previous_profile_picture:
+            previous_profile_picture.delete()
+        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.save()
         return instance
