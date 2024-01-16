@@ -7,6 +7,10 @@ from .models import CustomUser
 from django.contrib.auth import authenticate
 from .serializers import UserSerializer, UserTokenObtainPairSerializer
 
+
+from .models import Player
+from django.shortcuts import render
+
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserSerializer
@@ -34,3 +38,10 @@ class UserLogoutView(generics.GenericAPIView):
         # Front has to delete the access token!!!
         RefreshToken.for_user(user)
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+
+def index(request):
+    context = {"players":Player.objects.all()}
+    return render(request, "index.html", context)
+
+def home(request):
+    return render(response, "home.html", {})
