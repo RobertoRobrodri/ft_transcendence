@@ -6,7 +6,7 @@
 #    By: guilmira <guilmira@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/01/16 07:24:58 by guilmira          #+#    #+#              #
-#    Updated: 2024/01/16 07:39:34 by guilmira         ###   ########.fr        #
+#    Updated: 2024/01/16 15:48:24 by guilmira         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,9 +14,9 @@ NAME		= transcendence
 #--------------------------------------------------------------------------------------------------------------PATHS
 COMPOSE-PATH	= ./srcs
 #--------------------------------------------------------------------------------------------------------------SOURCES
-NAME-BACK	= back
+NAME-BACK	= django
 NAME-DB		= db
-NAME-FRONT	= front
+NAME-FRONT	= nginx
 #--------------------------------------------------------------------------------------------------------------RULES
 $(NAME):
 	docker compose up --detach
@@ -29,7 +29,7 @@ git:
 	git commit -m "standard commit"
 	git push
 
-logs:
+log:
 	docker logs $(NAME-FRONT)
 	docker logs $(NAME-DB)
 	docker logs $(NAME-BACK)
