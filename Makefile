@@ -6,7 +6,7 @@
 #    By: guilmira <guilmira@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/01/16 07:24:58 by guilmira          #+#    #+#              #
-#    Updated: 2024/01/16 07:37:02 by guilmira         ###   ########.fr        #
+#    Updated: 2024/01/16 07:39:34 by guilmira         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,7 +35,7 @@ logs:
 	docker logs $(NAME-BACK)
 
 clean:
-	docker compose kill
+	docker compose down -v
 	docker container prune --force
 
 fclean: clean

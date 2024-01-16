@@ -6,7 +6,7 @@
 /*   By: guilmira <guilmira@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 12:34:44 by guilmira          #+#    #+#             */
-/*   Updated: 2024/01/11 16:37:00 by guilmira         ###   ########.fr       */
+/*   Updated: 2024/01/16 08:01:48 by guilmira         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,9 @@ class CanvasEntity
 	updatePosition(deltaTime)
 	{
 		let scaledVelocity = new Vector(this.velocity.x * deltaTime, this.velocity.y * deltaTime);
+
+		console.log(scaledVelocity);
+	
 		this.position.add(scaledVelocity);
 	}
 
