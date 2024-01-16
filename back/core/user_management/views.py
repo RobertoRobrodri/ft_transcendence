@@ -13,3 +13,13 @@ class UserUpdateView(generics.UpdateAPIView):
 class UserDeleteView(generics.DestroyAPIView):
 	queryset = CustomUser.objects.all()
 	lookup_field = 'username'
+
+class UserListAllView(generics.ListAPIView):
+	serializer_class = UserUpdateSerializer
+	queryset = CustomUser.objects.all()
+	lookup_field = 'username'
+
+class UserListView(generics.RetrieveAPIView):
+	serializer_class = UserUpdateSerializer
+	queryset = CustomUser.objects.all()
+	lookup_field = 'username'
