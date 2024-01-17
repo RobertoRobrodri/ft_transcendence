@@ -45,6 +45,8 @@ INSTALLED_APPS = [
 	'drf_yasg', #swagger documentation
     #include your apps
     'pong_auth',
+	'user_management',
+	'friends'
 ]
 
 REST_FRAMEWORK = {
