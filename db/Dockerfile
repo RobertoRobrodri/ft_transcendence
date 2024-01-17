@@ -1,4 +1,4 @@
-FROM postgres
+FROM postgres:16-bullseye
 
 # In case we need to add any special config, if not run postgres image directly in compose
 

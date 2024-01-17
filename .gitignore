@@ -1,5 +1,9 @@
 # Virtual Environment #
 venv/
+
+Makefile
+guilmira-ref.txt
+
 # Django #
 *.log
 *.pot
