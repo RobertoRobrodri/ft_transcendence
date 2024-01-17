@@ -27,12 +27,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if previous_profile_picture:
             previous_profile_picture.delete()
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
-        instance.username = validated_data.get('username', instance.username)
-        instance.email = validated_data.get('email', instance.email)
-        instance.score = validated_data.get('score', instance.score)
-        instance.status = validated_data.get('status', instance.status)
+        instance.username        = validated_data.get('username', instance.username)
+        instance.email           = validated_data.get('email', instance.email)
+        instance.score           = validated_data.get('score', instance.score)
+        instance.status          = validated_data.get('status', instance.status)
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
-        password = validated_data.get('password')
+        password                 = validated_data.get('password')
         if password:
             instance.set_password(password)
         instance.save()
