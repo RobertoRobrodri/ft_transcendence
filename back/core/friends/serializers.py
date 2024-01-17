@@ -16,5 +16,4 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         # Ensure that the sender and receiver are not the same user
         if data['sender'] == data['receiver']:
             raise serializers.ValidationError("Sender and receiver cannot be the same user.")
-        # You can add more validation logic if needed
         return data

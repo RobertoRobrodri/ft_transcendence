@@ -8,8 +8,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'score', 'status', 'password', 'profile_picture',)
-        lookup_field = 'username'
+        fields = ('id', 'username', 'email', 'score', 'status', 'password', 'profile_picture',)
         extra_kwargs = {
             'password': {
                 'write_only': True
