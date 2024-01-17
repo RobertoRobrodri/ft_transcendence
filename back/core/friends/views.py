@@ -42,12 +42,15 @@ class AcceptOrCancelFriendRequestView(generics.DestroyAPIView):
 		except:
 			return Response({"message": "No such friend request"}, status=status.HTTP_400_BAD_REQUEST)
 		action = request.data.get('action', None)
-		if action == 'ACCEPT':
-			friend_request.sender.friends.add(friend_request.receiver)
-			friend_request.receiver.friends.add(friend_request.sender)
-			friend_request.delete()
-			return Response({"message": "Friend Request Accepted"}, status=status.HTTP_200_OK)
-		elif action == 'DECLINE':
-			friend_request.delete()
-			return Response({"message": "Friend Request declined"}, status=status.HTTP_200_OK)
+		if request.user == friend_request.receiver:
+			if action == 'ACCEPT':
+				friend_request.sender.friends.add(friend_request.receiver)
+				friend_request.receiver.friends.add(friend_request.sender)
+				friend_request.delete()
+				return Response({"message": "Friend Request Accepted"}, status=status.HTTP_200_OK)
+			elif action == 'DECLINE':
+				friend_request.delete()
+				return Response({"message": "Friend Request declined"}, status=status.HTTP_200_OK)
+		else:
+			return Response({"Error": "Request Users don´t match"}, status=status.HTTP_401_UNAUTHORIZED)	
 		return Response({"Error": "Action Required"}, status=status.HTTP_400_BAD_REQUEST)
