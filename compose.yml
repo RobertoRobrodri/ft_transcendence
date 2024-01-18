@@ -6,6 +6,8 @@ services:
     container_name: nginx
     ports:
       - 80:80
+    volumes:
+      - profile_pictures:/media
     depends_on:
       - django
 
@@ -14,6 +16,8 @@ services:
     container_name: django
     ports:
       - 8000:8000
+    volumes:
+      - profile_pictures:/core/media
     env_file:
       - .env
     depends_on:
@@ -29,3 +33,4 @@ services:
 
 volumes:
   ddbb:
+  profile_pictures:

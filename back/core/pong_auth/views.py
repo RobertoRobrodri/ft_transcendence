@@ -5,11 +5,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from .models import CustomUser
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, UserTokenObtainPairSerializer
+from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer
 
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
-    serializer_class = UserSerializer
+    serializer_class = UserRegistrationSerializer
 
 #Token Obtain Base sets permission_classes and authentication_classes to allow any
 class UserLoginView(TokenObtainPairView):
@@ -33,4 +33,5 @@ class UserLogoutView(generics.GenericAPIView):
         user = request.user
         # Front has to delete the access token!!!
         RefreshToken.for_user(user)
+        user.status = "offline"
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
