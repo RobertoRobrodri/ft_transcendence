@@ -1,4 +1,4 @@
-from rest_framework import generics, status
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -21,7 +21,7 @@ class UserViewset(viewsets.GenericViewSet):
 		user = get_object_or_404(self.serializer_class.Meta.model, pk=pk)
 		self.check_object_permissions(request, user)
 		user_serializer = self.serializer_class(user)
-		return Response(user_serializer.data)
+		return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 	def partial_update(self, request, pk=None):
 		user = get_object_or_404(self.serializer_class.Meta.model, pk=pk)

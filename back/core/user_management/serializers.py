@@ -8,7 +8,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'score', 'status', 'password', 'profile_picture',)
+        fields = ('id', 'username', 'email', 'wins', 'losses', 'status', 'password', 'profile_picture',)
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -29,7 +29,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.username        = validated_data.get('username', instance.username)
         instance.email           = validated_data.get('email', instance.email)
-        instance.score           = validated_data.get('score', instance.score)
+        instance.score           = validated_data.get('wins', instance.wins)
+        instance.score           = validated_data.get('losses', instance.losses)
         instance.status          = validated_data.get('status', instance.status)
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         password                 = validated_data.get('password')

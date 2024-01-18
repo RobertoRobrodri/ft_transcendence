@@ -1,15 +1,15 @@
 from rest_framework import generics, status
+from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 from pong_auth.models import CustomUser
 from .models import FriendRequest
 from .serializers import FriendRequestSerializer
 
-class CreateFriendRequestView(generics.CreateAPIView):
+class FriendRequestViewset(viewsets.GenericViewSet):
 	serializer_class = FriendRequestSerializer
 	queryset = FriendRequest.objects.all()
-	
-	def post(self, request, *args, **kwargs):
+
+	def create(self, request, *args, **kwargs):
 		user_sender = request.user
 		receiver = request.data.get('receiver', None)
 		if user_sender.friends.filter(pk=receiver).exists():
@@ -29,13 +29,9 @@ class CreateFriendRequestView(generics.CreateAPIView):
 		if friend_serializer.is_valid():
 			friend_serializer.save()
 			return Response({"message": "Friend Request sent"}, status=status.HTTP_200_OK)
-		print(friend_serializer.errors)
 		return Response({"message": "Cannot send friend request"}, status=status.HTTP_404_NOT_FOUND)
 	
-class AcceptOrCancelFriendRequestView(generics.DestroyAPIView):
-	queryset = FriendRequest.objects.all()
-
-	def delete(self, request, *args, **kwargs):
+	def destroy(self, request, *args, **kwargs):
 		friend_request_id = kwargs.get('pk')
 		try:
 			friend_request = FriendRequest.objects.get(pk=friend_request_id)
