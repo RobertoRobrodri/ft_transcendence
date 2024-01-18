@@ -37,7 +37,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/pong/', include('pong_auth.urls')),
-	path('api/user_management/', include('user_management.urls')),
+	path('api/user_management/', include('user_management.routers')),
 	path('api/friends/', include('friends.urls')),
 	#swagger documentation
 	path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),

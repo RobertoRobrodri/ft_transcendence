@@ -35,7 +35,7 @@ class CreateFriendRequestView(generics.CreateAPIView):
 class AcceptOrCancelFriendRequestView(generics.DestroyAPIView):
 	queryset = FriendRequest.objects.all()
 
-	def post(self, request, *args, **kwargs):
+	def delete(self, request, *args, **kwargs):
 		friend_request_id = kwargs.get('pk')
 		try:
 			friend_request = FriendRequest.objects.get(pk=friend_request_id)
