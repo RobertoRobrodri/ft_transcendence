@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   classes.js                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: guilmira <guilmira@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crisfern <crisfern@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/09 12:34:44 by guilmira          #+#    #+#             */
-/*   Updated: 2024/01/16 08:01:48 by guilmira         ###   ########.fr       */
+/*   Updated: 2024/01/19 15:51:27 by crisfern         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 /* Class definition */
 
 export { Vector, CanvasEntity, Pala, Ball, Player };
-import { canvas, ctx, palaSpeed, palaWidth, palaLength, ballSpeed } from './main.js';
+import { canvas, ctx, palaSpeed, palaWidth, palaLength, ballSpeed } from './pong.js';
 
 class Player
 {
