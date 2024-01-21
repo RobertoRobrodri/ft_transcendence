@@ -13,6 +13,8 @@ class CustomUser(AbstractUser):
 	wins 			= models.IntegerField(default=0)
 	losses 			= models.IntegerField(default=0)
 	status 			= models.CharField(choices=Status, default=Status.OFFLINE)
+	# Used for 42 Auth
+	external_id		= models.IntegerField(default=0)
 	#TODO add default profile picture
 	profile_picture = models.ImageField(upload_to='media/', null=True, blank=True)
 	friends 		= models.ManyToManyField('self', blank=True)

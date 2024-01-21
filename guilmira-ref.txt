@@ -1,7 +1,0 @@
-https://www.youtube.com/watch?v=cw8-KFVXpTE&ab_channel=DennisIvy
-
-https://www.youtube.com/watch?v=h39eMGWmEV4&ab_channel=BugBytes
-
-https://www.youtube.com/watch?v=b0CgA_Ap_Mc&ab_channel=TechWithTim
-
-http://localhost:8000/admin/login/?next=/admin/

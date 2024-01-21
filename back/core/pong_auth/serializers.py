@@ -39,3 +39,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 # In case we need to add custom logic to the serializer
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
     pass
+
+class User42Serializer(serializers.Serializer):
+    access_token = serializers.CharField()

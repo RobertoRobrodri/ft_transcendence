@@ -3,6 +3,7 @@ venv/
 
 Makefile
 guilmira-ref.txt
+.env
 
 # Django #
 *.log
