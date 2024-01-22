@@ -1,7 +1,6 @@
 # Virtual Environment #
 venv/
 
-Makefile
 guilmira-ref.txt
 .env
 
