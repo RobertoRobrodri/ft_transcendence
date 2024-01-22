@@ -24,6 +24,7 @@ $(NAME):
 
 all: $(NAME)
 
+#Usage make git msg="An useful commit"
 git:
 	git add -A
 	git commit -m "$(msg)"
