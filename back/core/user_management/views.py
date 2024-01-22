@@ -10,7 +10,7 @@ from pong_auth.permissions import IsLoggedInUser
 class UserViewset(viewsets.GenericViewSet):
 	serializer_class = UserUpdateSerializer
 	queryset = CustomUser.objects.all()
-	permission_classes = [IsLoggedInUser and IsAuthenticated]
+	permission_classes = [IsLoggedInUser, IsAuthenticated]
 	
 	def list(self, request):
 		users = self.get_queryset()
@@ -19,7 +19,6 @@ class UserViewset(viewsets.GenericViewSet):
 	
 	def retrieve(self, request, pk=None):
 		user = get_object_or_404(self.serializer_class.Meta.model, pk=pk)
-		self.check_object_permissions(request, user)
 		user_serializer = self.serializer_class(user)
 		return Response(user_serializer.data, status=status.HTTP_200_OK)
 
