@@ -16,21 +16,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {
                 'write_only': True,
-                'required': False,
             },
-#            'email': {
-#                'validators': [
-#                    UniqueValidator(
-#                        queryset=CustomUser.objects.all()
-#                    )
-#                ],
-#                'required': True,
-#                'allow_blank': False,
-#                
-#            },
-            'external_id': {
-                'required': False,
-            }
         }
 
     def create(self, validated_data):
