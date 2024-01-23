@@ -8,19 +8,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'wins', 'losses', 'status', 'password', 'profile_picture',)
-        extra_kwargs = {
-            'password': {
-                'write_only': True
-            },
-            'email': {
-                'validators': [
-                    UniqueValidator(
-                        queryset=CustomUser.objects.all()
-                    )
-                ]
-            }
-        }
+        fields = ('username', 'status', 'profile_picture',)
 
     def update(self, instance, validated_data):
         previous_profile_picture = instance.profile_picture
@@ -28,13 +16,22 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             previous_profile_picture.delete()
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.username        = validated_data.get('username', instance.username)
-        instance.email           = validated_data.get('email', instance.email)
-        instance.score           = validated_data.get('wins', instance.wins)
-        instance.score           = validated_data.get('losses', instance.losses)
         instance.status          = validated_data.get('status', instance.status)
-        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
-        password                 = validated_data.get('password')
-        if password:
-            instance.set_password(password)
+        instance.save()
+        return instance
+    
+class UserUpdatePasswordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ('password', )
+        extra_kwargs = {
+            'password': {
+                'write_only': True,
+            },
+        }
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data.get('password'))
         instance.save()
         return instance

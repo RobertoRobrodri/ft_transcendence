@@ -11,25 +11,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         # In case new fields are needed, create a custom model that inherits from User and add fields
-        fields = ('username', 'password', 'email')
+        fields = ('username', 'password',)
         # DO NOT SEND THE PASSWORD
         extra_kwargs = {
             'password': {
-                'write_only': True
+                'write_only': True,
             },
-            'email': {
-                'validators': [
-                    UniqueValidator(
-                        queryset=CustomUser.objects.all()
-                    )
-                ]
-            }
         }
-    
+
     def create(self, validated_data):
         user = CustomUser(
             username=validated_data['username'],
-            email=validated_data['email']
             # Set here any new field you may need
         )
         user.set_password(validated_data['password'])
@@ -39,3 +31,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 # In case we need to add custom logic to the serializer
 class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
     pass
+
+class User42RegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'external_id')

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from pong_auth.models import CustomUser
 from .models import FriendRequest
 from .serializers import FriendRequestSerializer
+from django.db.models import Q
 
 class FriendRequestViewset(viewsets.GenericViewSet):
 	serializer_class = FriendRequestSerializer
@@ -12,16 +13,21 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 	def create(self, request, *args, **kwargs):
 		user_sender = request.user
 		receiver = request.data.get('receiver', None)
+		# Search in the user list if they are already friends
 		if user_sender.friends.filter(pk=receiver).exists():
 			return Response({"message": "Already friends"}, status=status.HTTP_400_BAD_REQUEST)
-
+		
+		# Want to be friends with an unexistent user
 		try:
 			user_receiver = CustomUser.objects.get(pk=receiver)
 		except CustomUser.DoesNotExist:
 			return Response({"message": "Receiver user does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 		
-		existing_request = FriendRequest.objects.filter(sender=user_sender.id, receiver=user_receiver.id)
-		if existing_request.exists():
+		# Check if the request already exists
+		# Bidirectional, means it checks for both receiver and sender in both fields
+		existing_request = FriendRequest.objects.filter(Q(sender=user_sender.id, receiver=user_receiver.id) |
+												  Q(sender=user_receiver.id, receiver=user_sender.id)).first()
+		if existing_request is not None:
 			return Response({"message": "Friend request already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
 		friend_request_data = {'sender': user_sender.id, 'receiver': user_receiver.id}
