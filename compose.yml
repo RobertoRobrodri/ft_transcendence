@@ -6,6 +6,7 @@ services:
     container_name: nginx
     ports:
       - 80:80
+      - 8080:8080
     volumes:
       - profile_pictures:/media
     depends_on:
@@ -26,11 +27,57 @@ services:
   db:
     build: ./db/
     container_name: db
+    ports:
+      - 5432:5432
     volumes:
       - ddbb:/var/lib/postgresql/data
     env_file:
       - .env
 
+# Monitoring
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prom_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:10.3.1
+    container_name: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - graf_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+  postgres_exporter:
+    image: bitnami/postgres-exporter:0.15.0
+    container_name: postgres_exporter
+    ports:
+      - 9187:9187
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@db:5432/postgres?sslmode=disable
+    depends_on:
+      - prometheus
+      - db
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:1.1.0
+    container_name: nginx_exporter
+    ports:
+      - 9113:9113
+    environment:
+      - nginx.scrape-uri=http://nginx:8080/stub_status=value
+    depends_on:
+      - prometheus
+      - nginx
+
 volumes:
   ddbb:
   profile_pictures:
+  prom_data:
+  graf_data:
