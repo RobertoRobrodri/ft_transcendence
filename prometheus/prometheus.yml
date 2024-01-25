@@ -22,4 +22,4 @@ scrape_configs:
   - job_name: 'django'
     static_configs:
       - targets:
-        - django:8080
+        - django:8000

@@ -27,8 +27,10 @@ SECRET_KEY = 'django-insecure-qfcaph4ab)-2t0nvaj_4tzndz!4@s1ej^^vb3b1gu@&j)r2c)a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+# Development
+ALLOWED_HOSTS = ['*']
+# Production all containers that should be able to call django endpoints
+#ALLOWED_HOSTS = ['prometheus', 'nginx', 'db']
 
 # Application definition
 
@@ -73,7 +75,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	# Monitoring Middleware
 	'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
