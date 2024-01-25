@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
 	'rest_framework_simplejwt',
 	'drf_yasg', #swagger documentation
+	'corsheaders',
     #include your apps
     'pong_auth',
 	'user_management',
@@ -66,6 +67,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+	'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -150,3 +152,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:80",
+	"http://nginx:80"
+]
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:80",
+	"http://nginx:80"
+]
