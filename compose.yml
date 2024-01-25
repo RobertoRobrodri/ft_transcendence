@@ -6,7 +6,8 @@ services:
     container_name: nginx
     ports:
       - 80:80
-      - 8080:8080
+    expose:
+      - 8080
     volumes:
       - profile_pictures:/media
     depends_on:
@@ -27,8 +28,8 @@ services:
   db:
     build: ./db/
     container_name: db
-    ports:
-      - 5432:5432
+    expose:
+      - 5432
     volumes:
       - ddbb:/var/lib/postgresql/data
     env_file:
@@ -54,11 +55,13 @@ services:
     depends_on:
       - prometheus
 
+  # Oficial exporters https://prometheus.io/docs/instrumenting/exporters/
   postgres_exporter:
-    image: bitnami/postgres-exporter:0.15.0
+    #image: bitnami/postgres-exporter:0.15.0
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
     container_name: postgres_exporter
-    ports:
-      - 9187:9187
+    expose:
+      - 9187
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@db:5432/postgres?sslmode=disable
     depends_on:
@@ -68,8 +71,8 @@ services:
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:1.1.0
     container_name: nginx_exporter
-    ports:
-      - 9113:9113
+    expose:
+      - 9113
     environment:
       - nginx.scrape-uri=http://nginx:8080/stub_status=value
     depends_on:

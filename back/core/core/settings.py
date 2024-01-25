@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
 	'rest_framework_simplejwt',
 	'drf_yasg', #swagger documentation
+	'django_prometheus', # Monitoring Module
     #include your apps
     'pong_auth',
 	'user_management',
@@ -64,6 +65,7 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+	'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -71,6 +73,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	# Monitoring Middleware
+	'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
