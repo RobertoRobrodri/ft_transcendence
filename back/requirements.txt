@@ -5,7 +5,9 @@ psycopg2-binary==2.9.9
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 drf-yasg==1.21.7
-# Image Handling, verify if we can use it
+#Cors headers
+django-cors-headers==4.3.1
+# Image Handling
 pillow==10.2.0
 # Make request to 42 API
 requests==2.31.0
