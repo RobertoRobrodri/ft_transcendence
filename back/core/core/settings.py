@@ -100,13 +100,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+PROMETHEUS_EXPORT_MIGRATIONS = True
+
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django_prometheus.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_NAME'),
 		'USER': os.environ.get('POSTGRES_USER'),
 		'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
