@@ -43,12 +43,18 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prom_data:/prometheus
 
+
+# Django dashboard 17658
+# Postgres dashboard 9628
+# Nginx dashboard 12708
   grafana:
     image: grafana/grafana:10.3.1
     container_name: grafana
     ports:
       - 3000:3000
     volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
       - graf_data:/var/lib/grafana
     depends_on:
       - prometheus
