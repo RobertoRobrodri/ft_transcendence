@@ -23,7 +23,7 @@ from drf_yasg.views import get_schema_view
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="Ft_Transcendence API, La Piscina Legendaria",
+      title="Ft_Transcendence API",
       default_version='v1',
       description="Documentación de las Pong APIs, para que no tengáis que romperos la cabeza con Django",
       terms_of_service="https://www.google.com/policies/terms/",

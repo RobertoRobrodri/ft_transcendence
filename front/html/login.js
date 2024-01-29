@@ -1,31 +1,47 @@
-let form = document.querySelector(".logForm");
 
-    async function sendData(username, password) {
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `username=${username}&password=${password}`
-        };
+  document.addEventListener('DOMContentLoaded', function () {
+    // Select the login form
+    const loginForm = document.querySelector('.logForm');
 
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/pong_auth/login/', options);
-            const data = await response.json();
-            
-            console.log('API Response:', data);
-        } catch (error) {
-            console.error('Error:', error);
+    // Add event listener to the form submission
+    loginForm.addEventListener('submit', async function (event) {
+      event.preventDefault(); // Prevent the default form submission
+
+      // Get the input values
+      const username = document.querySelector('.username').value;
+      const password = document.querySelector('.password').value;
+
+      // Create an object with the login data
+      const loginData = {
+        username: username,
+        password: password,
+      };
+
+      try {
+        // Make a POST request to the specified endpoint
+        const response = await fetch('http://localhost:80/api/pong_auth/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(loginData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-    }
 
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+        // Check if the response content type is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Invalid response format. Expected JSON.');
+        }
 
-        // Get values from the form fields
-        let username = document.querySelector(".username").value;
-        let password = document.querySelector(".password").value;
-
-        // Send data to the server
-        await sendData(username, password);
+        const data = await response.json();
+        // Handle the response data as needed
+        console.log(data);
+      } catch (error) {
+        console.error('Error:', error.message);
+      }
     });
+  });
