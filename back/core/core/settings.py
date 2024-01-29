@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 # Production all containers that should be able to call django endpoints
 #ALLOWED_HOSTS = ['prometheus', 'nginx', 'db']
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -162,11 +163,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:80",
-	"http://nginx:80"
+#    "http://localhost:80",
+	"http://nginx:80",
 ]
 
 CORS_ORIGIN_WHITELIST = [
-    "http://localhost:80",
-	"http://nginx:80"
+#    "http://localhost:80",
+	"http://nginx:80",
 ]
+
+# CORS_ORIGIN_ALLOW_ALL = True
