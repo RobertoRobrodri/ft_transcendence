@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from .models import CustomUser
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer, User42RegistrationSerializer
-import requests, os, random, string
+import requests, os, random, string, logging
 
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
@@ -46,10 +46,10 @@ class User42Callback(generics.GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = User42RegistrationSerializer
 
-    def get(self, request):
+    def post(self, request):
         token_url     = "https://api.intra.42.fr/oauth/token"
-        code          = request.GET.get('code')
-        state         = request.GET.get('state')
+        code          = request.data.get('code', None)
+        state         = request.data.get('state', None)
         client_id     = os.environ.get('CLIENT_ID')
         client_secret = os.environ.get('CLIENT_SECRET')
         data = {
@@ -57,7 +57,7 @@ class User42Callback(generics.GenericAPIView):
             'client_id': client_id,
             'client_secret': client_secret,
             'code': code,
-            'redirect_uri': "http://localhost:8000/api/pong_auth/42/callback/", # ? Should this URL be passed as a secret?
+            'redirect_uri': "http://localhost:80/main.html",
             'state': state
         }
         # Make request to get 42 credentials for more information
@@ -95,4 +95,4 @@ class User42Callback(generics.GenericAPIView):
                         'refresh' : str(refresh),
                         'message': 'Welcome! Select a username',
                     },status=status.HTTP_200_OK)
-        return Response(user_request.text, status=r.status_code)
+        return Response(r.text, status=r.status_code)

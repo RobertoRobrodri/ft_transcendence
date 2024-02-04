@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Callback Page</title>
+</head>
+<body>
+    <h1>Callback Page</h1>
+    <script>
+        // Parse the query parameters to get the authorization code
+        const urlParams = new URLSearchParams(window.location.search);
+        const authorizationCode = urlParams.get('code');
+
+        // Make a POST request to your backend with the authorization code
+        if (authorizationCode) {
+            fetch('http://localhost:80/api/pong_auth/42/callback/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: authorizationCode,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response from your backend
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        } else {
+            console.error('Authorization code not found in the URL.');
+        }
+    </script>
+</body>
+</html>
