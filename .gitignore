@@ -1,7 +1,6 @@
 # Virtual Environment #
 venv/
 
-guilmira-ref.txt
 .env
 
 # Django #
