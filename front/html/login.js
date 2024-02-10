@@ -1,26 +1,35 @@
 async function handleSubmitRegister(e) {
     e.preventDefault()
     // Get the input values
-    const username = document.querySelector('#username').value;
-	const password = document.querySelector('#password').value;
+    const username = document.querySelector('#new_username').value;
+	const password = document.querySelector('#new_password').value;
 
 	const loginData = {
         username: username,
         password: password,
-      };
-      const response = await fetch('http://localhost:80/api/pong_auth/register/', {
-    	method: 'POST',
-        headers: {
+    };
+    try {
+        const response = await fetch('http://localhost:80/api/pong_auth/register/', {
+    	    method: 'POST',
+            headers: {
         	'Content-Type': 'application/json',
-        },body: JSON.stringify(loginData),
-    })
+            },body: JSON.stringify(loginData),
+        })
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+    }
+    catch (error) {
+            console.error('Error:', error.message);
+    }
+        
 }
 
 export function register(e) {
 	// Select the login form
-	const RegisterForm = document.querySelector('#RegisterForm');
+	const registerForm = document.querySelector('#RegisterForm');
 	// Add event listener to the form submission
-	loginForm.addEventListener('submit', handleSubmitRegister);
+	registerForm.addEventListener('submit', handleSubmitRegister);
 }
 
 async function handleSubmitLogin (e) {
@@ -35,7 +44,7 @@ async function handleSubmitLogin (e) {
       };
 	try {
     // Make a POST request to the specified endpoint
-    const response = await fetch('http://localhost:80/api/pong_auth/login/', {
+        const response = await fetch('http://localhost:80/api/pong_auth/login/', {
     	method: 'POST',
         headers: {
         	'Content-Type': 'application/json',
