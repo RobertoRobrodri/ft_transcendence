@@ -3,37 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Callback Page</title>
+    <title>SPA Boilerplate</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Callback Page</h1>
-    <script>
-        // Parse the query parameters to get the authorization code
-        const urlParams = new URLSearchParams(window.location.search);
-        const authorizationCode = urlParams.get('code');
 
-        // Make a POST request to your backend with the authorization code
-        if (authorizationCode) {
-            fetch('http://localhost:80/api/pong_auth/42/callback/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    code: authorizationCode,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Handle the response from your backend
-                console.log(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        } else {
-            console.error('Authorization code not found in the URL.');
-        }
-    </script>
+<header>
+    <h1>SPA Boilerplate</h1>
+</header>
+
+<main>
+    <div id="content">
+        <p>Sample thing</p>
+    </div>
+</main>
+
+<div id="loginForm" style="display: none;">
+    <h2>Login</h2>
+    <form id="loginFormElement">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button id="loginButton" type="button">Login</button>
+    </form>
+</div>
+
+<script type="module" src="./main.js"></script>
+
 </body>
 </html>
