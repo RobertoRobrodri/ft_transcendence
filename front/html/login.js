@@ -1,4 +1,29 @@
-async function handleSubmit (e) {
+async function handleSubmitRegister(e) {
+    e.preventDefault()
+    // Get the input values
+    const username = document.querySelector('#username').value;
+	const password = document.querySelector('#password').value;
+
+	const loginData = {
+        username: username,
+        password: password,
+      };
+      const response = await fetch('http://localhost:80/api/pong_auth/register/', {
+    	method: 'POST',
+        headers: {
+        	'Content-Type': 'application/json',
+        },body: JSON.stringify(loginData),
+    })
+}
+
+export function register(e) {
+	// Select the login form
+	const RegisterForm = document.querySelector('#RegisterForm');
+	// Add event listener to the form submission
+	loginForm.addEventListener('submit', handleSubmitRegister);
+}
+
+async function handleSubmitLogin (e) {
 	e.preventDefault()
 	// Get the input values
 	const username = document.querySelector('#username').value;
@@ -40,7 +65,7 @@ export function login(e) {
 	// Select the login form
 	const loginForm = document.querySelector('#loginForm');
 	// Add event listener to the form submission
-	loginForm.addEventListener('submit', handleSubmit);
+	loginForm.addEventListener('submit', handleSubmitLogin);
 }
 
 export async function callback42(e) {
@@ -74,11 +99,11 @@ export function checkLoginStatus() {
 }
 
 export function displayLoginForm() {
-    const loginForm = document.getElementById('loginForm');
+    const authForm = document.getElementById('auth');
 
     if (checkLoginStatus() === true ) {
-        loginForm.style.display = 'none';}
+        authForm.style.display = 'none';}
     else {
-        loginForm.style.display = 'block';
+        authForm.style.display = 'block';
     }
 }

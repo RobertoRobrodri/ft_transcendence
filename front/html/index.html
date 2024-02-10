@@ -18,21 +18,34 @@
     </div>
 </main>
 
-<div id="loginForm" style="display: none;">
-    <h2>Login</h2>
-    <form id="loginFormElement">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button id="loginButton" type="submit">Login</button>
-    </form>
-    <h2>42 Student?</h2>
-    <button id="Login42" type="button" onclick="location.href='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fabc70636434a6e13642cb70d96dd9b25d6d0d1416e676828df55c45808e06bc&redirect_uri=http%3A%2F%2Flocalhost%3A80&response_type=code'">Sign with 42</button>
+<div id="auth" style="display: none">
+    <div id="loginForm">
+        <h2>Login</h2>
+        <form id="loginFormElement">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <button id="loginButton" type="submit">Login</button>
+        </form>
+        <h2>42 Student?</h2>
+        <button id="Login42" type="button" onclick="location.href='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fabc70636434a6e13642cb70d96dd9b25d6d0d1416e676828df55c45808e06bc&redirect_uri=http%3A%2F%2Flocalhost%3A80&response_type=code'">Sign with 42</button>
+    </div>
+    <div id="RegisterForm">
+        <h2>Register</h2>
+        <form id="RegisterFormElement">
+            <label for="username">Username:</label>
+            <input type="text" id="register_username" name="username" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" id="register_password" name="password" required>
+            <br>
+            <button id="RegisterButton" type="submit">Register</button>
+        </form>
+    </div>
 </div>
-
 <script type="module" src="./main.js"></script>
 
 </body>
