@@ -1,24 +1,21 @@
 <div class="box">
     <div class="form">
-        <h2><b>Login 42 transcendence</h2>
-        <div class="inputBox">
-            <input type="text" required="required">
-            <span>Username</span>
-            <i></i>
+        <h2><b>Login 42 Transcendence</b></h2>
+        <div class="form-group">
+            <input type="text" class="form-control" required="required">
+            <label>Username</label>
         </div>
-        <div class="inputBox">
-            <input type="text" required="required">
-            <span>Password</span>
-            <i></i>
+        <div class="form-group">
+            <input type="password" class="form-control" required="required">
+            <label>Password</label>
         </div>
         <div class="links">
-            <a href="#">Forget your password?</a>
-            <a href="#">Sing up</a>
+            <a href="#">Forgot your password?</a>
+            <a href="#">Sign up</a>
         </div>
         <div class="login-buttons">
-            <input type="submit" value="Login">
-            <input type="submit" value="Login with 42"
-                class="login-42" onclick="location.href='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fabc70636434a6e13642cb70d96dd9b25d6d0d1416e676828df55c45808e06bc&redirect_uri=http%3A%2F%2Flocalhost%3A80&response_type=code'">
+            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="button" class="btn btn-info login-42" onclick="location.href='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fabc70636434a6e13642cb70d96dd9b25d6d0d1416e676828df55c45808e06bc&redirect_uri=http%3A%2F%2Flocalhost%3A80&response_type=code'">Login with 42</button>
         </div>
     </div>
 </div>

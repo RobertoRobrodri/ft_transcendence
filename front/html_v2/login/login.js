@@ -31,7 +31,7 @@ async function handleSubmitLogin (e) {
     const data = await response.json();
     // Handle the response data as needed
 	const token = data.access_token;
-	localStorage.setItem('token', token);
+	sessionStorage.setItem('token', token);
     console.log(data);
     } catch (error) {
     	console.error('Error:', error.message);
@@ -41,7 +41,7 @@ async function handleSubmitLogin (e) {
 export function login(e) {
     // Select the login form
     const loginForm = document.querySelector('#loginForm');
-    // 	// Add event listener to the form submission
+    // Add event listener to the form submission
     loginForm.addEventListener('submit', handleSubmitLogin);
 }
 
@@ -65,32 +65,30 @@ export async function callback42(e) {
 		}
 		data = await response.json()
 		const token = data.access_token;
-		localStorage.setItem('token', token);
+		sessionStorage.setItem('token', token);
     } else {
         console.error('Authorization code not found in the URL.');
     }
 }
 
 export function checkLoginStatus() {
-	return localStorage.getItem('token') !== null;
+	return sessionStorage.getItem('token') !== null;
 }
 
 export function importLogin(){
-    let loginPage = document.getElementById("root");
-    Promise.all([
-        fetch('./login/login.html').then(response => response.text()),
-        fetch('./login/login.css').then(response => response.text())
-    ]).then(([html, css]) => {
-        loginPage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
-    }).catch(error => {
-        console.error('Error al cargar el formulario:', error);
-    });
-}
-
-
-export function inicializarEventos() {
-    document.getElementById("htmlLogin").addEventListener("click", importLogin);
+    if (checkLoginStatus() === false) {
+        console.log("Not logged in");
+        let loginPage = document.getElementById("root");
+        Promise.all([
+            fetch('./login/login.html').then(response => response.text()),
+            fetch('./login/login.css').then(response => response.text())
+        ]).then(([html, css]) => {
+            loginPage.innerHTML = html;
+            let style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+        }).catch(error => {
+            console.error('Error al cargar el formulario:', error);
+        });
+    }
 }

@@ -39,8 +39,8 @@ export function importSingUp(){
     let singUpPage = document.getElementById("sing-up-page");
     if (singUpPageView) {
         Promise.all([
-            fetch('./sing-up/sing-up.html').then(response => response.text()),
-            fetch('./sing-up/sing-up.css').then(response => response.text())
+            fetch('./sing-up/sing_up.html').then(response => response.text()),
+            fetch('./sing-up/sing_up.css').then(response => response.text())
         ]).then(([html, css]) => {
             singUpPage.innerHTML = html;
             let style = document.createElement('style');
