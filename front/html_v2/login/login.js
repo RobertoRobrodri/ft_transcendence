@@ -1,6 +1,5 @@
-let loginPageView = true;
-
 async function handleSubmitLogin (e) {
+    const target = e.target.closest("#loginForm");
 	e.preventDefault()
 	// Get the input values
 	const username = document.querySelector('#username').value;
@@ -39,10 +38,9 @@ async function handleSubmitLogin (e) {
 }
 
 export function login(e) {
-    // Select the login form
-    const loginForm = document.querySelector('#loginForm');
-    // Add event listener to the form submission
-    loginForm.addEventListener('submit', handleSubmitLogin);
+    // event delegation
+    //https://stackoverflow.com/questions/1687296/what-is-dom-event-delegation
+    document.body.addEventListener('submit', handleSubmitLogin);
 }
 
 export async function callback42(e) {
@@ -71,7 +69,7 @@ export async function callback42(e) {
     }
 }
 
-export function checkLoginStatus() {
+function checkLoginStatus() {
 	return sessionStorage.getItem('token') !== null;
 }
 
