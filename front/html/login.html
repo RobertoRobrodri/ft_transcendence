@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="login.css">
+        <title>Login</title>
+    </head>
+    <body>
+        <div class="box">
+            <div class="form">
+                <h2><b>Login 42 transcende</h2>
+                <div class="inputBox">
+                    <input type="text" required="required">
+                    <span>Username</span>
+                    <i></i>
+                </div>
+                <div class="inputBox">
+                    <input type="text" required="required">
+                    <span>Password</span>
+                    <i></i>
+                </div>
+                <div class="links">
+                    <a href="#">Forget your password?</a>
+                    <a href="#">Sing up</a>
+                </div>
+                <div class="login-buttons">
+                    <input type="submit" value="Login">
+                    <input type="submit" value="Login with 42"
+                        class="login-42" onclick="location.href='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-fabc70636434a6e13642cb70d96dd9b25d6d0d1416e676828df55c45808e06bc&redirect_uri=http%3A%2F%2Flocalhost%3A80&response_type=code'">
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,31 +1,6 @@
-export async function handleSubmitRegister(e) {
-    e.preventDefault()
-    // Get the input values
-    const username = document.querySelector('#new_username').value;
-	const password = document.querySelector('#new_password').value;
+let loginPageView = true;
 
-	const loginData = {
-        username: username,
-        password: password,
-    };
-    try {
-        const response = await fetch('http://localhost:80/api/pong_auth/register/', {
-    	    method: 'POST',
-            headers: {
-        	'Content-Type': 'application/json',
-            },body: JSON.stringify(loginData),
-        })
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-    }
-    catch (error) {
-            console.error('Error:', error.message);
-    }
-        
-}
-
-export async function handleSubmitLogin (e) {
+async function handleSubmitLogin (e) {
 	e.preventDefault()
 	// Get the input values
 	const username = document.querySelector('#username').value;
@@ -63,6 +38,13 @@ export async function handleSubmitLogin (e) {
 	}
 }
 
+export function login(e) {
+    // Select the login form
+    const loginForm = document.querySelector('#loginForm');
+    // 	// Add event listener to the form submission
+    loginForm.addEventListener('submit', handleSubmitLogin);
+}
+
 export async function callback42(e) {
 	const urlParams = new URLSearchParams(window.location.search);
 	const authorizationCode = urlParams.get('code');
@@ -89,24 +71,26 @@ export async function callback42(e) {
     }
 }
 
-function loadLoginForm() {
-    const loginContainer = document.getElementById('loginContainer');
-    fetch('./login.html')
-        .then(response => response.text())
-        .then(html => {
-            loginContainer.innerHTML = html;
-        })
-        .catch(error => console.error('Error loading login form:', error));
-}
-
-function checkLoginStatus() {
+export function checkLoginStatus() {
 	return localStorage.getItem('token') !== null;
 }
 
-export function displayLoginForm() {
-    const authForm = document.getElementById('auth');
+export function importLogin(){
+    let loginPage = document.getElementById("root");
+    Promise.all([
+        fetch('./login/login.html').then(response => response.text()),
+        fetch('./login/login.css').then(response => response.text())
+    ]).then(([html, css]) => {
+        loginPage.innerHTML = html;
+        let style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+    }).catch(error => {
+        console.error('Error al cargar el formulario:', error);
+    });
+}
 
-    if (checkLoginStatus() === false ) {
-        loadLoginForm();
-    }
+
+export function inicializarEventos() {
+    document.getElementById("htmlLogin").addEventListener("click", importLogin);
 }
