@@ -1,16 +1,9 @@
-import * as loginModule from "./login.js";
+import * as routing from "./router/router.js"
+import * as loginModule from "./login/login.js"
+import * as signUpModule from "./sing-up/signup.js"
 
-const d = document;
-
-d.addEventListener("DOMContentLoaded", loginModule.displayLoginForm);
-
-
-loginModule.callback42();
-// Select the login form
-const loginForm = document.querySelector('#loginForm');
-// Add event listener to the form submission
-loginForm.addEventListener('submit', loginModule.handleSubmitLogin);
-// Select the register form
-const registerForm = document.querySelector('#RegisterForm');
-// Add event listener to the form submission
-registerForm.addEventListener('submit', loginModule.handleSubmitRegister);
+document.addEventListener("DOMContentLoaded", loginModule.importLogin);
+loginModule.login();
+loginModule.loadSignUp();
+signUpModule.register();
+//window.addEventListener("hashchange", routing.router)
