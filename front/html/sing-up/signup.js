@@ -35,18 +35,10 @@ export function register(e) {
 	document.getElementById('root').addEventListener('submit', handleSubmitRegister);
 }
 
-export function loadLogin(e) {
-    document.getElementById('root').addEventListener('click', function(e) {
-        if (e.target.matches('#loginbutton') === false)
-            return ;
-        importLogin();
-    });
-}
-
-export function importSingUp(e){
-    if (e.target.matches('#signupbutton') === false)
-        return ;
-	e.preventDefault()
+export function importSignUp(e){
+    // if (e.target.matches('#signupbutton') === false)
+    //     return ;
+	// e.preventDefault()
     let singUpPage = document.getElementById("root");
     Promise.all([
         fetch('./sing-up/sing_up.html').then(response => response.text()),
