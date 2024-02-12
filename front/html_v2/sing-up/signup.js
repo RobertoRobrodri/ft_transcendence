@@ -1,6 +1,6 @@
-let singUpPageView = true;
-
 async function handleSubmitRegister(e) {
+    if (e.target.matches('#registrationForm') === false)
+        return ;
     e.preventDefault()
     // Get the input values
     const username = document.querySelector('#new_username').value;
@@ -28,33 +28,23 @@ async function handleSubmitRegister(e) {
 }
 
 export function register(e) {
-	// Select the login form
-	const registerForm = document.querySelector('#RegisterForm');
-	// Add event listener to the form submission
-	registerForm.addEventListener('submit', handleSubmitRegister);
+	document.getElementById('root').addEventListener('submit', handleSubmitRegister);
 }
 
-export function importSingUp(){
-    singUpPageView = !singUpPageView; // Cambia el estado de la variable
-    let singUpPage = document.getElementById("sing-up-page");
-    if (singUpPageView) {
-        Promise.all([
-            fetch('./sing-up/sing_up.html').then(response => response.text()),
-            fetch('./sing-up/sing_up.css').then(response => response.text())
-        ]).then(([html, css]) => {
-            singUpPage.innerHTML = html;
-            let style = document.createElement('style');
-            style.textContent = css;
-            document.head.appendChild(style);
-        }).catch(error => {
-            console.error('Error al cargar el formulario:', error);
-        });
-    } else {
-        singUpPage.innerHTML = ""
-    }
-}
-
-
-export function inicializarEventos() {
-    document.getElementById("html-sing-up").addEventListener("click", importSingUp);
+export function importSingUp(e){
+    if (e.target.matches('#signupbutton') === false)
+        return ;
+	e.preventDefault()
+    let singUpPage = document.getElementById("root");
+    Promise.all([
+        fetch('./sing-up/sing_up.html').then(response => response.text()),
+        fetch('./sing-up/sing_up.css').then(response => response.text())
+    ]).then(([html, css]) => {
+        singUpPage.innerHTML = html;
+        let style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+    }).catch(error => {
+        console.error('Error al cargar el formulario:', error);
+    });
 }

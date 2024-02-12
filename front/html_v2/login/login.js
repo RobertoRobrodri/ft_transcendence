@@ -1,5 +1,8 @@
+import { importSingUp } from "../sing-up/signup.js"
+
 async function handleSubmitLogin (e) {
-    const target = e.target.closest("#loginForm");
+    if (e.target.matches('#loginForm') === false)
+        return ;
 	e.preventDefault()
 	// Get the input values
 	const username = document.querySelector('#username').value;
@@ -40,7 +43,11 @@ async function handleSubmitLogin (e) {
 export function login(e) {
     // event delegation
     //https://stackoverflow.com/questions/1687296/what-is-dom-event-delegation
-    document.body.addEventListener('submit', handleSubmitLogin);
+    document.getElementById('root').addEventListener('submit', handleSubmitLogin);
+}
+
+export function loadSignUp(e) {
+    document.getElementById('root').addEventListener('click', importSingUp);
 }
 
 export async function callback42(e) {
