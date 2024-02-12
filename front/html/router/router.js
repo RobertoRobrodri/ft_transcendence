@@ -1,5 +1,5 @@
 import { checkLoginStatus } from "../login/login.js"
-import { importSignUp } from "../sing-up/signup.js"
+import { loadSignUpPage } from "../sing-up/signup.js"
 import * as callbackModule from "../callback/callback.js"
 import { displayLoginOrMenu } from "../components/loader.js"
 
@@ -10,6 +10,6 @@ export function router() {
 		displayLoginOrMenu();
 	}
 	else if (hash === '#/signup') {
-		importSignUp();
+		loadSignUpPage();
 	}
 }

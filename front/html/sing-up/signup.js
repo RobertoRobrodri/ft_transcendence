@@ -1,5 +1,6 @@
 import { displayError } from "../components/loader.js"
-import { importLogin } from "../login/login.js"
+import { loadLoginPage } from "../login/login.js"
+import { loadMainPage } from "../menu/menu.js";
 
 async function handleSubmitRegister(e) {
     if (e.target.matches('#registrationForm') === false)
@@ -23,19 +24,20 @@ async function handleSubmitRegister(e) {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        // Asks server for a token
+        // loadMainPage();
     }
     catch (error) {
             console.error('Error:', error.message);
             displayError(error, 'small', 'registrationForm');
     }
-        
 }
 
 export function register(e) {
 	document.getElementById('root').addEventListener('submit', handleSubmitRegister);
 }
 
-export function importSignUp(e){
+export function loadSignUpPage(e){
     // if (e.target.matches('#signupbutton') === false)
     //     return ;
 	// e.preventDefault()

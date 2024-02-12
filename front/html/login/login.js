@@ -1,4 +1,4 @@
-import { importSignUp } from "../sing-up/signup.js"
+import { loadSignUpPage } from "../sing-up/signup.js"
 import { displayError } from "../components/loader.js"
 import { loadMainPage } from "../menu/menu.js"
 
@@ -54,7 +54,7 @@ export function checkLoginStatus() {
 	return sessionStorage.getItem('token') !== null;
 }
 
-export function importLogin(){
+export function loadLoginPage(){
     let loginPage = document.getElementById("root");
     Promise.all([
         fetch('./login/login.html').then(response => response.text()),

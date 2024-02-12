@@ -1,4 +1,4 @@
-import { checkLoginStatus, importLogin } from "../login/login.js"
+import { checkLoginStatus, loadLoginPage } from "../login/login.js"
 import { loadMainPage } from "../menu/menu.js"
 
 export function loadingAnimation() {
@@ -20,5 +20,5 @@ export function displayLoginOrMenu() {
     if (checkLoginStatus() === true)
         loadMainPage();
     else
-        importLogin();
+        loadLoginPage();
 }
