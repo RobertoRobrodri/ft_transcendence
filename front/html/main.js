@@ -5,5 +5,6 @@ import * as signUpModule from "./sing-up/signup.js"
 document.addEventListener("DOMContentLoaded", loginModule.importLogin);
 loginModule.login();
 loginModule.loadSignUp();
+signUpModule.loadLogin();
 signUpModule.register();
 //window.addEventListener("hashchange", routing.router)

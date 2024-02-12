@@ -1,4 +1,5 @@
 import { displayError } from "../components/loader.js"
+import { importLogin } from "../login/login.js"
 
 async function handleSubmitRegister(e) {
     if (e.target.matches('#registrationForm') === false)
@@ -32,6 +33,14 @@ async function handleSubmitRegister(e) {
 
 export function register(e) {
 	document.getElementById('root').addEventListener('submit', handleSubmitRegister);
+}
+
+export function loadLogin(e) {
+    document.getElementById('root').addEventListener('click', function(e) {
+        if (e.target.matches('#loginbutton') === false)
+            return ;
+        importLogin();
+    });
 }
 
 export function importSingUp(e){
