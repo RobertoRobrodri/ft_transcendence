@@ -1,4 +1,5 @@
 import { importSingUp } from "../sing-up/signup.js"
+import { displayError } from "../components/loader.js"
 
 async function handleSubmitLogin (e) {
     if (e.target.matches('#loginForm') === false)
@@ -37,6 +38,7 @@ async function handleSubmitLogin (e) {
     console.log(data);
     } catch (error) {
     	console.error('Error:', error.message);
+        displayError(error, 'small', 'loginForm');
 	}
 }
 

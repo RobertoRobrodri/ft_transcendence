@@ -1,3 +1,5 @@
+import { displayError } from "../components/loader.js"
+
 async function handleSubmitRegister(e) {
     if (e.target.matches('#registrationForm') === false)
         return ;
@@ -23,6 +25,7 @@ async function handleSubmitRegister(e) {
     }
     catch (error) {
             console.error('Error:', error.message);
+            displayError(error, 'small', 'registrationForm');
     }
         
 }
