@@ -1,5 +1,6 @@
 import { importSingUp } from "../sing-up/signup.js"
 import { displayError } from "../components/loader.js"
+import { loadMainPage } from "../menu/menu.js"
 
 async function handleSubmitLogin (e) {
     if (e.target.matches('#loginForm') === false)
@@ -36,6 +37,7 @@ async function handleSubmitLogin (e) {
 	const token = data.access_token;
 	sessionStorage.setItem('token', token);
     console.log(data);
+    loadMainPage();
     } catch (error) {
     	console.error('Error:', error.message);
         displayError(error, 'small', 'loginForm');
