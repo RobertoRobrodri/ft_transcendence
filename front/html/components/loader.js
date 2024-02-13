@@ -1,3 +1,6 @@
+import { checkLoginStatus, loadLoginPage } from "../login/login.js"
+import { loadMainPage } from "../menu/menu.js"
+
 export function loadingAnimation() {
 	const $loader = document.createElement("img");
 	$loader.src = "./assets/loader.svg"
@@ -11,4 +14,11 @@ export function displayError (error, type, id) {
     errorElement.style.color = 'red';
     const errorContainer = document.getElementById(id);
     errorContainer.appendChild(errorElement)
+}
+
+export function displayLoginOrMenu() {
+    if (checkLoginStatus() === true)
+        loadMainPage();
+    else
+        loadLoginPage();
 }

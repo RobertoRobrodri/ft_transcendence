@@ -1,4 +1,4 @@
-import { importSingUp } from "../sing-up/signup.js"
+import { loadSignUpPage } from "../sing-up/signup.js"
 import { displayError } from "../components/loader.js"
 import { loadMainPage } from "../menu/menu.js"
 
@@ -50,54 +50,21 @@ export function login(e) {
     document.getElementById('root').addEventListener('submit', handleSubmitLogin);
 }
 
-export function loadSignUp(e) {
-    document.getElementById('root').addEventListener('click', importSingUp);
-}
-
-export async function callback42(e) {
-	const urlParams = new URLSearchParams(window.location.search);
-	const authorizationCode = urlParams.get('code');
-
-    // Make a POST request to your backend with the authorization code
-    if (authorizationCode) {
-        const response = await fetch('http://localhost:80/api/pong_auth/42/callback/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                code: authorizationCode,
-            }),
-        })
-		if (!response.ok) {
-			throw new Error(`HTTP error! Status: ${response.status}`);
-		}
-		data = await response.json()
-		const token = data.access_token;
-		sessionStorage.setItem('token', token);
-    } else {
-        console.error('Authorization code not found in the URL.');
-    }
-}
-
-function checkLoginStatus() {
+export function checkLoginStatus() {
 	return sessionStorage.getItem('token') !== null;
 }
 
-export function importLogin(){
-    if (checkLoginStatus() === false) {
-        console.log("Not logged in");
-        let loginPage = document.getElementById("root");
-        Promise.all([
-            fetch('./login/login.html').then(response => response.text()),
-            fetch('./login/login.css').then(response => response.text())
-        ]).then(([html, css]) => {
-            loginPage.innerHTML = html;
-            let style = document.createElement('style');
-            style.textContent = css;
-            document.head.appendChild(style);
-        }).catch(error => {
-            console.error('Error al cargar el formulario:', error);
-        });
-    }
+export function loadLoginPage(){
+    let loginPage = document.getElementById("root");
+    Promise.all([
+        fetch('./login/login.html').then(response => response.text()),
+        fetch('./login/login.css').then(response => response.text())
+    ]).then(([html, css]) => {
+        loginPage.innerHTML = html;
+        let style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+    }).catch(error => {
+        console.error('Error al cargar el formulario:', error);
+    });
 }
