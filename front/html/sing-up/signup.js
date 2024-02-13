@@ -24,12 +24,16 @@ async function handleSubmitRegister(e) {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        // Asks server for a token
-        // loadMainPage();
+        const data = await response.json();
+        // Handle the response data as needed
+	    const token = data.access_token;
+	    sessionStorage.setItem('token', token);
+        console.log(data);
+        loadMainPage();
     }
     catch (error) {
-            console.error('Error:', error.message);
-            displayError(error, 'small', 'registrationForm');
+        console.error('Error:', error.message);
+        displayError(error, 'small', 'registrationForm');
     }
 }
 

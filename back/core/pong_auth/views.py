@@ -12,6 +12,22 @@ class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
 
+    def post(self, request):
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+        registration = self.serializer_class(data=request.data)
+        if registration.is_valid():
+            registration.save()
+            login_serializer = UserTokenObtainPairSerializer(data=request.data)
+            if login_serializer.is_valid():
+                return Response({
+                    'token' : login_serializer.validated_data.get('access'),
+                    'refresh' : login_serializer.validated_data.get('refresh'),
+                    'message': 'Login successful',
+                },
+                status=status.HTTP_200_OK)
+        return Response({'error': 'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+
 #Token Obtain Base sets permission_classes and authentication_classes to allow any
 class UserLoginView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
