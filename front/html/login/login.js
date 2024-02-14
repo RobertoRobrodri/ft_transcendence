@@ -33,10 +33,11 @@ async function handleSubmitLogin (e) {
     }
 
     const data = await response.json();
-    // Handle the response data as needed
-	const token = data.access_token;
+    // access token
+	const token = data.token;
+    const refresh = data.refresh
 	sessionStorage.setItem('token', token);
-    console.log(data);
+    sessionStorage.setItem('refresh', refresh);
     loadMainPage();
     } catch (error) {
     	console.error('Error:', error.message);

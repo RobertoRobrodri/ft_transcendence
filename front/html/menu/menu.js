@@ -1,12 +1,24 @@
 export async function loadUserInfo() {
-    token = sessionStorage.getItem('token')
-    const response = await fetch('http://localhost:80/api/user_management/', {
-    	method: 'GET',
-        headers: {
-        	'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        }}
-    );
+    const token = sessionStorage.getItem('token')
+    console.log(token);
+    try {
+        const response = await fetch('http://localhost:80/api/user_management/user_list/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }}
+        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data);
+    }
+    catch (error) {
+        console.error('Error:', error.message);
+        // displayError(error, 'small', 'registrationForm');
+    }
 }
 
 export function loadMainPage() {
@@ -17,6 +29,7 @@ export function loadMainPage() {
         mainPage.innerHTML = html;
         //clear hash
         history.pushState("", document.title, window.location.pathname + window.location.search);
+        loadUserInfo();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

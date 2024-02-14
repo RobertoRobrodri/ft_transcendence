@@ -26,8 +26,10 @@ async function handleSubmitRegister(e) {
         }
         const data = await response.json();
         // Handle the response data as needed
-	    const token = data.access_token;
+	    const token = data.token;
+        const refresh = data.refresh
 	    sessionStorage.setItem('token', token);
+        sessionStorage.setItem('refresh', refresh);
         console.log(data);
         loadMainPage();
     }
