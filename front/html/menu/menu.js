@@ -1,6 +1,5 @@
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
-    console.log(token);
     try {
         const response = await fetch('http://localhost:80/api/user_management/user_list/', {
             method: 'GET',
@@ -13,7 +12,10 @@ export async function loadUserInfo() {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
+        let username = data.username;
+        let user_info = document.getElementById("user_info");
+        let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, username);
+        user_info.innerHTML = user_updated;
     }
     catch (error) {
         console.error('Error:', error.message);
