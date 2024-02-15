@@ -1,4 +1,3 @@
-import { loadSignUpPage } from "../sing-up/signup.js"
 import { displayError } from "../components/loader.js"
 import { loadMainPage } from "../menu/menu.js"
 

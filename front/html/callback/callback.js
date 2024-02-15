@@ -19,8 +19,19 @@ export async function callback42(e) {
 			throw new Error(`HTTP error! Status: ${response.status}`);
 		}
 		const data = await response.json();
-		const token = data.access_token;
+		const token = data.token;
+        console.log(token);
 		sessionStorage.setItem('token', token);
+        // codigo de respuesta personalizado
+        // if new user
+        //   select a username
+        // else
+        //   loadMainpage
+        var currentUrl = window.location.href;
+        // Remove the query parameters
+        var updatedUrl = currentUrl.split('?')[0];
+        // Replace the current URL with the updated URL
+        window.history.replaceState({}, document.title, updatedUrl);
 		loadMainPage();
     } else {
         console.error('Authorization code not found in the URL.');

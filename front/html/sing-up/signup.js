@@ -1,5 +1,4 @@
 import { displayError } from "../components/loader.js"
-import { loadLoginPage } from "../login/login.js"
 import { loadMainPage } from "../menu/menu.js";
 
 async function handleSubmitRegister(e) {
