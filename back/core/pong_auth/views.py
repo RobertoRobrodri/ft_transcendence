@@ -110,5 +110,5 @@ class User42Callback(generics.GenericAPIView):
                         'token' : str(refresh.access_token),
                         'refresh' : str(refresh),
                         'message': 'Welcome! Select a username',
-                    },status=status.HTTP_200_OK)
+                    },status=status.HTTP_307_TEMPORARY_REDIRECT)
         return Response(r.text, status=r.status_code)
