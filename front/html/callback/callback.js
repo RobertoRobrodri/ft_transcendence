@@ -1,4 +1,4 @@
-import { loadMainPage } from "../menu/menu.js"
+import { loadMainPage, loadUserInfo } from "../menu/menu.js"
 
 async function handleSubmitUpdatedData(e) {
     if (e.target.matches('#SelectUsernameForm') === false)
@@ -13,7 +13,7 @@ async function handleSubmitUpdatedData(e) {
       try {
         // Make a POST request to the specified endpoint
             const response = await fetch('http://localhost:80/api/user_management/user_update/', {
-            method: 'POST',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -22,6 +22,7 @@ async function handleSubmitUpdatedData(e) {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        loadMainPage();
         } catch (error) {
             console.error('Error:', error.message);
             displayError(error, 'small', 'SelectUsernameForm');
@@ -44,7 +45,6 @@ function load42UserWelcomePage() {
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
-        loadUserInfo();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
