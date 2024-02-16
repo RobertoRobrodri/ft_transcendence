@@ -1,5 +1,5 @@
 import { displayError } from "../components/loader.js"
-import { importLogin } from "../login/login.js"
+import { loadMainPage } from "../menu/menu.js";
 
 async function handleSubmitRegister(e) {
     if (e.target.matches('#registrationForm') === false)
@@ -23,30 +23,29 @@ async function handleSubmitRegister(e) {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        const data = await response.json();
+        // Handle the response data as needed
+	    const token = data.token;
+        const refresh = data.refresh
+	    sessionStorage.setItem('token', token);
+        sessionStorage.setItem('refresh', refresh);
+        console.log(data);
+        loadMainPage();
     }
     catch (error) {
-            console.error('Error:', error.message);
-            displayError(error, 'small', 'registrationForm');
+        console.error('Error:', error.message);
+        displayError(error, 'small', 'registrationForm');
     }
-        
 }
 
 export function register(e) {
 	document.getElementById('root').addEventListener('submit', handleSubmitRegister);
 }
 
-export function loadLogin(e) {
-    document.getElementById('root').addEventListener('click', function(e) {
-        if (e.target.matches('#loginbutton') === false)
-            return ;
-        importLogin();
-    });
-}
-
-export function importSingUp(e){
-    if (e.target.matches('#signupbutton') === false)
-        return ;
-	e.preventDefault()
+export function loadSignUpPage(e){
+    // if (e.target.matches('#signupbutton') === false)
+    //     return ;
+	// e.preventDefault()
     let singUpPage = document.getElementById("root");
     Promise.all([
         fetch('./sing-up/sing_up.html').then(response => response.text()),

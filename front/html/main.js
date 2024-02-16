@@ -1,10 +1,11 @@
 import * as routing from "./router/router.js"
 import * as loginModule from "./login/login.js"
 import * as signUpModule from "./sing-up/signup.js"
+import * as callbackModule from "./callback/callback.js"
 
-document.addEventListener("DOMContentLoaded", loginModule.importLogin);
+document.addEventListener("DOMContentLoaded", routing.router);
 loginModule.login();
-loginModule.loadSignUp();
-signUpModule.loadLogin();
 signUpModule.register();
-//window.addEventListener("hashchange", routing.router)
+callbackModule.sendUpdatedData();
+callbackModule.callback42();
+window.addEventListener("hashchange", routing.router)
