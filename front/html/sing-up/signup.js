@@ -1,5 +1,4 @@
 import { displayError } from "../components/loader.js"
-import { loadLoginPage } from "../login/login.js"
 import { loadMainPage } from "../menu/menu.js";
 
 async function handleSubmitRegister(e) {
@@ -24,12 +23,18 @@ async function handleSubmitRegister(e) {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        // Asks server for a token
-        // loadMainPage();
+        const data = await response.json();
+        // Handle the response data as needed
+	    const token = data.token;
+        const refresh = data.refresh
+	    sessionStorage.setItem('token', token);
+        sessionStorage.setItem('refresh', refresh);
+        console.log(data);
+        loadMainPage();
     }
     catch (error) {
-            console.error('Error:', error.message);
-            displayError(error, 'small', 'registrationForm');
+        console.error('Error:', error.message);
+        displayError(error, 'small', 'registrationForm');
     }
 }
 

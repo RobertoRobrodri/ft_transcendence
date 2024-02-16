@@ -6,16 +6,15 @@ import { displayLoginOrMenu } from "../components/loader.js"
 export function router() {
 	let { hash } = location;
 	console.log(hash);
-	// TODO if an unauthenticated user tries to see other page should be redirected to login
+	// TODO send to main by default
 	if (!hash) {
 		displayLoginOrMenu();
 	}
 	else if (hash === '#/signup' && checkLoginStatus() === false) {
 		loadSignUpPage();
 	}
-	else if (hash === '/callback' && checkLoginStatus() === false) {
-		callback42();
-	}
+	else
+		displayLoginOrMenu();
 }
 
 // if (checkLoginStatus === false) {
