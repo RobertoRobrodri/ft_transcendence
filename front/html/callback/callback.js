@@ -1,6 +1,7 @@
 import { loadMainPage, loadUserInfo } from "../menu/menu.js"
 
 async function handleSubmitUpdatedData(e) {
+    console.log("Entro?");
     if (e.target.matches('#SelectUsernameForm') === false)
         return ;
 	e.preventDefault()
@@ -11,7 +12,6 @@ async function handleSubmitUpdatedData(e) {
         username: username,
       };
       try {
-        // Make a POST request to the specified endpoint
             const response = await fetch('http://localhost:80/api/user_management/user_update/', {
             method: 'PATCH',
             headers: {
@@ -36,10 +36,8 @@ export function sendUpdatedData(e) {
 
 function load42UserWelcomePage() {
     let welcomePage = document.getElementById("root");
-    console.log("Puta");
     Promise.all([
         fetch('./callback/callback.html').then(response => response.text()),
-
     ]).then(([html, css]) => {
         welcomePage.innerHTML = html;
         let style = document.createElement('style');
@@ -77,7 +75,6 @@ export async function callback42(e) {
         // Replace the current URL with the updated URL
         window.history.replaceState({}, document.title, updatedUrl);
         // custom status code for new user
-        console.log(response.status);
         if (response.status === 307)
             load42UserWelcomePage();
         else
