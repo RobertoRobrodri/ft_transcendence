@@ -10,10 +10,17 @@ export function loadingAnimation() {
 
 export function displayError (error, type, id) {
     const errorElement = document.createElement(type);
-    errorElement.textContent = error.message;
+    errorElement.textContent = error;
     errorElement.style.color = 'red';
     const errorContainer = document.getElementById(id);
-    errorContainer.appendChild(errorElement)
+    // Remove existing error messages of the same type
+    const existingErrors = errorContainer.querySelectorAll(type);
+    existingErrors.forEach((existingError) => {
+        errorContainer.removeChild(existingError);
+    });
+
+    // Append the new error message
+    errorContainer.appendChild(errorElement);
 }
 
 export function displayLoginOrMenu() {

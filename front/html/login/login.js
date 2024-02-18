@@ -40,7 +40,7 @@ async function handleSubmitLogin (e) {
     loadMainPage();
     } catch (error) {
     	console.error('Error:', error.message);
-        displayError(error, 'small', 'loginForm');
+        displayError(error.message, 'small', 'loginForm');
 	}
 }
 

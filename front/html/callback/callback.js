@@ -1,7 +1,6 @@
 import { loadMainPage, loadUserInfo } from "../menu/menu.js"
 
 async function handleSubmitUpdatedData(e) {
-    console.log("Entro?");
     if (e.target.matches('#SelectUsernameForm') === false)
         return ;
 	e.preventDefault()
@@ -25,7 +24,7 @@ async function handleSubmitUpdatedData(e) {
         loadMainPage();
         } catch (error) {
             console.error('Error:', error.message);
-            displayError(error, 'small', 'SelectUsernameForm');
+            displayError(error.message, 'small', 'SelectUsernameForm');
         }
 }
 

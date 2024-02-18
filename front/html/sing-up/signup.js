@@ -34,7 +34,7 @@ async function handleSubmitRegister(e) {
     }
     catch (error) {
         console.error('Error:', error.message);
-        displayError(error, 'small', 'registrationForm');
+        displayError(error.message, 'small', 'registrationForm');
     }
 }
 
