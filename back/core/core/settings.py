@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'pong_auth',
 	'user_management',
 	'friends',
+	'tournaments'
 ]
 
 REST_FRAMEWORK = {
@@ -108,7 +109,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_NAME'),
 		'USER': os.environ.get('POSTGRES_USER'),
 		'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-		'HOST': 'db',
+		'HOST': 'localhost',
 		'PORT': '5432',
     }
 }
