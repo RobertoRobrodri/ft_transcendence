@@ -1,0 +1,55 @@
+groups:
+- name: Django alerts
+  rules:
+  - alert: Dajngo Down
+    expr: up{job="django"} == 0
+    labels:
+      severity: major
+      service: django
+    annotations:
+      summary: Something was wrong with Django and it is down
+      impact: django is down
+- name: Nginx alerts
+  rules:
+  - alert: Nginx Down
+    expr: up{job="nginx"} == 0
+    labels:
+      severity: major
+      service: nginx
+    annotations:
+      summary: Something was wrong with Nginx and it is down
+      impact: Nginx is down
+  - alert: Spike in Nginx Requests
+    expr: rate(nginx_http_requests_total[5m]) > 100
+    labels:
+      severity: warning
+      service: nginx
+    annotations:
+      summary: Spike in Nginx Requests
+      impact: Nginx is getting too many requests
+- name: Postgres alerts
+  rules:
+  - alert: Postgres Down
+    expr: up{job="postgres"} == 0
+    labels:
+      severity: major
+      service: postgres
+    annotations:
+      summary: Something was wrong with Postgres and it is down
+      impact: Postgres is down
+  - alert: Available connections under 10%
+    expr: ((sum(pg_settings_max_connections) - sum(pg_settings_superuser_reserved_connections) - sum(pg_stat_activity_count) ) / sum(pg_settings_max_connections) ) * 100 < 10
+    labels:
+      severity: major
+      service: postgres
+    annotations:
+      summary: available connections is under 10 percent of the total.
+      impact: Postgres is running out of connections
+  - alert: Max transaction duration
+    expr: pg_stat_activity_max_tx_duration{state="active"} > 2
+    labels:
+      severity: major
+      service: postgres
+    annotations:
+      summary: A transaction is taking too long
+      impact: Postgres is getting slow
