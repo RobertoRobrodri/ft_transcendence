@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 	'rest_framework_simplejwt',
 	'drf_yasg', #swagger documentation
 	'corsheaders',
+	'django_prometheus', # Monitoring Module
     #include your apps
     'pong_auth',
 	'user_management',
@@ -68,6 +69,7 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+	'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 	'corsheaders.middleware.CorsMiddleware',
@@ -76,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -98,13 +101,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django_prometheus.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_NAME'),
 		'USER': os.environ.get('POSTGRES_USER'),
 		'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
