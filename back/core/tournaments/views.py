@@ -19,3 +19,21 @@ class TournamentsViewset(viewsets.GenericViewSet):
 			tournament.save()
 			return Response({"message": "Tournament created"}, status=status.HTTP_200_OK)
 		return Response({"error": tournament.errors}, status=status.HTTP_400_BAD_REQUEST)
+	
+	#Join tournament
+	def update(self, request, *args, **kwargs):
+		user = request.user
+		tournament_id = kwargs.get('pk')
+		try:
+			tournament = Tournament.objects.get(pk=tournament_id)
+		except:
+			return Response({"error": "Tournament does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+		# Check if tournament is full
+		if (len(tournament.players.all()) < tournament.size):
+			# Check if user is already in the tournament
+			if (tournament.players.filter(pk=user.id).exists()):
+				return Response({"error":"Already joined"}, status=status.HTTP_400_BAD_REQUEST)
+			tournament.players.add(user.id)
+			return Response({"message":"Joined Tournament"}, status=status.HTTP_200_OK)
+		return Response({"error":"Tournament is full"}, status=status.HTTP_400_BAD_REQUEST)
+

@@ -6,4 +6,4 @@ class Tournament(models.Model):
 	name 				= models.CharField(max_length=42)
 	tournament_admin	= models.ForeignKey(CustomUser, related_name='tournament_admin', on_delete=models.CASCADE, blank=True, null=True)
 	winner 				= models.ForeignKey(CustomUser, related_name='winner', on_delete=models.CASCADE, blank=True, null=True)
-	contestants 		= models.ManyToManyField(CustomUser, blank=True, related_name='contestants')
+	players		 		= models.ManyToManyField(CustomUser, blank=True, related_name='players')
