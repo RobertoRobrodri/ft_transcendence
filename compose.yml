@@ -8,6 +8,7 @@ services:
       - 80:80
     volumes:
       - profile_pictures:/media
+      - logs:/var/log/nginx
     depends_on:
       - django
 
@@ -18,6 +19,7 @@ services:
       - 8000:8000
     volumes:
       - profile_pictures:/core/media
+      - logs:/var/log/app 
     env_file:
       - .env
     depends_on:
@@ -30,6 +32,7 @@ services:
       - 5432
     volumes:
       - ddbb:/var/lib/postgresql/data
+      - logs:/var/log/postgresql
     env_file:
       - .env
 
@@ -43,7 +46,7 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
       - prom_data:/prometheus
-  
+
   alertmanager:
     image: prom/alertmanager:v0.21.0
     container_name: alertmanager
@@ -51,6 +54,35 @@ services:
       - "9093:9093"
     volumes:
       - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./elk-config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.1
+    container_name: logstash
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./elk-config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # TODO review
+      - logs:/var/log/services
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.1
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
 
 
 # Django dashboard 17658
@@ -100,3 +132,5 @@ volumes:
   profile_pictures:
   prom_data:
   graf_data:
+  elasticsearch_data:
+  logs:
