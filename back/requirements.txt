@@ -11,3 +11,5 @@ django-cors-headers==4.3.1
 pillow==10.2.0
 # Make request to 42 API
 requests==2.31.0
+#Monitoring
+django-prometheus==2.3.1

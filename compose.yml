@@ -26,11 +26,77 @@ services:
   db:
     build: ./db/
     container_name: db
+    expose:
+      - 5432
     volumes:
       - ddbb:/var/lib/postgresql/data
     env_file:
       - .env
 
+# Monitoring
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prom_data:/prometheus
+  
+  alertmanager:
+    image: prom/alertmanager:v0.21.0
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+
+# Django dashboard 17658
+# Postgres dashboard 9628
+# Nginx dashboard 12708
+  grafana:
+    image: grafana/grafana:10.3.1
+    container_name: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - graf_data:/var/lib/grafana
+    environment:
+    #TODO Secure this credentials, for now development doesnt matter
+      - GF_SECURITY_ADMIN_USER=test-user
+      - GF_SECURITY_ADMIN_PASSWORD=test
+    depends_on:
+      - prometheus
+
+  # Oficial exporters https://prometheus.io/docs/instrumenting/exporters/
+  postgres_exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres_exporter
+    expose:
+      - 9187
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@db:5432/postgres?sslmode=disable
+    depends_on:
+      - prometheus
+      - db
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:1.1.0
+    container_name: nginx_exporter
+    expose:
+      - 9113
+    command:
+      - --nginx.scrape-uri=http://nginx:80/nginx_status
+    depends_on:
+      - prometheus
+      - nginx
+
 volumes:
   ddbb:
   profile_pictures:
+  prom_data:
+  graf_data:

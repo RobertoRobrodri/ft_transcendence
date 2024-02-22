@@ -1,9 +1,8 @@
-FROM python:3.11.5-slim-bullseye
+FROM python:3.11-slim-bullseye
 
 COPY . .
-
-RUN apt-get update && \
-	apt-get install -y libpq-dev && \
+#TODO Remove --allow-insecure-repositories
+RUN apt-get update --allow-insecure-repositories && \
 	pip3 install -r requirements.txt && \
 	rm requirements.txt
 
