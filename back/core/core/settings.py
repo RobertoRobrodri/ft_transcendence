@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+	"daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,7 +53,8 @@ INSTALLED_APPS = [
     'pong_auth',
 	'user_management',
 	'friends',
-	'tournaments'
+	'tournaments',
+	'game'
 ]
 
 REST_FRAMEWORK = {
@@ -101,6 +103,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+ASGI_APPLICATION = "core.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -111,8 +114,8 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_NAME'),
 		'USER': os.environ.get('POSTGRES_USER'),
 		'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-		'HOST': 'localhost',
-		'PORT': '5432',
+		'HOST': os.environ.get('POSTGRES_HOST'),
+		'PORT': os.environ.get('POSTGRES_PORT'),
     }
 }
 
@@ -196,3 +199,10 @@ LOGGING = {
     },
 }
 # CORS_ORIGIN_ALLOW_ALL = True
+
+# Channel Layers
+CHANNEL_LAYERS = { 
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }   
+}
