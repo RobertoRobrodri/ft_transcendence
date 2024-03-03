@@ -54,7 +54,8 @@ INSTALLED_APPS = [
 	'user_management',
 	'friends',
 	'tournaments',
-	'game'
+	'game',
+	'channels'
 ]
 
 REST_FRAMEWORK = {

@@ -1,4 +1,4 @@
-import { handleServerError } from "../components/loader.js"
+import { displayErrorList } from "../components/loader.js"
 import { loadMainPage } from "../menu/menu.js";
 
 async function handleSubmitRegister(e) {
@@ -34,7 +34,7 @@ async function handleSubmitRegister(e) {
         loadMainPage();
     }
     catch (error) {
-		handleServerError(JSON.parse(error.message));
+		displayErrorList(JSON.parse(error.message), 'registrationForm');
     }
 }
 

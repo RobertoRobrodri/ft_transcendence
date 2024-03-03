@@ -61,7 +61,7 @@ export async function callback42(e) {
             body: JSON.stringify({
                 code: authorizationCode,
             }),
-        })
+        });
 		if (!response.ok && response.status !== 307) {
 			throw new Error(`HTTP error! Status: ${response.status}`);
 		}

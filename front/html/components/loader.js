@@ -23,7 +23,7 @@ export function displayError(error, type, id) {
     errorContainer.appendChild(errorElement);
 }
 
-export function handleServerError(errorData) {
+export function displayErrorList(errorData, id) {
     const errorMessagesList = [];
 
     const processErrors = (errorObject) => {
@@ -42,7 +42,7 @@ export function handleServerError(errorData) {
     processErrors(errorData.error);
     if (errorMessagesList.length > 0) {
         const errorMessage = errorMessagesList.join('');
-        displayError(errorMessage, 'ul', 'registrationForm');
+        displayError(errorMessage, 'ul', id);
     }
 }
 

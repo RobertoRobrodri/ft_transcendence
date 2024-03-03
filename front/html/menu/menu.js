@@ -1,3 +1,6 @@
+import { WebSocketManager } from "../socket/socket.js"
+import { loadOnlineUsers } from "../chat/chat.js"
+
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
     try {
@@ -23,6 +26,13 @@ export async function loadUserInfo() {
     }
 }
 
+export function loadChatPage()
+{
+	const socketManager = new WebSocketManager();
+	loadOnlineUsers();
+	//socketManager.send('chat_message', 'Holiwis, mundillo');
+
+}
 export function loadMainPage() {
 	let mainPage = document.getElementById("root");
     Promise.all([
@@ -32,6 +42,7 @@ export function loadMainPage() {
         //clear hash
         history.pushState("", document.title, window.location.pathname + window.location.search);
         loadUserInfo();
+		loadChatPage();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

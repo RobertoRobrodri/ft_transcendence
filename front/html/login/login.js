@@ -22,7 +22,8 @@ async function handleSubmitLogin (e) {
         },body: JSON.stringify(loginData),
     });
     if (!response.ok) {
-    	throw new Error(`HTTP error! Status: ${response.status}`);
+    	throw new Error("Incorrect Username or Password");
+        //throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     // Check if the response content type is JSON
