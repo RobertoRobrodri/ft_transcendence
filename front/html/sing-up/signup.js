@@ -1,4 +1,4 @@
-import { displayError } from "../components/loader.js"
+import { handleServerError } from "../components/loader.js"
 import { loadMainPage } from "../menu/menu.js";
 
 async function handleSubmitRegister(e) {
@@ -21,7 +21,8 @@ async function handleSubmitRegister(e) {
             },body: JSON.stringify(loginData),
         })
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+			const error = await response.json();
+            throw new Error(JSON.stringify(error));
         }
         const data = await response.json();
         // Handle the response data as needed
@@ -33,8 +34,7 @@ async function handleSubmitRegister(e) {
         loadMainPage();
     }
     catch (error) {
-        console.error('Error:', error.message);
-        displayError(error.message, 'small', 'registrationForm');
+		handleServerError(JSON.parse(error.message));
     }
 }
 
