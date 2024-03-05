@@ -9,6 +9,7 @@ from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializ
 import requests, os, random, string, logging
 from django.core.exceptions import ValidationError
 
+
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer

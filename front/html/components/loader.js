@@ -1,11 +1,12 @@
 import { checkLoginStatus, loadLoginPage } from "../login/login.js"
-import { loadMainPage } from "../menu/menu.js"
+import { loadMainPage } from "../index/index.js"
+
 
 export function loadingAnimation() {
-	const $loader = document.createElement("img");
-	$loader.src = "./assets/loader.svg"
-	$loader.alt = "Loading..."
-	return $loader;
+    const $loader = document.createElement("img");
+    $loader.src = "./assets/loader.svg"
+    $loader.alt = "Loading..."
+    return $loader;
 }
 
 export function displayError(error, type, id) {

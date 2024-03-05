@@ -1,5 +1,5 @@
 import { displayErrorList } from "../components/loader.js"
-import { loadMainPage } from "../menu/menu.js";
+import { loadMainPage } from "../index/index.js";
 
 async function handleSubmitRegister(e) {
     if (e.target.matches('#registrationForm') === false)

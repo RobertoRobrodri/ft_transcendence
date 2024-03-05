@@ -1,5 +1,5 @@
-import { WebSocketManager } from "../socket/socket.js"
-import { loadOnlineUsers } from "../chat/chat.js"
+import { connectChat } from "../chat/chat.js"
+import { remove_session } from "../components/updatejwt.js"
 
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
@@ -22,27 +22,19 @@ export async function loadUserInfo() {
     }
     catch (error) {
         console.error('Error:', error.message);
-        // displayError(error, 'small', 'registrationForm');
+        // Token refresh error, remove tokens and redirect to login page?
+        remove_session();
     }
 }
 
-export function loadChatPage()
-{
-	const socketManager = new WebSocketManager();
-	loadOnlineUsers();
-	//socketManager.send('chat_message', 'Holiwis, mundillo');
+export function loadMenu() {
 
-}
-export function loadMainPage() {
-	let mainPage = document.getElementById("root");
+    let mainPage = document.getElementById("navmenu");
     Promise.all([
         fetch('./menu/menu.html').then(response => response.text()),
-    ]).then(([html, css]) => {
+    ]).then(([html]) => {
         mainPage.innerHTML = html;
-        //clear hash
-        history.pushState("", document.title, window.location.pathname + window.location.search);
         loadUserInfo();
-		loadChatPage();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

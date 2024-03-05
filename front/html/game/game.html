@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong Game</title>
+  <style>
+    canvas {
+      display: block;
+      margin: auto;
+      background-color: black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="pongCanvas" width="800" height="400"></canvas>
+
+  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  <script>
+    const canvas = document.getElementById("pongCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const paddleWidth = 10;
+    const paddleHeight = 60;
+    let leftPaddleY = (canvas.height - paddleHeight) / 2;
+    let rightPaddleY = (canvas.height - paddleHeight) / 2;
+    const paddleSpeed = 5;
+
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 5;
+    let ballSpeedY = 5;
+    const ballSize = 10;
+
+    let upPressed = false;
+    let downPressed = false;
+
+    let vsAI = false;
+
+    let socket;  // Variable para almacenar el socket WebSocket
+
+    const playerChoice = prompt("Seleccione el modo de juego:\n1. 2 Jugadores\n2. Vs. IA\n3. En línea");
+
+    if (playerChoice === "2") {
+      vsAI = true;
+    } else if (playerChoice === "3") {
+      // Modo en línea
+      socket = io();  // Conéctate al servidor WebSocket
+
+      // Manejar eventos del servidor para actualizar la posición del segundo jugador
+      socket.on("updatePaddle", (position) => {
+        rightPaddleY = position;
+      });
+    }
+
+    function drawPaddle(x, y) {
+      ctx.fillStyle = "white";
+      ctx.fillRect(x, y, paddleWidth, paddleHeight);
+    }
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, ballSize, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawPaddle(0, leftPaddleY);
+      drawPaddle(canvas.width - paddleWidth, rightPaddleY);
+
+      drawBall();
+
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      if (ballY + ballSize > canvas.height || ballY - ballSize < 0) {
+        ballSpeedY = -ballSpeedY;
+      }
+
+      if (
+        (ballX - ballSize < paddleWidth &&
+          ballY > leftPaddleY &&
+          ballY < leftPaddleY + paddleHeight) ||
+        (ballX + ballSize > canvas.width - paddleWidth &&
+          ballY > rightPaddleY &&
+          ballY < rightPaddleY + paddleHeight)
+      ) {
+        ballSpeedX = -ballSpeedX;
+      }
+
+      if (ballX - ballSize < 0) {
+        resetBall();
+      }
+
+      if (ballX + ballSize > canvas.width) {
+        resetBall();
+      }
+
+      if (vsAI && ballX > canvas.width / 2) {
+        if (ballY < rightPaddleY + paddleHeight / 2) {
+          rightPaddleY -= aiSpeed;
+        }
+
+        if (ballY > rightPaddleY + paddleHeight / 2) {
+          rightPaddleY += aiSpeed;
+        }
+      } else {
+        if (upPressed && leftPaddleY > 0) {
+          leftPaddleY -= paddleSpeed;
+        }
+
+        if (downPressed && leftPaddleY < canvas.height - paddleHeight) {
+          leftPaddleY += paddleSpeed;
+        }
+      }
+
+      if (!vsAI) {
+        if (upPressed && leftPaddleY > 0) {
+          leftPaddleY -= paddleSpeed;
+        }
+
+        if (downPressed && leftPaddleY < canvas.height - paddleHeight) {
+          leftPaddleY += paddleSpeed;
+        }
+      }
+
+      // Enviar la posición de la raqueta al servidor en línea
+      if (socket) {
+        socket.emit("updatePaddle", leftPaddleY);
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    function keyDownHandler(e) {
+      if (e.key === "Up" || e.key === "ArrowUp") {
+        upPressed = true;
+      } else if (e.key === "Down" || e.key === "ArrowDown") {
+        downPressed = true;
+      }
+    }
+
+    function keyUpHandler(e) {
+      if (e.key === "Up" || e.key === "ArrowUp") {
+        upPressed = false;
+      } else if (e.key === "Down" || e.key === "ArrowDown") {
+        downPressed = false;
+      }
+    }
+
+    function resetBall() {
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballSpeedX = -ballSpeedX;
+    }
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    draw();
+  </script>
+</body>
+</html>
