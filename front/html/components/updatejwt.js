@@ -2,7 +2,7 @@ import { displayLoginOrMenu } from "../components/loader.js"
 
 export function remove_session()
 {
-	
+    
     let { hash } = location;
     if (hash !== '#/login')
     {
@@ -10,9 +10,9 @@ export function remove_session()
         sessionStorage.removeItem("refresh");
         displayLoginOrMenu();
     }/*
-	let { hash } = location;
-	const urlParams = new URLSearchParams(window.location.search);
-	const authorizationCode = urlParams.get('code');
+    let { hash } = location;
+    const urlParams = new URLSearchParams(window.location.search);
+    const authorizationCode = urlParams.get('code');
     if (hash !== '#/login' && !authorizationCode)
     {
         sessionStorage.removeItem("token");

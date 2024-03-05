@@ -14,6 +14,17 @@ GENERAL_CHAT = "general_chat"
 
 class ChatConsumer(AsyncWebsocketConsumer):
     
+    # Base function to send message to all in group
+    async def general_message(self, event):
+        text = event["text"]
+        await self.send(text_data=text)
+    
+    # Base function to send message to all in group except self
+    async def general_message_exclude_self(self, event):
+        text = event["text"]
+        if self.channel_name != event["channel"]:
+            await self.send(text_data=text)
+        
     async def connect(self):
         try:
             user = self.scope["user"]
@@ -23,7 +34,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # Add user to `{general_chat}` room
                 await self.channel_layer.group_add(GENERAL_CHAT,self.channel_name)
                 # Send a user_connected message to the group (excluding the connected user)
-                await send_to_group_exclude_self(GENERAL_CHAT, "user_connected", user.username)
+                await send_to_group_exclude_self(self, GENERAL_CHAT, "user_connected", user.username)
                 
         except ExpiredSignatureError as e:
             await self.close(code=4003)
@@ -36,7 +47,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if user.is_authenticated and not user.is_anonymous:
                 del connected_users[self.channel_name]
                 await self.channel_layer.group_discard(GENERAL_CHAT,self.channel_name)
-                await send_to_group(GENERAL_CHAT, "user_disconnected", user.username)
+                await send_to_group(self, GENERAL_CHAT, "user_disconnected", user.username)
                 
         except Exception as e:
             logger.warning(f'Exception: {e}')
@@ -70,7 +81,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user = self.scope["user"]
         connected_users_list.remove(user.username)
         # Send to self
-        await send_to_me('user_list', connected_users_list)
+        await send_to_me(self, 'user_list', connected_users_list)
 
         
     

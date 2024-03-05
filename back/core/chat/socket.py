@@ -1,4 +1,3 @@
-
 import json
 from django.contrib.auth.models import User
 from channels.db import database_sync_to_async
@@ -7,27 +6,16 @@ from channels.db import database_sync_to_async
 ## GENERAL SOCKET FUNCTIONS ##
 ##############################
 
-# Base function to send message to all in group
-async def general_message(self, event):
-    text = event["text"]
-    await self.send(text_data=text)
-    
-# Base function to send message to all in group except self
-async def general_message_exclude_self(self, event):
-    text = event["text"]
-    if self.channel_name != event["channel"]:
-        await self.send(text_data=text)
-
 # Function to send message to self
-async def send_to_me(self, type, message):
-    await self.send(text_data=json.dumps({
+async def send_to_me(consumer, type, message):
+    await consumer.send(text_data=json.dumps({
         "type": type,
         "message": message,
     }))
     
 # Function to send message to specific user
-async def send_to_user(self, user_channel_name, type, message):
-    await self.channel_layer.send(
+async def send_to_user(consumer, user_channel_name, type, message):
+    await consumer.channel_layer.send(
         user_channel_name,
         {
             "type": "general.message",
@@ -39,8 +27,8 @@ async def send_to_user(self, user_channel_name, type, message):
     )
     
  # Function to send message to entire group
-async def send_to_group(self, group_name, type, message):
-    await self.channel_layer.group_send(
+async def send_to_group(consumer, group_name, type, message):
+    await consumer.channel_layer.group_send(
         group_name,
         {
             "type": "general.message",
@@ -52,12 +40,12 @@ async def send_to_group(self, group_name, type, message):
     )
 
 # Function to send message to entire group except self
-async def send_to_group_exclude_self(self, group_name, type, message):
-    await self.channel_layer.group_send(
+async def send_to_group_exclude_self(consumer, group_name, type, message):
+    await consumer.channel_layer.group_send(
         group_name,
         {
             "type": "general.message.exclude.self",
-            "channel": self.channel_name,
+            "channel": consumer.channel_name,
             "text": json.dumps({
                 "type": type,
                 "message": message,
@@ -65,14 +53,14 @@ async def send_to_group_exclude_self(self, group_name, type, message):
         }
     )
 
-def get_channel_name_by_username(self, username, list):
+def get_channel_name_by_username(consumer, username, list):
     for channel_name, user_name in list.items():
         if user_name == username:
             return channel_name
     return None
     
 @database_sync_to_async
-def get_user_by_username(self, username):
+def get_user_by_username(consumer, username):
     try:
         return User.objects.get(username=username)
     except User.DoesNotExist:
