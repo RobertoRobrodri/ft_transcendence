@@ -1,7 +1,7 @@
 groups:
 - name: Django alerts
   rules:
-  - alert: Dajngo Down
+  - alert: Django Down
     expr: up{job="django"} == 0
     labels:
       severity: major

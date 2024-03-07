@@ -9,6 +9,12 @@ services:
     volumes:
       - profile_pictures:/media
       - logs:/var/log/nginx
+    #logging:
+    #  driver: elastic/elastic-logging-plugin:8.12.2
+    #  options:
+    #    hosts: "http://elasticsearch:9200"
+        #index: "dockerlogs-%{+yyyy.MM.dd}"
+        ##TODO add pass and user
     depends_on:
       - django
 
@@ -19,7 +25,13 @@ services:
       - 8000:8000
     volumes:
       - profile_pictures:/core/media
-      - logs:/var/log/app 
+      - logs:/var/log/app
+    #logging:
+    #  driver: elastic/elastic-logging-plugin:8.12.2
+    #  options:
+    #    hosts: "http://elasticsearch:9200"
+        #index: "dockerlogs-%{+yyyy.MM.dd}"
+        ##TODO add pass and user
     env_file:
       - .env
     depends_on:
@@ -32,7 +44,14 @@ services:
       - 5432
     volumes:
       - ddbb:/var/lib/postgresql/data
-      - logs:/var/log/postgresql
+      - ./.logs/db:/log
+    command: -c 'config_file=/etc/postgresql/postgresql.conf'
+    #logging:
+    #  driver: elastic/elastic-logging-plugin:8.12.2
+    #  options:
+    #    hosts: "http://elasticsearch:9200"
+        #index: "dockerlogs-%{+yyyy.MM.dd}"
+        ##TODO add pass and user
     env_file:
       - .env
 
@@ -70,19 +89,34 @@ services:
     container_name: logstash
     ports:
       - "5000:5000"
+      - "5054:5054"
     volumes:
       - ./elk-config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # TODO review
-      - logs:/var/log/services
+      #- ./elk-config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./.logs:/var/log/services
     depends_on:
       - elasticsearch
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.12.1
     container_name: kibana
+    volumes:
+      - ./elk-config/kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
       - "5601:5601"
     depends_on:
       - elasticsearch
+
+  #filebeat:
+  #  build: ./elk-config/filebeat_docker/
+  #  container_name: filebeat
+  #  volumes:
+  #    - /var/lib/docker/containers:/usr/share/dockerlogs/data:ro
+  #    - /var/run/docker.sock:/var/run/docker.sock:ro
+  #    #- logs:/var/log/services
+  #  depends_on:
+  #    - elasticsearch
+
 
 
 # Django dashboard 17658

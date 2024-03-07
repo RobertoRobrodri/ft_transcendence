@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer, User42RegistrationSerializer
 import requests, os, random, string, logging
 
+logger = logging.getLogger('mylogger')
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
@@ -33,6 +34,7 @@ class UserLoginView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
+        logger.debug('Procesando solicitud de inicio de sesión')
         # TokenObtainPairSerializer takes care of authentication and generating both tokens
         login_serializer = self.serializer_class(data=request.data)
         if login_serializer.is_valid():
