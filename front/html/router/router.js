@@ -6,7 +6,6 @@ import { renewJWT, remove_session } from "../components/updatejwt.js"
 
 export function router() {
     let { hash } = location;
-    console.log(hash);
     // TODO send to main by default
     if (!hash) {
         displayLoginOrMenu();

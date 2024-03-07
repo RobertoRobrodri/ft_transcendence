@@ -15,8 +15,12 @@ export class SocketManager {
 
     disconnect()
     {
-        if(this.socket.readyState === WebSocket.OPEN)
-            this.socket.disconnect();
+        const code = 3008;
+        const reasson = 'Unespected';
+        if(this.socket.readyState === WebSocket.OPEN) {
+            this.socket.close(code, reasson);
+            this.socket = undefined;
+        }
     }
 
     setupSocketEvents() {

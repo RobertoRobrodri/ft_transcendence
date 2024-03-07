@@ -1,7 +1,13 @@
 
 import { ChatSocketManager } from "../socket/ChatSocketManager.js"
 import { CHAT_TYPES, SOCKET } from '../socket/Constants.js';
-import { remove_session } from "../components/updatejwt.js"
+import { remove_session, renewJWT } from "../components/updatejwt.js"
+
+function register() {
+    document.getElementById("disconnect").addEventListener("click", disconnect);
+    document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
+    document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
+}
 
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
@@ -9,15 +15,19 @@ let chatSM = new ChatSocketManager();
 export function connectChat()
 {
     chatSM.connect();
+    register();
 }
 
+function disconnect()
+{
+    chatSM.disconnect();
+}
 ///////////////////////
 // Socket rcv events //
 ///////////////////////
 
 // Callback socket connected
 chatSM.registerCallback(SOCKET.CONNECTED, event => {
-    console.log('Socket connected:', event);
     // Request all connected users
     chatSM.send(CHAT_TYPES.GET_USERS);
 });
@@ -25,13 +35,16 @@ chatSM.registerCallback(SOCKET.CONNECTED, event => {
 // Callback socket disconnected
 chatSM.registerCallback(SOCKET.DISCONNECTED, event => {
     console.log('Socket connection lost:', event);
+    renewJWT();
+    chatSM.connect();
 });
 
 // Callback socket error
 chatSM.registerCallback(SOCKET.ERROR, event => {
     console.log('Expired JWT token. Redirecting to login.');
-    remove_session();
-    //window.location.href = '/login';
+    // remove_session();
+    renewJWT();
+    chatSM.connect();
 });
 
 // Callback rcv all connected users
@@ -39,15 +52,26 @@ chatSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
     populateChat(userList)
 });
 
-// Callback rcv all connected users
+// Callback rcv connected user
 chatSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
     addSingleUser(user)
 });
 
-// Callback rcv all connected users
+// Callback rcv user disconnected
 chatSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
     removeSingleUser(user)
 });
+
+// Callback rcv message in general channel
+chatSM.registerCallback(CHAT_TYPES.GENERAL_MSG, data => {
+    addGeneralMsg(data)
+});
+
+// Callback rcv private message
+chatSM.registerCallback(CHAT_TYPES.PRIV_MSG, data => {
+    addPrivateMsg(data)
+});
+
 
 
 /////////////////
@@ -55,33 +79,37 @@ chatSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
 /////////////////
 
 // Load all chat users
-export function populateChat(userList) {
+function populateChat(userList) {
     userList.forEach((username) => {
         addSingleUser(username)
     });
 }
 
+function sendMessage() {
+    var input = document.getElementById("newMessage");
+    chatSM.send(CHAT_TYPES.GENERAL_MSG, input.value);
+    input.value = "";
+}
+
+function sendPrivMessage() {
+    var dstUser = document.getElementById("dstUser");
+    var input = document.getElementById("newPrivMessage");
+    chatSM.send(CHAT_TYPES.PRIV_MSG, JSON.stringify({
+        recipient: dstUser.value,
+        message: input.value
+    }));
+    input.value = "";
+}
 
 
 export function openChatPopup(selectedUsername) {
-    chatSM.send('chat_with', `Abriendo chat con ${selectedUsername}`);
+    var dstUser = document.getElementById("dstUser");
+    dstUser.value = selectedUsername;
 }
 
 //////////////////
 // UI FUNCTIONS //
 //////////////////
-export function loadChat()
-{
-	let mainPage = document.getElementById("sidebar");
-    Promise.all([
-        fetch('./chat/chat.html').then(response => response.text()),
-    ]).then(([html]) => {
-        mainPage.innerHTML = html;
-        connectChat();
-    }).catch(error => {
-        console.error('Error al cargar el formulario:', error);
-    });
-}
 
 // Add new item to chat
 export function addSingleUser(username) {
@@ -109,4 +137,22 @@ export function removeSingleUser(username) {
     if (listItem) {
         userListElement.removeChild(listItem);
     }
+}
+
+// Add general message
+export function addGeneralMsg(data) {
+    var userList = document.getElementById("general_msg");
+    var newmsg = document.createElement("li");
+    newmsg.textContent = `${data.sender_name}: ${data.message}`;
+    newmsg.classList.add("list-group-item");
+    userList.appendChild(newmsg);
+}
+
+// Add private message
+export function addPrivateMsg(data) {
+    var userList = document.getElementById("private_msg");
+    var newmsg = document.createElement("li");
+    newmsg.textContent = `${data.sender_name}: ${data.message}`;
+    newmsg.classList.add("list-group-item");
+    userList.appendChild(newmsg);
 }

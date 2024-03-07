@@ -10,7 +10,7 @@ export class ChatSocketManager extends SocketManager {
         }
         return ChatSocketManager.instance;
     }
-    
+
     onOpen(event) {
         if (this.callbacks[SOCKET.CONNECTED]) {
             this.callbacks[SOCKET.CONNECTED].forEach(callback => callback(event));

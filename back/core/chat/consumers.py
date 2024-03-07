@@ -2,7 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
-from .socket import *
+from core.socket import *
 from jwt import ExpiredSignatureError
 
 import logging
@@ -59,14 +59,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 data = json.loads(text_data)
                 type = data["type"]
 
-                if type == "message":
-                    await self.send_message("message", data["message"])
-                elif type == "private_message":
-                    await self.send_private_message(data["recipient"], data["message"])
+                if type == "general_msg":
+                    # Receive new message, let's spread it, but including information like Username
+                    data["sender_name"] = user.username
+                    await send_to_group(self, GENERAL_CHAT, "general_msg", data)
+                elif type == "priv_msg":
+                    message_data = json.loads(data["message"])
+                    recipient = message_data["recipient"]
+                    userChannel = get_channel_name_by_username(recipient, connected_users)
+                    if(userChannel and recipient != user.username):
+                        data["sender_name"] = user.username
+                        data["message"] = message_data["message"]
+                        # Send message to recipient user
+                        await send_to_user(self, userChannel, "priv_msg", data)
+                        # and send message to me too
+                        await send_to_me(self, "priv_msg", data)
                 elif type == "get_users":
                     await self.send_user_list()
 
         except Exception as e:
+            logger.warning(f'Exception in receive: {e}')
             await self.close(code=4003)
             
     
@@ -82,7 +94,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
         connected_users_list.remove(user.username)
         # Send to self
         await send_to_me(self, 'user_list', connected_users_list)
-
-        
-    
-    

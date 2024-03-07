@@ -1,5 +1,4 @@
-import { connectChat } from "../chat/chat.js"
-import { remove_session } from "../components/updatejwt.js"
+import { renewJWT } from "../components/updatejwt.js"
 
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
@@ -22,20 +21,7 @@ export async function loadUserInfo() {
     }
     catch (error) {
         console.error('Error:', error.message);
-        // Token refresh error, remove tokens and redirect to login page?
-        remove_session();
+        // Token error, try update jwt
+        renewJWT();
     }
-}
-
-export function loadMenu() {
-
-    let mainPage = document.getElementById("navmenu");
-    Promise.all([
-        fetch('./menu/menu.html').then(response => response.text()),
-    ]).then(([html]) => {
-        mainPage.innerHTML = html;
-        loadUserInfo();
-    }).catch(error => {
-        console.error('Error al cargar el formulario:', error);
-    });
 }

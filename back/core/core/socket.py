@@ -1,4 +1,5 @@
 import json
+import re
 from django.contrib.auth.models import User
 from channels.db import database_sync_to_async
 
@@ -53,7 +54,7 @@ async def send_to_group_exclude_self(consumer, group_name, type, message):
         }
     )
 
-def get_channel_name_by_username(consumer, username, list):
+def get_channel_name_by_username(username, list):
     for channel_name, user_name in list.items():
         if user_name == username:
             return channel_name
@@ -65,17 +66,8 @@ def get_user_by_username(consumer, username):
         return User.objects.get(username=username)
     except User.DoesNotExist:
         return None
-        
-# async def send_private_message(self, recipient_username, message):
-    #     sender = self.scope["user"]
-    #     if sender.is_authenticated and not sender.is_anonymous:
-    #         recipient = await self.get_user_by_username(recipient_username)
-    #         if recipient:
-    #             # Check if the user is connected
-    #             recipient_channel_name = self.get_channel_name_by_username(recipient_username)
-    #             if recipient_channel_name in connected_users:
-    #                 await self.send_to_user(recipient_channel_name, {
-    #                     'type': 'private_message',
-    #                     'username': sender.username,
-    #                     'message': message,
-    #                 })
+
+
+######################
+## HELPER FUNCTIONS ##
+######################

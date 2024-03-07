@@ -57,6 +57,13 @@ export function checkLoginStatus() {
 }
 
 export function loadLoginPage(){
+
+    // Remove previous styles
+    const existingStyles = document.head.querySelectorAll('style');
+    existingStyles.forEach(style => {
+        document.head.removeChild(style);
+    });
+    
     let loginPage = document.getElementById("root");
     Promise.all([
         fetch('./login/login.html').then(response => response.text()),

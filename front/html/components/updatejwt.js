@@ -44,7 +44,6 @@ export function renewJWT() {
         .then(data => {
             const token = data.access;
             sessionStorage.setItem('token', token);
-            console.log('Renewed token.');
         })
         .catch(error => {
             console.error('Error renewing token:', error);
