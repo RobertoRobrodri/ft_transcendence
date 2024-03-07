@@ -1,0 +1,9 @@
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_NAME=postgres
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+DOCKERIZED=false // Set to true when using container
+CLIENT_ID=<your-client-id>
+CLIENT_SECRET=<your-client-secre>
