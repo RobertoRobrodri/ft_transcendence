@@ -13,3 +13,5 @@ pillow==10.2.0
 requests==2.31.0
 #Monitoring
 django-prometheus==2.3.1
+#One Time Password
+pyotp==2.9.0
