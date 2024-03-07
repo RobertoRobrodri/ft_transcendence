@@ -102,6 +102,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+if DOCKERIZED == "true":
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [('redis', 6379)],
+                "capacity": 1500,
+            },
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 if DOCKERIZED == "true":
@@ -111,8 +127,8 @@ if DOCKERIZED == "true":
             'NAME': os.environ.get('POSTGRES_NAME'),
     		'USER': os.environ.get('POSTGRES_USER'),
     		'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-    		'HOST': os.environ.get('POSTGRES_HOST'),
-    		'PORT': os.environ.get('POSTGRES_PORT'),
+    		'HOST': 'db',
+    		'PORT': '5432',
         }
     }
 else:
