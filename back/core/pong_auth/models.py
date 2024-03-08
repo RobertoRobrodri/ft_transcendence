@@ -21,5 +21,6 @@ class CustomUser(AbstractUser):
 	friends 		= models.ManyToManyField('self', blank=True)
 	# 2FA
 	TwoFactorAuth   = models.BooleanField(default=False)
+	otp_base32 		= models.CharField(max_length = 200, null = True)
 	#TODO Historial should be a table of tournaments
 	#history

@@ -43,7 +43,10 @@ class UserLoginView(TokenObtainPairView):
         if (user is not None):
             if (user.TwoFactorAuth == True):
                 # Generate code and return
-                url = pyotp.totp.TOTP(SECRET_KEY).provisioning_uri(name=username.lower(), issuer_name='ft_transcendence_chads')
+                topt = pyotp.totp.TOTP(SECRET_KEY)
+                user.otp_base32 = topt.now()
+                url = topt.provisioning_uri(name=username.lower(), issuer_name='ft_transcendence_chads')
+                user.save()
                 return Response({
                     'url' : url,
                     'message' : 'Verify Login',
