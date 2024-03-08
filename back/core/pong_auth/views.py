@@ -6,9 +6,9 @@ from rest_framework.permissions import AllowAny
 from .models import CustomUser
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer, User42RegistrationSerializer
-import requests, os, random, string, pyotp
+import requests, os, pyotp
 from django.core.exceptions import ValidationError
-from .utils import GenerateQR
+from .utils import GenerateQR, generate_random_string
 
 #? move it to settings and secure the credentials
 SECRET_KEY = pyotp.random_base32()
@@ -44,19 +44,15 @@ class UserLoginView(TokenObtainPairView):
         user = authenticate(username=username, password=password)
         if (user is not None):
             if (user.TwoFactorAuth == True):
-                if (user.otp_base32 is None):
-                    encoded_qr = GenerateQR(user, SECRET_KEY)
-                    return Response({
-                        'QR' : encoded_qr,
-                        'message' : 'Verify Login',
-                    },
-                    status=status.HTTP_200_OK)
-                #Verify OTP
-                elif (user.otp_base32 is not None):
-                    # Verify otp
-                    # Clear otp
-                    user.otp_base32 = None
-                    user.save()
+                encoded_qr = GenerateQR(user, SECRET_KEY)
+                verification_token = RefreshToken.for_user(user)
+                return Response({
+                    'verification_token' : str(verification_token.access_token),
+                    'message' : 'Verify Login',
+                    'QR' : encoded_qr,
+                    # Send a token ONLY for verification
+                },
+                status=status.HTTP_200_OK)
             else:
                 # TokenObtainPairSerializer takes care of authentication and generating both tokens
                 login_serializer = self.serializer_class(data=request.data)
@@ -70,10 +66,24 @@ class UserLoginView(TokenObtainPairView):
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserValidateOTPView(TokenObtainPairView):
-    serializer_class = UserTokenObtainPairSerializer
-
     def post(self, request, *args, **kwargs):
-        pass
+        user = request.user
+        if (user.TwoFactorAuth == True and user.otp_base32 is not None):
+            otp = request.data.get('otp', None)
+            # Verify
+            # user.otp_base32.verify(otp)
+            print(user.otp_base32.verify(otp))
+            user.otp_base32 = None
+            user.save()
+            # Refresh verification token
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'token' : str(refresh.access_token),
+                'refresh' : str(refresh),
+                'message': 'Login successful',
+                },status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
 # We are not using logout because we are not using sessions
 class UserLogoutView(generics.GenericAPIView):
     def post(self, request,*args, **kwargs):
@@ -82,11 +92,6 @@ class UserLogoutView(generics.GenericAPIView):
         RefreshToken.for_user(user)
         user.status = "offline"
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
-
-def generate_random_string(length=10):
-        characters = string.ascii_letters + string.digits
-        random_string = ''.join(random.choice(characters) for _ in range(length))
-        return random_string
 
 class User42Callback(generics.GenericAPIView):
     permission_classes = [AllowAny]

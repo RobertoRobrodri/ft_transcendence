@@ -1,4 +1,4 @@
-import pyotp, qrcode, base64
+import pyotp, qrcode, base64, string, random
 from io import BytesIO
 
 def GenerateQR(user, SECRET_KEY):
@@ -16,3 +16,8 @@ def GenerateQR(user, SECRET_KEY):
     buffered.seek(0)
     img_str = base64.b64encode(buffered.getvalue())
     return img_str
+
+def generate_random_string(length=10):
+        characters = string.ascii_letters + string.digits
+        random_string = ''.join(random.choice(characters) for _ in range(length))
+        return random_string
