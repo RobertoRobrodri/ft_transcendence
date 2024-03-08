@@ -9,9 +9,9 @@ from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializ
 import requests, os, pyotp
 from django.core.exceptions import ValidationError
 from .utils import GenerateQR, generate_random_string
+from django.conf import settings
 
 #? move it to settings and secure the credentials
-SECRET_KEY = pyotp.random_base32()
 
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
@@ -44,13 +44,14 @@ class UserLoginView(TokenObtainPairView):
         user = authenticate(username=username, password=password)
         if (user is not None):
             if (user.TwoFactorAuth == True):
-                encoded_qr = GenerateQR(user, SECRET_KEY)
+                # Send qr image as base64
+                encoded_qr = GenerateQR(user)
                 verification_token = RefreshToken.for_user(user)
                 return Response({
+                    # Send a token ONLY for verification
                     'verification_token' : str(verification_token.access_token),
                     'message' : 'Verify Login',
                     'QR' : encoded_qr,
-                    # Send a token ONLY for verification
                 },
                 status=status.HTTP_200_OK)
             else:
@@ -65,23 +66,22 @@ class UserLoginView(TokenObtainPairView):
                         status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-class UserValidateOTPView(TokenObtainPairView):
+class UserValidateOTPView(generics.GenericAPIView):
+    queryset = CustomUser.objects.all()
     def post(self, request, *args, **kwargs):
         user = request.user
-        if (user.TwoFactorAuth == True and user.otp_base32 is not None):
+        if (user.TwoFactorAuth == True):
             otp = request.data.get('otp', None)
             # Verify
-            # user.otp_base32.verify(otp)
-            print(user.otp_base32.verify(otp))
-            user.otp_base32 = None
-            user.save()
-            # Refresh verification token
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'token' : str(refresh.access_token),
-                'refresh' : str(refresh),
-                'message': 'Login successful',
-                },status=status.HTTP_200_OK)
+            totp = pyotp.TOTP(settings.OTP_SECRET_KEY)
+            if totp.verify(otp):
+                # Refresh verification token
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'token' : str(refresh.access_token),
+                    'refresh' : str(refresh),
+                    'message': 'Login successful',
+                    },status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # We are not using logout because we are not using sessions

@@ -1,13 +1,11 @@
 import pyotp, qrcode, base64, string, random
 from io import BytesIO
+from django.conf import settings
 
-def GenerateQR(user, SECRET_KEY):
+def GenerateQR(user):
 	# Generate code and return url
-    topt = pyotp.totp.TOTP(SECRET_KEY)
-    user.otp_base32 = topt.now()
+    topt = pyotp.totp.TOTP(settings.OTP_SECRET_KEY)
     qr_code_url = topt.provisioning_uri(name=user.username.lower(), issuer_name='ft_transcendence_chads')
-    #Save OTP for the user
-    user.save()
     # Generate QR Image
     img = qrcode.make(qr_code_url)
     buffered = BytesIO()
