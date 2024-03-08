@@ -1,7 +1,5 @@
 import json
 import re
-from django.contrib.auth.models import User
-from channels.db import database_sync_to_async
 
 ##############################
 ## GENERAL SOCKET FUNCTIONS ##
@@ -53,19 +51,6 @@ async def send_to_group_exclude_self(consumer, group_name, type, message):
             }),
         }
     )
-
-def get_channel_name_by_username(username, list):
-    for channel_name, user_name in list.items():
-        if user_name == username:
-            return channel_name
-    return None
-    
-@database_sync_to_async
-def get_user_by_username(consumer, username):
-    try:
-        return User.objects.get(username=username)
-    except User.DoesNotExist:
-        return None
 
 
 ######################

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from django.contrib.auth import get_user_model
 from pong_auth.models import CustomUser
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError

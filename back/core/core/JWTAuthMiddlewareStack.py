@@ -4,14 +4,11 @@ from urllib.parse import parse_qs
 from channels.auth import AuthMiddlewareStack
 from channels.db import database_sync_to_async
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from pong_auth.models import CustomUser
 from django.contrib.auth.models import AnonymousUser
 from django.db import close_old_connections
 from jwt import decode as jwt_decode
 from jwt import InvalidSignatureError, ExpiredSignatureError, DecodeError
-
-
-User = get_user_model()
 
 
 class JWTAuthMiddleware:
@@ -56,8 +53,8 @@ class JWTAuthMiddleware:
     @database_sync_to_async
     def get_user(self, user_id):
         try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
+            return CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
             return AnonymousUser()
 
 
