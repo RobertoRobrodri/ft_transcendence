@@ -15,3 +15,4 @@ requests==2.31.0
 django-prometheus==2.3.1
 #One Time Password
 pyotp==2.9.0
+qrcode==7.4.2

@@ -6,7 +6,8 @@ from rest_framework.permissions import AllowAny
 from .models import CustomUser
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer, User42RegistrationSerializer
-import requests, os, random, string, pyotp
+import requests, os, random, string, pyotp, qrcode, base64
+from io import BytesIO
 from django.core.exceptions import ValidationError
 
 SECRET_KEY = pyotp.random_base32()
@@ -42,13 +43,21 @@ class UserLoginView(TokenObtainPairView):
         user = authenticate(username=username, password=password)
         if (user is not None):
             if (user.TwoFactorAuth == True):
-                # Generate code and return
+                # Generate code and return url
                 topt = pyotp.totp.TOTP(SECRET_KEY)
                 user.otp_base32 = topt.now()
-                url = topt.provisioning_uri(name=username.lower(), issuer_name='ft_transcendence_chads')
+                qr_code_url = topt.provisioning_uri(name=username.lower(), issuer_name='ft_transcendence_chads')
+                #Save OTP for the user
                 user.save()
+                # Generate QR Image
+                img = qrcode.make(qr_code_url)
+                buffered = BytesIO()
+                img.save(buffered, format="PNG")
+                # Reset BytesIO position to the beginning
+                buffered.seek(0)
+                img_str = base64.b64encode(buffered.getvalue())
                 return Response({
-                    'url' : url,
+                    'QR' : img_str,
                     'message' : 'Verify Login',
                 },
                 status=status.HTTP_200_OK)
