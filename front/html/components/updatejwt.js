@@ -8,7 +8,8 @@ export function remove_session()
     {
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("refresh");
-        displayLoginOrMenu();
+        location.reload();
+        // displayLoginOrMenu();
     }/*
     let { hash } = location;
     const urlParams = new URLSearchParams(window.location.search);

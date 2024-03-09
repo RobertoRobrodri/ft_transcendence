@@ -7,7 +7,7 @@ export function loadMainPage() {
     // Renew jwt
     renewJWT();
 
-	// Remove previous styles
+    // Remove previous styles
     const existingStyles = document.head.querySelectorAll('style');
     existingStyles.forEach(style => {
         document.head.removeChild(style);
@@ -16,16 +16,16 @@ export function loadMainPage() {
     let mainPage = document.getElementById("root");
     Promise.all([
         fetch('./index/index.html').then(response => response.text()),
-		fetch('../styles.css').then(response => response.text())
+        fetch('../styles.css').then(response => response.text())
     ]).then(([html, css]) => {
         mainPage.innerHTML = html;
-		let style = document.createElement('style');
+        let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
         //clear hash
         history.pushState("", document.title, window.location.pathname + window.location.search);
         loadUserInfo();
-		connectChat();
+        connectChat();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

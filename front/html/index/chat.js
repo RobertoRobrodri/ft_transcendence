@@ -4,6 +4,9 @@ import { CHAT_TYPES, SOCKET } from '../socket/Constants.js';
 import { remove_session, renewJWT } from "../components/updatejwt.js"
 
 function register() {
+    document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
+    document.getElementById("Ignore").addEventListener("click", ignoreUser);
+    document.getElementById("Unignore").addEventListener("click", unignoreUser);
     document.getElementById("disconnect").addEventListener("click", disconnect);
     document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
@@ -22,6 +25,7 @@ function disconnect()
 {
     chatSM.disconnect();
 }
+
 ///////////////////////
 // Socket rcv events //
 ///////////////////////
@@ -29,7 +33,7 @@ function disconnect()
 // Callback socket connected
 chatSM.registerCallback(SOCKET.CONNECTED, event => {
     // Request all connected users
-    chatSM.send(CHAT_TYPES.GET_USERS);
+    chatSM.send(CHAT_TYPES.USER_LIST);
 });
 
 // Callback socket disconnected
@@ -49,27 +53,45 @@ chatSM.registerCallback(SOCKET.ERROR, event => {
 
 // Callback rcv all connected users
 chatSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
-    populateChat(userList)
+    populateChat(userList);
 });
 
 // Callback rcv connected user
 chatSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
-    addSingleUser(user)
+    addSingleUser(user);
 });
 
 // Callback rcv user disconnected
 chatSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
-    removeSingleUser(user)
+    removeSingleUser(user);
 });
 
 // Callback rcv message in general channel
 chatSM.registerCallback(CHAT_TYPES.GENERAL_MSG, data => {
-    addGeneralMsg(data)
+    addGeneralMsg(data);
 });
 
 // Callback rcv private message
 chatSM.registerCallback(CHAT_TYPES.PRIV_MSG, data => {
-    addPrivateMsg(data)
+    addPrivateMsg(data);
+	
+	// When message are received, send request to backend to mark as seen
+	chatSM.send(CHAT_TYPES.SEEN_MSG, JSON.stringify({
+        sender: data.sender
+    }));
+});
+
+// Callback get private message specific any user
+chatSM.registerCallback(CHAT_TYPES.LIST_MSG, data => {
+    fillHistoryMsg(data);
+});
+
+// Callback get list of ignored users
+chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, data => {
+    //fillHistoryMsg(data);
+	data.forEach((username) => {
+		console.log(`Ignored username: ${username}`);
+	});
 });
 
 
@@ -78,6 +100,27 @@ chatSM.registerCallback(CHAT_TYPES.PRIV_MSG, data => {
 // Manage chat //
 /////////////////
 
+function getIgnoreList()
+{
+    chatSM.send(CHAT_TYPES.IGNORE_LIST);
+}
+
+function ignoreUser()
+{
+    var userToIgnore = document.getElementById("dstUser");
+    chatSM.send(CHAT_TYPES.IGNORE_USER, JSON.stringify({
+        user: userToIgnore.value
+    }));
+}
+
+function unignoreUser()
+{
+    var userToUnignore = document.getElementById("dstUser");
+    chatSM.send(CHAT_TYPES.UNIGNORE_USER, JSON.stringify({
+        user: userToUnignore.value
+    }));
+}
+
 // Load all chat users
 function populateChat(userList) {
     userList.forEach((username) => {
@@ -85,12 +128,14 @@ function populateChat(userList) {
     });
 }
 
+// Example to send a global message
 function sendMessage() {
     var input = document.getElementById("newMessage");
     chatSM.send(CHAT_TYPES.GENERAL_MSG, input.value);
     input.value = "";
 }
 
+// Example to send a message to a specific user
 function sendPrivMessage() {
     var dstUser = document.getElementById("dstUser");
     var input = document.getElementById("newPrivMessage");
@@ -101,10 +146,14 @@ function sendPrivMessage() {
     input.value = "";
 }
 
-
-export function openChatPopup(selectedUsername) {
+// Example to request chat history from this user
+export function requestHistory(selectedUsername) {
     var dstUser = document.getElementById("dstUser");
     dstUser.value = selectedUsername;
+    
+    chatSM.send(CHAT_TYPES.LIST_MSG, JSON.stringify({
+        recipient: dstUser.value
+    }));
 }
 
 //////////////////
@@ -120,7 +169,7 @@ export function addSingleUser(username) {
     link.classList.add('nav-link');
     link.textContent = username;
     link.addEventListener('click', () => {
-        openChatPopup(username);
+        requestHistory(username);
     });
     listItem.appendChild(link);
     userListElement.appendChild(listItem);
@@ -139,11 +188,11 @@ export function removeSingleUser(username) {
     }
 }
 
-// Add general message
+// Add general message test
 export function addGeneralMsg(data) {
     var userList = document.getElementById("general_msg");
     var newmsg = document.createElement("li");
-    newmsg.textContent = `${data.sender_name}: ${data.message}`;
+    newmsg.textContent = `${data.sender}: ${data.message}`;
     newmsg.classList.add("list-group-item");
     userList.appendChild(newmsg);
 }
@@ -152,7 +201,26 @@ export function addGeneralMsg(data) {
 export function addPrivateMsg(data) {
     var userList = document.getElementById("private_msg");
     var newmsg = document.createElement("li");
-    newmsg.textContent = `${data.sender_name}: ${data.message}`;
+    newmsg.textContent = `${data.sender}: ${data.message}`;
     newmsg.classList.add("list-group-item");
     userList.appendChild(newmsg);
+}
+
+// Add history message
+export function fillHistoryMsg(data) {
+    var messageHistory = document.getElementById("private_msg_history");
+
+    // Remove previous li elements
+    while (messageHistory.firstChild)
+        messageHistory.removeChild(messageHistory.firstChild);
+    
+    data.forEach((message) => {
+        var newmsg = document.createElement("li");
+        newmsg.textContent = `${message.receiver}: ${message.message}`;
+        newmsg.classList.add("list-group-item");
+        messageHistory.appendChild(newmsg);
+        // Get message time example
+        var date = new Date(message.timestamp);
+        var formattedDate = date.toLocaleString();
+    });
 }

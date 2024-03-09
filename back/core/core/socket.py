@@ -1,5 +1,4 @@
 import json
-import re
 
 ##############################
 ## GENERAL SOCKET FUNCTIONS ##

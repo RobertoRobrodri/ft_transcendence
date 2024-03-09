@@ -15,7 +15,8 @@ class CustomUser(AbstractUser):
     losses              = models.IntegerField(default=0)
     status              = models.CharField(max_length=9, choices=Status, default=Status.INMENU)
     connected           = models.BooleanField(default=False)
-    channel_name 		= models.CharField(max_length=255, blank=True, null=True)
+    channel_name        = models.CharField(max_length=255, blank=True, null=True)
+    ignored_users       = models.ManyToManyField('self', blank=True, symmetrical=False, related_name='ignored')
     # Used for 42 Auth
     external_id         = models.IntegerField(null=True, blank=True)
     #TODO add default profile picture
@@ -23,7 +24,7 @@ class CustomUser(AbstractUser):
     friends             = models.ManyToManyField('self', blank=True)
     #TODO Historial should be a table of tournaments
     #history
-
+    
     @classmethod
     @database_sync_to_async
     def get_connected_usernames(cls):
@@ -56,3 +57,24 @@ class CustomUser(AbstractUser):
     def update_user_on_disconnect(cls, user):
         user.connected = True
         user.save()
+    
+    @classmethod
+    @database_sync_to_async
+    def ignore_user(cls, user, user_to_ignore):
+        user_to_ignore = CustomUser.objects.get(username=user_to_ignore)
+        user.ignored_users.add(user_to_ignore)
+        user.save()
+
+    @classmethod
+    @database_sync_to_async
+    def unignore_user(cls, user, user_to_unignore):
+        user_to_unignore = CustomUser.objects.get(username=user_to_unignore)
+        user.ignored_users.remove(user_to_unignore)
+        user.save()
+
+    @classmethod
+    @database_sync_to_async
+    def get_ignored_users(cls, user):
+        user = CustomUser.objects.get(username=user)
+        ignored_users = user.ignored_users.values_list('username', flat=True)
+        return list(ignored_users)

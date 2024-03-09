@@ -7,39 +7,39 @@ from django.core.exceptions import ValidationError
 
 class UserUpdateSerializer(serializers.ModelSerializer):
 
-	class Meta:
-		model = CustomUser
-		fields = ('username', 'status', 'profile_picture',)
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'status', 'profile_picture',)
 
-	def update(self, instance, validated_data):
-		previous_profile_picture = instance.profile_picture
-		if previous_profile_picture:
-			previous_profile_picture.delete()
-		instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
-		instance.username        = validated_data.get('username', instance.username)
-		instance.status          = validated_data.get('status', instance.status)
-		instance.save()
-		return instance
-	
+    def update(self, instance, validated_data):
+        previous_profile_picture = instance.profile_picture
+        if previous_profile_picture:
+            previous_profile_picture.delete()
+        instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
+        instance.username        = validated_data.get('username', instance.username)
+        instance.status          = validated_data.get('status', instance.status)
+        instance.save()
+        return instance
+    
 class UserUpdatePasswordSerializer(serializers.ModelSerializer):
 
-	class Meta:
-		model = CustomUser
-		fields = ('password', )
-		extra_kwargs = {
-			'password': {
-				'write_only': True,
-			},
-		}
+    class Meta:
+        model = CustomUser
+        fields = ('password', )
+        extra_kwargs = {
+            'password': {
+                'write_only': True,
+            },
+        }
 
-	def validate_password(self, value):
-		try:
-			validate_password(value)
-		except ValidationError as e:
-			raise serializers.ValidationError({'password': e.messages})
-		return value
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError({'password': e.messages})
+        return value
 
-	def update(self, instance, validated_data):
-		instance.set_password(validated_data.get('password'))
-		instance.save()
-		return instance
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data.get('password'))
+        instance.save()
+        return instance
