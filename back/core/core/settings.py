@@ -65,6 +65,7 @@ REST_FRAMEWORK = {
     ],
 	'DEFAULT_PERMISSION_CLASSES': [
 		'rest_framework.permissions.IsAuthenticated',
+        'pong_auth.permissions.Verify2FAPermission'
     ]
 }
 

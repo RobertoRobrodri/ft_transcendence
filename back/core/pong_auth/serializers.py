@@ -46,3 +46,12 @@ class User42RegistrationSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CustomUser
 		fields = ('username', 'external_id')
+
+class TwoFactorAuthnObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['2FA'] = True
+        return token

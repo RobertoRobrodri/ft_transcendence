@@ -2,16 +2,16 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import CustomUser
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer, User42RegistrationSerializer
+from .serializers import UserRegistrationSerializer, \
+    UserTokenObtainPairSerializer, User42RegistrationSerializer, \
+        TwoFactorAuthnObtainPairSerializer
 import requests, os, pyotp
 from django.core.exceptions import ValidationError
 from .utils import GenerateQR, generate_random_string
 from django.conf import settings
-
-#? move it to settings and secure the credentials
 
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
@@ -46,13 +46,14 @@ class UserLoginView(TokenObtainPairView):
             if (user.TwoFactorAuth == True):
                 # Send qr image as base64
                 encoded_qr = GenerateQR(user)
-                verification_token = RefreshToken.for_user(user)
-                return Response({
-                    # Send a token ONLY for verification
-                    'verification_token' : str(verification_token.access_token),
-                    'message' : 'Verify Login',
-                    'QR' : encoded_qr,
-                },
+                verification_serializer = TwoFactorAuthnObtainPairSerializer(data=request.data)
+                if (verification_serializer.is_valid()):
+                    return Response({
+                        # Send a token ONLY for verification
+                        'verification_token' : verification_serializer.validated_data.get('access'),
+                        'message' : 'Verify Login',
+                        'QR' : encoded_qr,
+                    },
                 status=status.HTTP_200_OK)
             else:
                 # TokenObtainPairSerializer takes care of authentication and generating both tokens
@@ -68,8 +69,12 @@ class UserLoginView(TokenObtainPairView):
 
 class UserValidateOTPView(generics.GenericAPIView):
     queryset = CustomUser.objects.all()
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         user = request.user
+        if ('2FA' not in request.auth.payload):
+            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
         if (user.TwoFactorAuth == True):
             otp = request.data.get('otp', None)
             # Verify
