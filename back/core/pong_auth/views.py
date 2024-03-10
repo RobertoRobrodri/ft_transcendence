@@ -10,6 +10,7 @@ from .serializers import UserRegistrationSerializer, \
         TwoFactorAuthnObtainPairSerializer
 import requests, os, pyotp
 from django.core.exceptions import ValidationError
+
 from .utils import GenerateQR, generate_random_string
 from django.conf import settings
 
@@ -55,16 +56,19 @@ class UserLoginView(TokenObtainPairView):
                         'QR' : encoded_qr,
                     },
                 status=status.HTTP_200_OK)
-            else:
-                # TokenObtainPairSerializer takes care of authentication and generating both tokens
-                login_serializer = self.serializer_class(data=request.data)
-                if login_serializer.is_valid():
-                    return Response({
-                            'token' : login_serializer.validated_data.get('access'),
-                            'refresh' : login_serializer.validated_data.get('refresh'),
-                            'message': 'Login successful',
-                        },
-                        status=status.HTTP_200_OK)
+        else:
+            # TokenObtainPairSerializer takes care of authentication and generating both tokens
+            login_serializer = self.serializer_class(data=request.data)
+            if login_serializer.is_valid():
+                user = login_serializer.user
+                user.status = CustomUser.Status.INMENU
+                user.save()
+                return Response({
+                        'token' : login_serializer.validated_data.get('access'),
+                        'refresh' : login_serializer.validated_data.get('refresh'),
+                        'message': 'Login successful',
+                    },
+                    status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserValidateOTPView(generics.GenericAPIView):
@@ -80,6 +84,8 @@ class UserValidateOTPView(generics.GenericAPIView):
             # Verify
             totp = pyotp.TOTP(settings.OTP_SECRET_KEY)
             if totp.verify(otp):
+                user.status = CustomUser.Status.INMENU
+                user.save()
                 # Refresh verification token
                 refresh = RefreshToken.for_user(user)
                 return Response({
@@ -95,7 +101,8 @@ class UserLogoutView(generics.GenericAPIView):
         user = request.user
         # Front has to delete the access token!!!
         RefreshToken.for_user(user)
-        user.status = "offline"
+        user.status = CustomUser.Status.INMENU
+        user.save()
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 class User42Callback(generics.GenericAPIView):
@@ -128,6 +135,8 @@ class User42Callback(generics.GenericAPIView):
             external_id = user_request.json()['id']
             user = CustomUser.objects.filter(external_id=external_id).first()
             if user is not None:
+                user.status = CustomUser.Status.INMENU
+                user.save()
                 refresh = RefreshToken.for_user(user)
                 return Response({
                     'token' : str(refresh.access_token),

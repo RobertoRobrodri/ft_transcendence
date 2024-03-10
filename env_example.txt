@@ -1,8 +1,15 @@
-// -- Create your own .env at root level! -- //
+# -- Create your own .env at root level! --
+# DEBUG
+DOCKERIZED=true // Set to true when using container
+
+# POSTGRES
+POSTGRES_NAME=postgres
+POSTGRES_PASSWORD=postgres
 POSTGRES_DB=postgres
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_NAME=postgres
-DOCKERIZED=false // Set to true when using container
+POSTGRES_PORT=5432
+POSTGRES_HOST=db
+
+# 42
 CLIENT_ID=<your-client-id>
-CLIENT_SECRET=<your-client-secre>
+CLIENT_SECRET=<your-client-secret>

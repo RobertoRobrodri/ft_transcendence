@@ -33,6 +33,11 @@ services:
     env_file:
       - .env
 
+  redis:
+    image: "redis:7.2.3-alpine"
+    container_name: "redis"
+    command: ["redis-server", "--bind", "redis", "--port", "6379"]
+      
 # Monitoring
   prometheus:
     image: prom/prometheus:v2.49.1
