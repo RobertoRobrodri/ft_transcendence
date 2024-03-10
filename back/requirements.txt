@@ -13,3 +13,7 @@ pillow==10.2.0
 requests==2.31.0
 #Monitoring
 django-prometheus==2.3.1
+#Websockets
+daphne==4.1.0
+channels==4.0.0
+channels-redis==4.1.0

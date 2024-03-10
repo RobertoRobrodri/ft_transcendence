@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,22 +46,26 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #extras
     'rest_framework',
-	'rest_framework_simplejwt',
-	'drf_yasg', #swagger documentation
-	'corsheaders',
-	'django_prometheus', # Monitoring Module
+    'rest_framework_simplejwt',
+    'drf_yasg', #swagger documentation
+    'corsheaders',
+    'django_prometheus', # Monitoring Module
     #include your apps
     'pong_auth',
-	'user_management',
-	'friends',
+    'user_management',
+    'friends',
+    'tournaments',
+    'game',
+    'channels',
+    'chat'
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-	'DEFAULT_PERMISSION_CLASSES': [
-		'rest_framework.permissions.IsAuthenticated',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
     ]
 }
 
@@ -70,16 +75,16 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
-	'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-	'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'django_prometheus.middleware.PrometheusAfterMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -101,6 +106,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+ASGI_APPLICATION = "core.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [('redis', 6379)],
+            "capacity": 1500,
+        },
+    },
+}
 
 if DOCKERIZED == "true":
     CHANNEL_LAYERS = {
@@ -149,7 +165,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-		"OPTIONS": {
+        "OPTIONS": {
             "min_length": 8,
         },
     },
@@ -188,12 +204,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
 #    "http://localhost:80",
-	"http://nginx:80",
+    "http://nginx:80",
 ]
 
 CORS_ORIGIN_WHITELIST = [
 #    "http://localhost:80",
-	"http://nginx:80",
+    "http://nginx:80",
 ]
 
 LOGGING = {
@@ -219,3 +235,10 @@ LOGGING = {
     },
 }
 # CORS_ORIGIN_ALLOW_ALL = True
+
+# Channel Layers
+CHANNEL_LAYERS = { 
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }   
+}

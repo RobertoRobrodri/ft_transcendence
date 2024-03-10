@@ -1,0 +1,92 @@
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand">PONG!</a>
+    <div class="navbar-collapse justify-content-end">
+        <span class="navbar-text user-info" id="user_info">Welcome, {{USERNAME}}!</span>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div>
+                <button id="disconnect">test disconnect socket</button>
+            </div>
+            <br>
+            <div>
+                <button id="Ignore">Ignore</button>
+            </div>
+            <br>
+            <div>
+                <button id="Unignore">Unignore</button>
+            </div>
+            <br>
+            <div>
+                <button id="ignorelist">Get Ingored List (console log)</button>
+            </div>
+            <br>
+            <br>
+            <div>
+                <input type="text" id="newMessage" placeholder="New General Message">
+                <br>
+                <button id="sendMessageBtn">Send</button>
+            </div>
+            <br>
+            <br>
+            <div>
+                <input type="text" id="dstUser" placeholder="Destination user">
+                <br>
+                <input type="text" id="newPrivMessage" placeholder="New Priv Message">
+                <button id="sendPrivMessageBtn">Send</button>
+            </div>
+
+            <h5 class="sidebar-title">Online Users</h5>
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column" id="userList"></ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card p-3 nav-option">
+                            <h5 class="card-title">Play</h5>
+                            <p class="card-text">Start a new game</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card p-3 nav-option">
+                            <h5 class="card-title">Settings</h5>
+                            <p class="card-text">Configure your preferences</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3">
+                            <h5 class="card-title">Test general messages</h5>
+                            <ul id="general_msg" class="list-group">
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3">
+                            <h5 class="card-title">Test private messages</h5>
+                            <ul id="private_msg" class="list-group">
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3">
+                            <h6 class="card-title">Test chat history (click on other username)</h6>
+                            <ul id="private_msg_history" class="list-group">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
