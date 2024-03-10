@@ -1,3 +1,5 @@
+import { renewJWT } from "../components/updatejwt.js"
+
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
     try {
@@ -19,20 +21,7 @@ export async function loadUserInfo() {
     }
     catch (error) {
         console.error('Error:', error.message);
-        // displayError(error, 'small', 'registrationForm');
+        // Token error, try update jwt
+        renewJWT();
     }
-}
-
-export function loadMainPage() {
-	let mainPage = document.getElementById("root");
-    Promise.all([
-        fetch('./menu/menu.html').then(response => response.text()),
-    ]).then(([html, css]) => {
-        mainPage.innerHTML = html;
-        //clear hash
-        history.pushState("", document.title, window.location.pathname + window.location.search);
-        loadUserInfo();
-    }).catch(error => {
-        console.error('Error al cargar el formulario:', error);
-    });
 }

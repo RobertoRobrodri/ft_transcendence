@@ -1,5 +1,5 @@
-import { displayError } from "../components/loader.js"
-import { loadMainPage } from "../menu/menu.js";
+import { displayErrorList } from "../components/loader.js"
+import { loadMainPage } from "../index/index.js";
 
 async function handleSubmitRegister(e) {
     if (e.target.matches('#registrationForm') === false)
@@ -7,45 +7,52 @@ async function handleSubmitRegister(e) {
     e.preventDefault()
     // Get the input values
     const username = document.querySelector('#new_username').value;
-	const password = document.querySelector('#new_password').value;
+    const password = document.querySelector('#new_password').value;
 
-	const loginData = {
+    const loginData = {
         username: username,
         password: password,
     };
     try {
         const response = await fetch('http://localhost:80/api/pong_auth/register/', {
-    	    method: 'POST',
+            method: 'POST',
             headers: {
-        	'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
             },body: JSON.stringify(loginData),
         })
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            const error = await response.json();
+            throw new Error(JSON.stringify(error));
         }
         const data = await response.json();
         // Handle the response data as needed
-	    const token = data.token;
+        const token = data.token;
         const refresh = data.refresh
-	    sessionStorage.setItem('token', token);
+        sessionStorage.setItem('token', token);
         sessionStorage.setItem('refresh', refresh);
         console.log(data);
         loadMainPage();
     }
     catch (error) {
-        console.error('Error:', error.message);
-        displayError(error.message, 'small', 'registrationForm');
+        displayErrorList(JSON.parse(error.message), 'registrationForm');
     }
 }
 
 export function register(e) {
-	document.getElementById('root').addEventListener('submit', handleSubmitRegister);
+    document.getElementById('root').addEventListener('submit', handleSubmitRegister);
 }
 
 export function loadSignUpPage(e){
     // if (e.target.matches('#signupbutton') === false)
     //     return ;
-	// e.preventDefault()
+    // e.preventDefault()
+    
+    // Remove previous styles
+    const existingStyles = document.head.querySelectorAll('style');
+    existingStyles.forEach(style => {
+        document.head.removeChild(style);
+    });
+
     let singUpPage = document.getElementById("root");
     Promise.all([
         fetch('./sing-up/sing_up.html').then(response => response.text()),

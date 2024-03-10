@@ -9,6 +9,7 @@ from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializ
 import requests, os, random, string, logging
 from django.core.exceptions import ValidationError
 
+
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
@@ -38,6 +39,9 @@ class UserLoginView(TokenObtainPairView):
         # TokenObtainPairSerializer takes care of authentication and generating both tokens
         login_serializer = self.serializer_class(data=request.data)
         if login_serializer.is_valid():
+            user = login_serializer.user
+            user.status = CustomUser.Status.INMENU
+            user.save()
             return Response({
                     'token' : login_serializer.validated_data.get('access'),
                     'refresh' : login_serializer.validated_data.get('refresh'),
@@ -52,7 +56,8 @@ class UserLogoutView(generics.GenericAPIView):
         user = request.user
         # Front has to delete the access token!!!
         RefreshToken.for_user(user)
-        user.status = "offline"
+        user.status = CustomUser.Status.INMENU
+        user.save()
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 def generate_random_string(length=10):
@@ -90,6 +95,8 @@ class User42Callback(generics.GenericAPIView):
             external_id = user_request.json()['id']
             user = CustomUser.objects.filter(external_id=external_id).first()
             if user is not None:
+                user.status = CustomUser.Status.INMENU
+                user.save()
                 refresh = RefreshToken.for_user(user)
                 return Response({
                     'token' : str(refresh.access_token),
