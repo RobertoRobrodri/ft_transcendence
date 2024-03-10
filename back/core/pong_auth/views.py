@@ -56,19 +56,19 @@ class UserLoginView(TokenObtainPairView):
                         'QR' : encoded_qr,
                     },
                 status=status.HTTP_200_OK)
-        else:
-            # TokenObtainPairSerializer takes care of authentication and generating both tokens
-            login_serializer = self.serializer_class(data=request.data)
-            if login_serializer.is_valid():
-                user = login_serializer.user
-                user.status = CustomUser.Status.INMENU
-                user.save()
-                return Response({
-                        'token' : login_serializer.validated_data.get('access'),
-                        'refresh' : login_serializer.validated_data.get('refresh'),
-                        'message': 'Login successful',
-                    },
-                    status=status.HTTP_200_OK)
+            else:
+                # TokenObtainPairSerializer takes care of authentication and generating both tokens
+                login_serializer = self.serializer_class(data=request.data)
+                if login_serializer.is_valid():
+                    user = login_serializer.user
+                    user.status = CustomUser.Status.INMENU
+                    user.save()
+                    return Response({
+                            'token' : login_serializer.validated_data.get('access'),
+                            'refresh' : login_serializer.validated_data.get('refresh'),
+                            'message': 'Login successful',
+                        },
+                        status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserValidateOTPView(generics.GenericAPIView):
