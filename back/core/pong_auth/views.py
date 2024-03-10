@@ -60,7 +60,6 @@ class UserLoginView(TokenObtainPairView):
                 # TokenObtainPairSerializer takes care of authentication and generating both tokens
                 login_serializer = self.serializer_class(data=request.data)
                 if login_serializer.is_valid():
-                    user = login_serializer.user
                     user.status = CustomUser.Status.INMENU
                     user.save()
                     return Response({
