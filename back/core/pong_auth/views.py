@@ -37,7 +37,7 @@ class UserLoginView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        logger.debug('Procesando solicitud de inicio de sesión')
+        logger.debug('Processing login request')
         # TokenObtainPairSerializer takes care of authentication and generating both tokens
         login_serializer = self.serializer_class(data=request.data)
         if login_serializer.is_valid():
