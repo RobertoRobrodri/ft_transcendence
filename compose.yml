@@ -8,6 +8,7 @@ services:
       - 80:80
     volumes:
       - profile_pictures:/media
+      - ./front/html:/usr/share/nginx/html/
     depends_on:
       - django
 

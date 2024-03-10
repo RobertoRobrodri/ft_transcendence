@@ -1,0 +1,46 @@
+body {
+    background-color: #28292d;
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Altura del 100% de la ventana */
+    cursor: url('../assets/cursor3.svg'), auto !important;
+    user-select: none;
+}
+
+main {
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Altura del 100% de la ventana */
+}
+
+/* Barra de abajo de la página */
+.system-bar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Iconos del escritorio */
+.profile {
+    height: 70px;
+    width: 70px;
+}
+
+.chat {
+    height: 70px;
+    width: 70px;
+}
+
+/* Estilo para la hora dentro de la barra del sistema */
+.current-time {
+    float: right;
+    color: #45f3ff;
+}
+
+/* Estilo de los programas */
+.program_name {
+    color: #45f3ff;
+}

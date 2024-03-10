@@ -1,45 +1,45 @@
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark">
+<nav class="mshide navbar navbar-expand-lg navbar-dark">
     <a class="navbar-brand">PONG!</a>
     <div class="navbar-collapse justify-content-end">
         <span class="navbar-text user-info" id="user_info">Welcome, {{USERNAME}}!</span>
     </div>
 </nav>
 
-<div class="container-fluid">
+<div class="mshide container-fluid">
     <div class="row">
 
         <!-- Sidebar -->
         <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
             <div>
-                <button id="disconnect">test disconnect socket</button>
+                <button class="btn btn-primary" id="disconnect">test disconnect socket</button>
             </div>
             <br>
             <div>
-                <button id="Ignore">Ignore</button>
+                <button class="btn btn-primary" id="Ignore">Ignore</button>
             </div>
             <br>
             <div>
-                <button id="Unignore">Unignore</button>
+                <button class="btn btn-primary" id="Unignore">Unignore</button>
             </div>
             <br>
             <div>
-                <button id="ignorelist">Get Ingored List (console log)</button>
+                <button class="btn btn-primary" id="ignorelist">Get Ingored List (console log)</button>
             </div>
             <br>
             <br>
             <div>
-                <input type="text" id="newMessage" placeholder="New General Message">
+                <input type="text" class="form-control" id="newMessage" placeholder="New General Message">
                 <br>
-                <button id="sendMessageBtn">Send</button>
+                <button class="btn btn-primary" id="sendMessageBtn">Send</button>
             </div>
             <br>
             <br>
             <div>
-                <input type="text" id="dstUser" placeholder="Destination user">
+                <input type="text" class="form-control" id="dstUser" placeholder="Destination user">
                 <br>
-                <input type="text" id="newPrivMessage" placeholder="New Priv Message">
-                <button id="sendPrivMessageBtn">Send</button>
+                <input type="text" class="form-control" id="newPrivMessage" placeholder="New Priv Message">
+                <button class="btn btn-primary" id="sendPrivMessageBtn">Send</button>
             </div>
 
             <h5 class="sidebar-title">Online Users</h5>
@@ -88,5 +88,25 @@
                 </div>
             </div>
         </main>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="desktop mt-5 col-md-12">
+            <div class="icons d-flex align-items-center justify-content-start"> <!-- Aplicar la clase text-left a .icons -->
+                <div class="icon text-center col-md-1">
+                    <img class="profile" src="../assets/personBlue.svg" alt="">
+                    <p class="program_name">Profile</p>
+                </div>
+                <div class="icon text-center col-md-1">
+                    <img class="chat" src="../assets/chat.svg" alt="">
+                    <p class="program_name">Chat</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="system-bar fixed-bottom">
+        <div class="current-time" id="current-time"></div>
     </div>
 </div>
