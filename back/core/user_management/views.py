@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from pong_auth.models import CustomUser
 from .serializers import UserUpdateSerializer, UserUpdatePasswordSerializer
 from pong_auth.permissions import IsLoggedInUser
+from django.core.exceptions import ValidationError
 
 class UserUpdateView(generics.GenericAPIView):
 	serializer_class = UserUpdateSerializer
@@ -29,9 +30,12 @@ class UserUpdatePasswordView(generics.GenericAPIView):
 		if user.external_id is None:
 			user_serializer = UserUpdatePasswordSerializer(user, data=request.data)
 			if user_serializer.is_valid():
-				user_serializer.save()
-				return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
-			return Response({'message': 'Cannot update user'}, status=status.HTTP_400_BAD_REQUEST)
+				try:
+					user_serializer.save()
+					return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
+				except ValidationError as e:
+					return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+			return Response({'message': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserListAllView(generics.ListAPIView):
 	serializer_class = UserUpdateSerializer

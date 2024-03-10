@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from django.contrib.auth import get_user_model
 from pong_auth.models import CustomUser
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 class UserUpdateSerializer(serializers.ModelSerializer):
 
@@ -30,6 +31,13 @@ class UserUpdatePasswordSerializer(serializers.ModelSerializer):
                 'write_only': True,
             },
         }
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError({'password': e.messages})
+        return value
 
     def update(self, instance, validated_data):
         instance.set_password(validated_data.get('password'))

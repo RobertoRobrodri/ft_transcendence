@@ -14,3 +14,7 @@ requests==2.31.0
 #Monitoring
 django-prometheus==2.3.1
 python-logstash==0.4.8
+#Websockets
+daphne==4.1.0
+channels==4.0.0
+channels-redis==4.1.0

@@ -3,7 +3,8 @@ from .models import CustomUser
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.validators import UniqueValidator
-from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -18,6 +19,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 'write_only': True,
             },
         }
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError({'password': e.messages})
+        return value
+
 
     def create(self, validated_data):
         user = CustomUser(

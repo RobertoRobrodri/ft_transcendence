@@ -7,6 +7,8 @@ from .models import CustomUser
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer, User42RegistrationSerializer
 import requests, os, random, string, logging
+from django.core.exceptions import ValidationError
+
 
 logger = logging.getLogger('mylogger')
 class UserRegistrationView(generics.CreateAPIView):
@@ -14,11 +16,12 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
 
     def post(self, request):
-        username = request.data.get('username', None)
-        password = request.data.get('password', None)
         registration = self.serializer_class(data=request.data)
         if registration.is_valid():
-            registration.save()
+            try:
+                registration.save()
+            except ValidationError as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
             login_serializer = UserTokenObtainPairSerializer(data=request.data)
             if login_serializer.is_valid():
                 return Response({
@@ -27,7 +30,7 @@ class UserRegistrationView(generics.CreateAPIView):
                     'message': 'Login successful',
                 },
                 status=status.HTTP_200_OK)
-        return Response({'error': 'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': registration.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 #Token Obtain Base sets permission_classes and authentication_classes to allow any
 class UserLoginView(TokenObtainPairView):
@@ -38,6 +41,9 @@ class UserLoginView(TokenObtainPairView):
         # TokenObtainPairSerializer takes care of authentication and generating both tokens
         login_serializer = self.serializer_class(data=request.data)
         if login_serializer.is_valid():
+            user = login_serializer.user
+            user.status = CustomUser.Status.INMENU
+            user.save()
             return Response({
                     'token' : login_serializer.validated_data.get('access'),
                     'refresh' : login_serializer.validated_data.get('refresh'),
@@ -52,7 +58,8 @@ class UserLogoutView(generics.GenericAPIView):
         user = request.user
         # Front has to delete the access token!!!
         RefreshToken.for_user(user)
-        user.status = "offline"
+        user.status = CustomUser.Status.INMENU
+        user.save()
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
 def generate_random_string(length=10):
@@ -90,6 +97,8 @@ class User42Callback(generics.GenericAPIView):
             external_id = user_request.json()['id']
             user = CustomUser.objects.filter(external_id=external_id).first()
             if user is not None:
+                user.status = CustomUser.Status.INMENU
+                user.save()
                 refresh = RefreshToken.for_user(user)
                 return Response({
                     'token' : str(refresh.access_token),
