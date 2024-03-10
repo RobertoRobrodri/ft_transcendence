@@ -19,7 +19,6 @@ services:
       - 8000:8000
     volumes:
       - profile_pictures:/core/media
-      - logs:/var/log/app
     env_file:
       - .env
     depends_on:
@@ -149,4 +148,3 @@ volumes:
   prom_data:
   graf_data:
   elasticsearch_data:
-  logs:
