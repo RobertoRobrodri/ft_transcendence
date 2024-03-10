@@ -9,12 +9,6 @@ services:
     volumes:
       - profile_pictures:/media
       - ./.logs/nginx:/var/log/nginx
-    #logging:
-    #  driver: elastic/elastic-logging-plugin:8.12.2
-    #  options:
-    #    hosts: "http://elasticsearch:9200"
-        #index: "dockerlogs-%{+yyyy.MM.dd}"
-        ##TODO add pass and user
     depends_on:
       - django
 
@@ -26,12 +20,6 @@ services:
     volumes:
       - profile_pictures:/core/media
       - logs:/var/log/app
-    #logging:
-    #  driver: elastic/elastic-logging-plugin:8.12.2
-    #  options:
-    #    hosts: "http://elasticsearch:9200"
-        #index: "dockerlogs-%{+yyyy.MM.dd}"
-        ##TODO add pass and user
     env_file:
       - .env
     depends_on:
@@ -46,17 +34,12 @@ services:
       - ddbb:/var/lib/postgresql/data
       - ./.logs/db:/log
     command: -c 'config_file=/etc/postgresql/postgresql.conf'
-    #logging:
-    #  driver: elastic/elastic-logging-plugin:8.12.2
-    #  options:
-    #    hosts: "http://elasticsearch:9200"
-        #index: "dockerlogs-%{+yyyy.MM.dd}"
-        ##TODO add pass and user
     env_file:
       - .env
 
 # Monitoring
   prometheus:
+    # TODO secure with user password
     image: prom/prometheus:v2.49.1
     container_name: prometheus
     ports:
@@ -67,6 +50,7 @@ services:
       - prom_data:/prometheus
 
   alertmanager:
+    # TODO secure with user password
     image: prom/alertmanager:v0.21.0
     container_name: alertmanager
     ports:
@@ -75,6 +59,7 @@ services:
       - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
 
   elasticsearch:
+    # TODO secure with user password
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
     container_name: elasticsearch
     environment:
@@ -94,14 +79,15 @@ services:
     ports:
       - "5000:5000"
       - "5054:5054"
+    ## TODO ssl enable to secure logstah
     volumes:
-      - ./elk-config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf # TODO review
-      #- ./elk-config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./elk-config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./.logs:/var/log/services
     depends_on:
       - elasticsearch
 
   kibana:
+    # TODO secure with user password
     image: docker.elastic.co/kibana/kibana:8.12.1
     container_name: kibana
     volumes:
@@ -110,22 +96,9 @@ services:
       - "5601:5601"
     depends_on:
       - elasticsearch
-
-  #filebeat:
-  #  build: ./elk-config/filebeat_docker/
-  #  container_name: filebeat
-  #  volumes:
-  #    - /var/lib/docker/containers:/usr/share/dockerlogs/data:ro
-  #    - /var/run/docker.sock:/var/run/docker.sock:ro
-  #    #- logs:/var/log/services
-  #  depends_on:
-  #    - elasticsearch
-
-
-
-# Django dashboard 17658
-# Postgres dashboard 9628
-# Nginx dashboard 12708
+# Django    dashboard    17658
+# Postgres  dashboard  9628
+# Nginx     dashboard     12708
   grafana:
     image: grafana/grafana:10.3.1
     container_name: grafana
