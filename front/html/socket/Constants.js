@@ -22,5 +22,6 @@ export const CHAT_TYPES = {
 
 // Game socket events
 export const GAME_TYPES = {
-    EVENT: 'event',
+    INITMATCHMAKING: 'init_matchmaking',
+    CANCELMATCHMAKING: 'cancel_matchmaking',
 };

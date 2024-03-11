@@ -1,7 +1,7 @@
 
 import { ChatSocketManager } from "../socket/ChatSocketManager.js"
 import { CHAT_TYPES, SOCKET } from '../socket/Constants.js';
-import { remove_session, renewJWT } from "../components/updatejwt.js"
+import { renewJWT } from "../components/updatejwt.js"
 
 function register() {
     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
@@ -74,9 +74,9 @@ chatSM.registerCallback(CHAT_TYPES.GENERAL_MSG, data => {
 // Callback rcv private message
 chatSM.registerCallback(CHAT_TYPES.PRIV_MSG, data => {
     addPrivateMsg(data);
-	
-	// When message are received, send request to backend to mark as seen
-	chatSM.send(CHAT_TYPES.SEEN_MSG, JSON.stringify({
+    
+    // When message are received, send request to backend to mark as seen
+    chatSM.send(CHAT_TYPES.SEEN_MSG, JSON.stringify({
         sender: data.sender
     }));
 });
@@ -89,9 +89,9 @@ chatSM.registerCallback(CHAT_TYPES.LIST_MSG, data => {
 // Callback get list of ignored users
 chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, data => {
     //fillHistoryMsg(data);
-	data.forEach((username) => {
-		console.log(`Ignored username: ${username}`);
-	});
+    data.forEach((username) => {
+        console.log(`Ignored username: ${username}`);
+    });
 });
 
 

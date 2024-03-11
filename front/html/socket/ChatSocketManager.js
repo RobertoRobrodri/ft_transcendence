@@ -1,5 +1,5 @@
 import { SocketManager } from './SocketManager.js';
-import { CHAT_TYPES, SOCKET } from './Constants.js';
+import { SOCKET } from './Constants.js';
 
 export class ChatSocketManager extends SocketManager {
     constructor() {

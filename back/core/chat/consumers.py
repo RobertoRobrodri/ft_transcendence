@@ -61,7 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
                 await CustomUser.update_user_on_disconnect(user)
-                await self.channel_layer.group_discard(GENERAL_MSG,self.channel_name)
+                await self.channel_layer.group_discard(GENERAL_MSG, self.channel_name)
                 await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_DISCONNECTED, user.username)
                 
         except Exception as e:
