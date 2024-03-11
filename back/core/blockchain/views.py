@@ -32,9 +32,6 @@ class ContractView(generics.GenericAPIView):
         with open(contract_file_path, encoding='utf-8') as deploy_file:
             contract_json = json.load(deploy_file)
             contract_abi = contract_json.get("abi", [])
-            # contract_address = contract_json.get("networks", {}).get("your_network_id", {}).get("address", "")
-            # contract = ContractView.w3.eth.contract(address=contract_address, abi=contract_abi)
-            # return contract
             for network in contract_json["networks"]:
                 contract_address = contract_json["networks"][network]["address"]
             # contract_address = contract_json["networks"]["5777"]["address"]
