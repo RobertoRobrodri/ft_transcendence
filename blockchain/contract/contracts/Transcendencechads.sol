@@ -17,9 +17,19 @@ contract Transcendencechads {
     }
     
     Tournament[] tournaments;
+	address public owner;
+
+	constructor() {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not authorized");
+        _;
+    }
 
     // A new Tournament to the list
-    function addTournament(Tournament calldata _newTournament) public {
+    function addTournament(Tournament calldata _newTournament) public onlyOwner {
         // assert(_newTournament.matches.length <= tournaments.length && _newTournament.matches.length > 0);
         // require(_newTournament.matches.length <= tournaments.length, "Array out of bounds");
         tournaments.push(_newTournament);
