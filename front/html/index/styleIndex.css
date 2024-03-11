@@ -1,4 +1,5 @@
 body {
+    font-family: 'Courier New', Courier, monospace;
     background-color: #28292d;
     margin: 0;
     padding: 0;
@@ -43,4 +44,9 @@ main {
 /* Estilo de los programas */
 .program_name {
     color: #45f3ff;
+}
+
+/* Estilo para objeto seleccionado */
+.icon:hover {
+    background-color: #45f3ff33;
 }

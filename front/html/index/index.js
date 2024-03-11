@@ -23,6 +23,18 @@ function updateTime() {
     // Actualiza el contenido del elemento con el ID "current-date-time"
     document.getElementById('current-time').innerHTML = dateTimeString;
 }
+
+function setConsoleLog(e) {
+    console.log("Toco")
+    if (e.target.matches('#profile') === false)
+    return ;
+    e.preventDefault()
+}
+
+export function checkDiv(){
+    document.getElementById('root').addEventListener('click', setConsoleLog);
+}
+
 export function loadMainPage() {
     // Renew jwt
     renewJWT();
@@ -57,7 +69,4 @@ export function loadMainPage() {
 
     // Actualiza la hora cada segundo
     setInterval(updateTime, 1000);
-
-    // Inicializa la hora al cargar la página
-    updateTime();
 }
