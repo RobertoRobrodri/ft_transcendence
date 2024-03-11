@@ -44,7 +44,7 @@ services:
     image: trufflesuite/ganache-cli:latest
     container_name: ganache
     volumes:
-      - ganache_data:/ganache_data
+      - ganache:/ganache_data
     ports:
         - '8545:8545'
     entrypoint:
@@ -134,4 +134,4 @@ volumes:
   prom_data:
   graf_data:
   truffle:
-  ganache_data:
+  ganache:
