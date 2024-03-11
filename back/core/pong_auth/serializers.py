@@ -46,7 +46,12 @@ class User42RegistrationSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('username', 'external_id')
 
-class TwoFactorAuthnObtainPairSerializer(TokenObtainPairSerializer):
+class ValidateOTPSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('otp', )
+
+class TwoFactorAuthObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
