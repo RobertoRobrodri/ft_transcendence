@@ -18,6 +18,7 @@ services:
       - 8000:8000
     volumes:
       - profile_pictures:/core/media
+      - truffle:/core/contract/build/contracts
     env_file:
       - .env
     depends_on:
@@ -37,7 +38,34 @@ services:
     image: "redis:7.2.3-alpine"
     container_name: "redis"
     command: ["redis-server", "--bind", "redis", "--port", "6379"]
-      
+  
+# Blockchain
+  ganache:
+    image: trufflesuite/ganache-cli:latest
+    container_name: ganache
+    volumes:
+      - ganache:/ganache_data
+    ports:
+        - '8545:8545'
+    entrypoint:
+      - node
+      - /app/ganache-core.docker.cli.js
+      - --deterministic                  # Always use same address and keys
+      - --db=/ganache_data               # Store data to connect previous contract
+      - --mnemonic                       # Seed
+      - 'desert whisper reunion modify taxi energy update mention awful foam achieve visa'
+      - --networkId                      # Ganache network id
+      - '5777'
+
+  contract-deployer:
+    image: contract-deployer:latest
+    container_name: contract-deployer
+    build: ./blockchain
+    depends_on:
+      - ganache
+    volumes:
+      - truffle:/core/contract/build/contracts
+
 # Monitoring
   prometheus:
     image: prom/prometheus:v2.49.1
@@ -105,3 +133,5 @@ volumes:
   profile_pictures:
   prom_data:
   graf_data:
+  truffle:
+  ganache:

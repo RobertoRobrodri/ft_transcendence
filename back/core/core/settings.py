@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'tournaments',
     'game',
     'channels',
-    'chat'
+    'chat',
+    'blockchain'
 ]
 
 REST_FRAMEWORK = {
