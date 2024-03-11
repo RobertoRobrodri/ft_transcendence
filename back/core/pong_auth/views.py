@@ -7,7 +7,7 @@ from .models import CustomUser
 from django.contrib.auth import authenticate
 from .serializers import UserRegistrationSerializer, \
     UserTokenObtainPairSerializer, User42RegistrationSerializer, \
-        TwoFactorAuthObtainPairSerializer, ValidateOTPSerializer
+        TwoFactorAuthObtainPairSerializer
 import requests, os, pyotp
 from django.core.exceptions import ValidationError
 
@@ -73,28 +73,25 @@ class UserLoginView(TokenObtainPairView):
 class UserValidateOTPView(generics.GenericAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = [IsAuthenticated]
-    serializer_class = ValidateOTPSerializer
 
     def post(self, request, *args, **kwargs):
         user = request.user
         if ('2FA' not in request.auth.payload):
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
         if (user.TwoFactorAuth == True):
-            validate_serializer = self.serializer_class(data=request.data)
-            if validate_serializer.is_valid():
-                otp = validate_serializer.validated_data.get('otp')
-                # Verify
-                totp = pyotp.TOTP(settings.OTP_SECRET_KEY)
-                if totp.verify(otp):
-                    user.status = CustomUser.Status.INMENU
-                    user.save()
-                    # Refresh verification token
-                    refresh = RefreshToken.for_user(user)
-                    return Response({
-                        'token' : str(refresh.access_token),
-                        'refresh' : str(refresh),
-                        'message': 'Login successful',
-                        },status=status.HTTP_200_OK)
+            otp = request.data.get('otp', None)
+            # Verify
+            totp = pyotp.TOTP(settings.OTP_SECRET_KEY)
+            if totp.verify(otp):
+                user.status = CustomUser.Status.INMENU
+                user.save()
+                # Refresh verification token
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'token' : str(refresh.access_token),
+                    'refresh' : str(refresh),
+                    'message': 'Login successful',
+                    },status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # We are not using logout because we are not using sessions

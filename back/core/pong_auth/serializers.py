@@ -46,10 +46,8 @@ class User42RegistrationSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ('username', 'external_id')
 
-class ValidateOTPSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ('otp', )
+# class ValidateOTPSerializer(serializers.Serializer):
+#         otp = serializers.IntegerField
 
 class TwoFactorAuthObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
