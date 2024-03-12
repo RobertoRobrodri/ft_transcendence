@@ -31,11 +31,11 @@ function removeClassFromClass(classNameToRemove, classNameToFind) {
         element.classList.remove(classNameToRemove);
     });
 }
-
+//TODO: Modificar que el modal salga cuando se está llamando a una API.
 function selectProgram(e) {
     // Esto importa el modal
     var modal = document.getElementById('exampleModal');
-    
+
     var parentIcon = e.target.closest('.icon');
     if (parentIcon === false || !parentIcon) {
         removeClassFromClass('selected_program', 'selected_program')
