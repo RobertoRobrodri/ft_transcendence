@@ -9,5 +9,5 @@ loginModule.login();
 signUpModule.register();
 callbackModule.sendUpdatedData();
 callbackModule.callback42();
+window.addEventListener("hashchange", routing.router);
 index.checkDiv();
-window.addEventListener("hashchange", routing.router)

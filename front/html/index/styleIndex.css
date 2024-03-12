@@ -46,6 +46,23 @@ main {
     color: #45f3ff;
 }
 
+.selected_program {
+    background-color: #45f3ff33 !important;
+}
+
+/* Estilo para los iconos */
+.icon {
+    display: flex;
+    justify-content: center;
+}
+
+.icon-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Estilo para objeto seleccionado */
 .icon:hover {
     background-color: #45f3ff33;

@@ -24,15 +24,37 @@ function updateTime() {
     document.getElementById('current-time').innerHTML = dateTimeString;
 }
 
-function setConsoleLog(e) {
-    console.log("Toco")
-    if (e.target.matches('#profile') === false)
-    return ;
+// Esta funcion elimina una clase de todos los objetos que tengan esa clase
+function removeClassFromClass(classNameToRemove, classNameToFind) {
+    var elements = document.querySelectorAll('.' + classNameToFind);
+    elements.forEach(function(element) {
+        element.classList.remove(classNameToRemove);
+    });
+}
+
+function selectProgram(e) {
+    // Esto importa el modal
+    var modal = document.getElementById('exampleModal');
+    
+    var parentIcon = e.target.closest('.icon');
+    if (parentIcon === false || !parentIcon) {
+        removeClassFromClass('selected_program', 'selected_program')
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        return ;
+    }
+    // Estas dos lineas activan el modal
+    modal.classList.add('show');
+    modal.style.display = 'block';
+
+    removeClassFromClass('selected_program', 'selected_program')
+    var parentIcon = e.target.closest('.icon');
+    parentIcon.classList.add('selected_program');
     e.preventDefault()
 }
 
 export function checkDiv(){
-    document.getElementById('root').addEventListener('click', setConsoleLog);
+    document.getElementById('root').addEventListener('click', selectProgram);
 }
 
 export function loadMainPage() {
