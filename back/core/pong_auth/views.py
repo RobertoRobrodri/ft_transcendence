@@ -11,7 +11,7 @@ from .serializers import UserRegistrationSerializer, \
 import requests, os, pyotp
 from django.core.exceptions import ValidationError
 
-from .utils import GenerateQR, generate_random_string
+from .utils import GenerateQR, generate_random_string,  get_token_with_custom_claim
 from django.conf import settings
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -137,15 +137,13 @@ class User42Callback(generics.GenericAPIView):
                 if (user.TwoFactorAuth == True):
                     # Send qr image as base64
                     encoded_qr = GenerateQR(user)
-                    verification_serializer = TwoFactorAuthObtainPairSerializer(data=request.data)
-                    if (verification_serializer.is_valid()):
-                        return Response({
-                            # Send a token ONLY for verification
-                            'verification_token' : verification_serializer.validated_data.get('access'),
-                            'message' : 'Verify Login',
-                            'QR' : encoded_qr,
-                        },
-                    status=status.HTTP_200_OK)
+                    verification_token = get_token_with_custom_claim(user)
+                    return Response({
+                        # Send a token ONLY for verification
+                        'verification_token' : str(verification_token.access_token),
+                        'message' : 'Verify Login',
+                        'QR' : encoded_qr,
+                    },status=status.HTTP_200_OK)
                 else:
                     user.status = CustomUser.Status.INMENU
                     user.save()

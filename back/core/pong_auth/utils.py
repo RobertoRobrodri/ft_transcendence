@@ -1,6 +1,7 @@
 import pyotp, qrcode, base64, string, random
 from io import BytesIO
 from django.conf import settings
+from rest_framework_simplejwt.tokens import AccessToken
 
 def GenerateQR(user):
 	# Generate code and return url
@@ -19,3 +20,8 @@ def generate_random_string(length=10):
         characters = string.ascii_letters + string.digits
         random_string = ''.join(random.choice(characters) for _ in range(length))
         return random_string
+
+def get_token_with_custom_claim(user):
+    token = AccessToken.for_user(user)
+    token['2FA'] = True  # Add your custom claim here
+    return token
