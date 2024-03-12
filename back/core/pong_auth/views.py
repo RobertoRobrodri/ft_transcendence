@@ -134,14 +134,27 @@ class User42Callback(generics.GenericAPIView):
             external_id = user_request.json()['id']
             user = CustomUser.objects.filter(external_id=external_id).first()
             if user is not None:
-                user.status = CustomUser.Status.INMENU
-                user.save()
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'token' : str(refresh.access_token),
-                    'refresh' : str(refresh),
-                    'message': 'Login successful',
-                },status=status.HTTP_200_OK)
+                if (user.TwoFactorAuth == True):
+                    # Send qr image as base64
+                    encoded_qr = GenerateQR(user)
+                    verification_serializer = TwoFactorAuthObtainPairSerializer(data=request.data)
+                    if (verification_serializer.is_valid()):
+                        return Response({
+                            # Send a token ONLY for verification
+                            'verification_token' : verification_serializer.validated_data.get('access'),
+                            'message' : 'Verify Login',
+                            'QR' : encoded_qr,
+                        },
+                    status=status.HTTP_200_OK)
+                else:
+                    user.status = CustomUser.Status.INMENU
+                    user.save()
+                    refresh = RefreshToken.for_user(user)
+                    return Response({
+                        'token' : str(refresh.access_token),
+                        'refresh' : str(refresh),
+                        'message': 'Login successful',
+                    },status=status.HTTP_200_OK)
             else:
                 # Create ramdom username and return the token
                 registration_data = {
