@@ -46,7 +46,7 @@ class PongGame:
             await asyncio.sleep(1 / 60)
 
     def reset_game(self):
-        self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2, 'speed_x': 1, 'speed_y': 1}
+        self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2, 'speed_x': 2, 'speed_y': 2}
         for i in range(2):
             player_info = list(self.players.values())[i]
             if i == 0:
