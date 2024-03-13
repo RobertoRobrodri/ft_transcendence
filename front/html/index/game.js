@@ -98,27 +98,34 @@ function drawBall(x, y) {
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 let direction = null;
+let isSending = false;
 
 function handleKeyDown(event) {
-    direction = getDirectionFromKeyCode(event.keyCode);
-    if (direction) {
-        // Send key event to server
-        sendDirectionToServer();
+    if (!isSending) {
+        direction = getDirectionFromKeyCode(event.keyCode);
+        if (direction) {
+            // Set a flag to indicate that we are sending a request
+            isSending = true;
+            // Send key event to server
+            sendDirectionToServer();
+        }
     }
 }
 
 function handleKeyUp(event) {
     direction = null;  // When release, set direction as null
+    isSending = false;  // Reset the flag when key is released
 }
 
 function sendDirectionToServer() {
     if (direction) {
         // Send direction
-
         gameSM.send(GAME_TYPES.DIRECTION, direction);
-
         // Schedule the next update while the key is pressed
         requestAnimationFrame(sendDirectionToServer);
+    } else {
+        // Reset the flag when the key is released
+        isSending = false;
     }
 }
 
