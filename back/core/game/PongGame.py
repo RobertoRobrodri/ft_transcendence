@@ -46,15 +46,10 @@ class PongGame:
             await asyncio.sleep(1 / 60)
 
     def reset_game(self):
-        self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2, 'speed_x': 2, 'speed_y': 2}
-        for i in range(2):
-            player_info = list(self.players.values())[i]
-            if i == 0:
-                player_info['paddle_x'] = self.player1_paddle_x
-                player_info['paddle_y'] = self.player1_paddle_y
-            elif i == 1:
-                player_info['paddle_x'] = self.player2_paddle_x
-                player_info['paddle_y'] = self.player2_paddle_y
+        self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2, 'speed_x': 3, 'speed_y': 3}
+        for player_info in self.players.values():
+            player_info['paddle_x'] = self.player1_paddle_x if player_info['nbr'] == 1 else self.player2_paddle_x
+            player_info['paddle_y'] = self.player1_paddle_y if player_info['nbr'] == 1 else self.player2_paddle_y
 
     def move_ball(self):
         self.ball['x'] += self.ball['speed_x']
