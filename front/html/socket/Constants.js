@@ -24,7 +24,10 @@ export const CHAT_TYPES = {
 export const GAME_TYPES = {
     INITMATCHMAKING:    'init_matchmaking',
     CANCELMATCHMAKING:  'cancel_matchmaking',
+    INQUEUE:            'queue_matchmaking',
     GAME_STATE:         'game_state',
+	GAME_SCORE:         'game_score',
+	GAME_END:      	    'game_end',
+	GAME_RIVAL_LEAVE:   'game_rival_leave',
     DIRECTION:          'direction',
-    INQUEUE:            'queue_matchmaking'
 };

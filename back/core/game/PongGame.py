@@ -8,6 +8,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 GAME_STATE = 'game_state'
+GAME_SCORE = 'game_score'
+GAME_END   = 'game_end'
 
 class PongGame:
     def __init__(self, game_id, consumer):
@@ -25,11 +27,10 @@ class PongGame:
         self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2, 'speed_x': 3, 'speed_y': 3}
         self.running = False
         self.consumer = consumer
-        self.points = 0
         self.player1_paddle_x = 0
-        self.player1_paddle_y = (self.canvas_y / 2) + (self.paddle_width / 2)
+        self.player1_paddle_y = (self.canvas_y / 2) - (self.paddle_width / 2)
         self.player2_paddle_x = self.canvas_x - self.paddle_width
-        self.player2_paddle_y =  (self.canvas_y / 2) + (self.paddle_width / 2)
+        self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_width / 2)
 
     async def start_game(self):
         self.running = True
@@ -37,7 +38,7 @@ class PongGame:
 
         while self.running:
             self.move_ball()
-            self.detect_collisions()
+            await self.detect_collisions()
 
             # Send updated status to all players
             await self.send_game_state()
@@ -55,7 +56,7 @@ class PongGame:
         self.ball['x'] += self.ball['speed_x']
         self.ball['y'] += self.ball['speed_y']
 
-    def detect_collisions(self):
+    async def detect_collisions(self):
         ball = self.ball
         
         left_side = 0 + self.ball_radius
@@ -65,14 +66,22 @@ class PongGame:
         
         for _, player in self.players.items():
             if self.check_paddle_collision(ball, player, self.paddle_width, self.paddle_height):
-                # ball['speed_x'] *= -1  # Invertir la dirección en el eje x
-                logger.warning(f'Collide with paddle 1: ball x = {ball["x"]}  ball y = {ball["y"]}')
-                # time.sleep(2)
                 return
 
         # Detect point to player X
         if ball['x'] <= left_side or ball['x'] >= right_side:
-            logger.warning(f'Point!!')
+            players_list = list(self.players.values())
+            # Determine winner
+            if ball['x'] <= left_side:
+                players_list[1]['score'] += 1 
+            else:
+                players_list[0]['score'] += 1
+            
+            await self.send_game_score()
+            if players_list[0]['score'] == 6 or players_list[1]['score'] == 6:
+                await self.send_game_end()
+                self.running = False
+
             self.reset_game()
             return
         
@@ -126,19 +135,38 @@ class PongGame:
     async def send_game_state(self):
         # Send updated status to all players in the game
         await send_to_group(self.consumer, self.game_id, GAME_STATE, {'message': self.get_game_state()})
+    
+    async def send_game_end(self):
+        # Send game finish
+        players_list = list(self.players.values())
+        scores = {0: players_list[0]['score'], 1: players_list[0]['score']}
+        await send_to_group(self.consumer, self.game_id, GAME_END, {'message': scores})
+    
+    async def send_game_score(self):
+        # Send players score
+        players_list = list(self.players.values())
+        scores = {0: players_list[0]['score'], 1: players_list[0]['score']}
+        await send_to_group(self.consumer, self.game_id, GAME_SCORE, {'message': scores})
 
     def get_game_state(self):
         # Return the current state of the game
+        players_without_id_score = {}
+        for player_id, player_info in self.players.items():
+            player_info_copy = player_info.copy()
+            del player_info_copy['id']
+            del player_info_copy['score']
+            players_without_id_score[player_id] = player_info_copy
+
         return {
-            'players': self.players,
+            'players': players_without_id_score,
             'ball': self.ball,
-        }
+    }
 
     def add_player(self, player, player_number):
         if player_number == 1:
-            self.players[player] = {'id': player, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y}
+            self.players[player] = {'id': player, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'score': 0}
         else:
-            self.players[player] = {'id': player, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y}
+            self.players[player] = {'id': player, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'score': 0}
     
     def move_paddle(self, player_id, direction):
         if player_id in self.players:
