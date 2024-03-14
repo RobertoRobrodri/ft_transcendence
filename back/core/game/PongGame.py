@@ -50,7 +50,7 @@ class PongGame:
 
         while self.running:
             await self.detect_collisions()
-            if self.running:
+            if not self.running:
                 return
             self.move_ball()
             # Send updated status to all players

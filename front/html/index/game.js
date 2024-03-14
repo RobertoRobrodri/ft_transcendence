@@ -1,6 +1,12 @@
 import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
 
+/////////////////
+// Global vars //
+/////////////////
+let canvas;
+let ctx;
+
 function register() {
     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
     document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
@@ -17,7 +23,7 @@ export function connectGame()
 
 function InitMatchmaking()
 {
-    gameSM.send(GAME_TYPES.INITMATCHMAKING);
+	initializeGame()
 }
 
 function CancelMatchmaking()
@@ -42,8 +48,7 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 
 // MATCHMAKING
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
-    //Game matched! start game
-    initializeGame(data.message)
+    //Game matched! game started
 });
 
 gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
@@ -84,25 +89,11 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 // GAME LOGIC //
 ////////////////
 
-let canvas;
-let ctx;
-const backgroundImage = new Image();
-const paddle_image = new Image();
-const ball_image = new Image();
-
-function initializeGame(initialState) {
+function initializeGame() {
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
-    // Canvas background image
-    backgroundImage.src = "assets/game/images/pong_backgound.jpg";
-    // Paddle images
-    paddle_image.src = "assets/game/images/player_pink.png";
-
-    // Wait for the image to load before drawing it on the canvas
-    // backgroundImage.onload = function() {
-    //     // Draw image
-    //     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-    // };
+	gameSM.send(GAME_TYPES.INITMATCHMAKING);
+    
 }
 
 function updateGame(gameState) {
@@ -110,48 +101,21 @@ function updateGame(gameState) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Black background
-    // ctx.fillStyle = "#000";
-    // ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    //Draw Background
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-
+	// Draw paddles
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];
-        if(player.id === 0)
-            drawPaddle(player.paddle_x, player.paddle_y); // Red paddle
-        else
-            drawPaddle(player.paddle_x, player.paddle_y); // Blue paddle
+        drawPaddle(player.paddle_x, player.paddle_y);
     }
+	// Draw ball
     drawBall(gameState.ball.x, gameState.ball.y);
 }
 
 function drawPaddle(x, y) {
-    // // Set neon effect parameters
-    // ctx.shadowColor = "#ffffff";
-    // ctx.shadowBlur = 20;
-    // ctx.lineJoin = "bevel";
-    // ctx.lineWidth = 15;
-    // ctx.strokeStyle = "#ffffff"; // White
-    
-    // // Gradient to simulate neon effect
-    // var gradient = ctx.createLinearGradient(x, y, x + 10, y + 40);
-    // gradient.addColorStop(0, color); // Base color
-    // gradient.addColorStop(1, "#fff"); // White color for neon effect
-    
-    // // Draw paddle
-    // ctx.fillStyle = gradient;
-    // ctx.fillRect(x, y, 10, 40);
-    
-    // // Reset shadow
-    // ctx.shadowColor = "transparent";
-    // ctx.shadowBlur = 0;
-
-    // The image it's a sprite see https://www.w3schools.com/TAgs/canvas_drawimage.asp
-    ctx.drawImage(paddle_image, 0, 0, 70, 200, x, y, 22, 89);
-    
-
-
+    ctx.fillStyle = "#ffff";
+    ctx.fillRect(x, y, 10, 40);
 }
 
 function drawBall(x, y) {
@@ -161,27 +125,6 @@ function drawBall(x, y) {
     ctx.fill();
     ctx.closePath();
 }
-
-/*
-function drawBall(x, y) {
-    // Set neon effect
-    ctx.shadowColor = "#d53";
-    ctx.shadowBlur = 20;
-    ctx.lineJoin = "bevel";
-    ctx.lineWidth = 15;
-    ctx.strokeStyle = "#38f";
-    
-    // Draw Ball
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, 2 * Math.PI);
-    ctx.stroke();
-    ctx.closePath();
-    
-    // Reset shadow
-    ctx.shadowColor = "transparent";
-    ctx.shadowBlur = 0;
-}
-*/
 
 // Event listener detect keys
 window.addEventListener("keydown", handleKeyDown);
