@@ -27,25 +27,26 @@ function updateTime() {
 // Esta funcion elimina una clase de todos los objetos que tengan esa clase
 function removeClassFromClass(classNameToRemove, classNameToFind) {
     var elements = document.querySelectorAll('.' + classNameToFind);
-    elements.forEach(function(element) {
+    elements.forEach(function (element) {
         element.classList.remove(classNameToRemove);
     });
 }
 //TODO: Modificar que el modal salga cuando se está llamando a una API.
 function selectProgram(e) {
     // Esto importa el modal
-    var modal = document.getElementById('exampleModal');
+    // var modal = document.getElementById('exampleModal');
 
     var parentIcon = e.target.closest('.icon');
     if (parentIcon === false || !parentIcon) {
         removeClassFromClass('selected_program', 'selected_program')
-        modal.classList.remove('show');
-        modal.style.display = 'none';
-        return ;
+        // Estas dos lineas desactivan el modal
+        // modal.classList.remove('show');
+        // modal.style.display = 'none';
+        return;
     }
     // Estas dos lineas activan el modal
-    modal.classList.add('show');
-    modal.style.display = 'block';
+    // modal.classList.add('show');
+    // modal.style.display = 'block';
 
     removeClassFromClass('selected_program', 'selected_program')
     var parentIcon = e.target.closest('.icon');
@@ -53,8 +54,87 @@ function selectProgram(e) {
     e.preventDefault()
 }
 
-export function checkDiv(){
+export function checkDiv() {
     document.getElementById('root').addEventListener('click', selectProgram);
+}
+
+function configureMenu(e) {
+    if (e.target.matches('#menuLogo') === false) {
+        return;
+    }
+    var menu = document.getElementById('menu');
+    if (menu.style.display === 'none') {
+        menu.style.display = 'flex';
+    } else {
+        menu.style.display = 'none';
+    }
+    e.preventDefault()
+}
+
+export function checkMenu() {
+    document.getElementById('root').addEventListener('click', configureMenu);
+}
+
+// // Con esta funcion hago que los objetos puedan tener movimiento con click
+// function makeDrag(e) {
+//     if (e.target.matches('#draggable') === false) {
+//         return ;
+//     }
+//     document.onmousedown = function(e) {
+//         if (e.target.matches('#draggable') === false) {
+//             return ;
+//         }
+//         e.preventDefault();
+//         document.onmouseup = function(e) {
+//             console.log("Suelto el raton");
+//             document.onmouseup = null;
+//             document.onmousemove = null;
+//         };
+//         document.onmousemove = function(e) {
+//             console.log("Muevo el raton");
+//         };
+//     }
+//     e.preventDefault();
+// }
+
+
+function makeDrag(element) {
+    if (element.target.matches('#draggable') === false) {
+        return;
+    }
+
+    console.log (element)
+    let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
+
+    document.onmousedown = function (e) {
+        e.preventDefault();
+        previousPosX = e.clientX;
+        previousPosY = e.clientY;
+
+        document.onmouseup = function (e) {
+            console.log("Suelto el ratón");
+            document.onmouseup = null;
+            document.onmousemove = null;
+        };
+
+        document.onmousemove = moveHandler;
+    };
+
+    function moveHandler(e) {
+        console.log("Muevo el raton")
+        e.preventDefault();
+        currentPosX = previousPosX - e.clientX;
+        currentPosY = previousPosY - e.clientY;
+        previousPosX = e.clientX;
+        previousPosY = e.clientY;
+        element.target.style.top = (element.offsetTop - currentPosY) + 'px';
+        element.target.style.left = (element.offsetLeft - currentPosX) + 'px';
+    }
+}
+
+
+export function setWindowsMovement() {
+    document.getElementById('root').addEventListener('click', makeDrag);
 }
 
 export function loadMainPage() {

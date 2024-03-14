@@ -11,3 +11,5 @@ callbackModule.sendUpdatedData();
 callbackModule.callback42();
 window.addEventListener("hashchange", routing.router);
 index.checkDiv();
+index.checkMenu();
+index.setWindowsMovement();

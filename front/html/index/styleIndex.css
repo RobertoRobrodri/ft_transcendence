@@ -24,6 +24,54 @@ main {
     width: 100%;
 }
 
+/* Estilo para la hora dentro de la barra del sistema */
+.current-time {
+    float: right;
+    color: #45f3ff;
+}
+
+/* Estilo para el icono del menu de la pagina */
+.menuLogo {
+    float: left;
+    width: 25px;
+    height: 25px;
+}
+
+/* Estilo para el contenedor del menu */
+.menuContainer {
+    float: left;
+}
+
+/* Estilo para el desplegable */
+.menu {
+    display: none;
+    flex-direction: column;
+    justify-content: flex-end; /* Alinea los elementos al final del eje principal (abajo) */
+    position: fixed;
+    bottom: 0; /* Pegado al borde inferior de la ventana */
+    left: 0;
+    background-color: #333;
+    color: #fff;
+    max-height: 80vh; /* Ajusta la altura máxima según necesites */
+    overflow-y: auto;
+}
+
+.menu ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.menu ul li {
+    padding: 10px;
+}
+
+.menu ul li a {
+    color: #45f3ff;
+    text-decoration: none;
+}
+
+
+
 /* Iconos del escritorio */
 .profile {
     height: 70px;
@@ -35,11 +83,6 @@ main {
     width: 70px;
 }
 
-/* Estilo para la hora dentro de la barra del sistema */
-.current-time {
-    float: right;
-    color: #45f3ff;
-}
 
 /* Estilo de los programas */
 .program_name {
@@ -67,3 +110,15 @@ main {
 .icon:hover {
     background-color: #45f3ff33;
 }
+
+/* Estilo del modal de carga */
+.modal-content {
+    background-color: #45f3ff33;
+    border-color: #45f3ff;
+}
+
+/* Estilo de las ventanas */
+/* #draggable {
+    position: absolute;
+    cursor: move;
+} */
