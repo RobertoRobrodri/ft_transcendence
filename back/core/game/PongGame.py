@@ -31,15 +31,17 @@ class PongGame:
         self.border_thickness   = 5   # Canvas frame border thickness (always 1/2 of lineWidth)
         self.sleep              = 3   # Seconds of pause between each point
 
-        self.points_to_win = 3
+        self.points_to_win      = 3
         ######
         self.game_id = game_id
         self.players = {}
+        self.scores = [0, 0]
         self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2}
         # Set initial random angle and direction
         self.ball['speed_y'] = self.get_random_angle()
         self.ball['speed_x'] = self.get_random_direction()
         self.running = False
+        self.finished = False
         self.consumer = consumer
         self.player1_paddle_x = 0 + self.border_thickness + self.paddle_margin
         self.player1_paddle_y = (self.canvas_y / 2) - (self.paddle_height / 2)
@@ -61,10 +63,11 @@ class PongGame:
             await asyncio.sleep(1 / 60)
             
     async def checkEndGame(self, players_list):
-        if players_list[0]['score'] == self.points_to_win or players_list[1]['score'] == self.points_to_win:
+        if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
             await self.send_game_end(players_list)
             await self.save_game_result()
             self.running = False
+            self.finished = True
 
     async def reset_game(self, winner):
         self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2}
@@ -108,10 +111,10 @@ class PongGame:
             players_list = list(self.players.values())
             # Determine winner
             if ball['x'] <= left_side:
-                players_list[1]['score'] += 1
+                self.scores[1] += 1
                 winner = 1
             else:
-                players_list[0]['score'] += 1
+                self.scores[0] += 1
                 winner = 0
             
             await self.send_game_score(players_list)    # Send current score
@@ -162,12 +165,12 @@ class PongGame:
     
     async def send_game_end(self, players_list):
         # Send game finish
-        scores = {0: players_list[0]['score'], 1: players_list[0]['score']}
+        scores = {0: self.scores[0], 1: self.scores[1]}
         await send_to_group(self.consumer, self.game_id, GAME_END, {'message': scores})
     
     async def send_game_score(self, players_list):
         # Send players score
-        scores = {0: players_list[0]['score'], 1: players_list[0]['score']}
+        scores = {0: self.scores[0], 1: self.scores[1]}
         await send_to_group(self.consumer, self.game_id, GAME_SCORE, {'message': scores})
 
     def get_game_state(self):
@@ -176,19 +179,28 @@ class PongGame:
         for player_id, player_info in self.players.items():
             player_info_copy = player_info.copy()
             del player_info_copy['id']
-            del player_info_copy['score']
             players_without_id_score[player_id] = player_info_copy
-
         return {
-            'players': players_without_id_score,
-            'ball': self.ball,
-    }
+            'players'   : players_without_id_score,
+            'ball'      : self.ball,
+        }
 
     def add_player(self, player_id, player_name, player_number):
         if player_number == 1:
-            self.players[player_id] = {'id': player_id, 'name': player_name, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'score': 0}
+            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y}
         else:
-            self.players[player_id] = {'id': player_id, 'name': player_name, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'score': 0}
+            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y}
+            
+    async def change_player(self, new_player_id, player_name):
+        player_ids = list(self.players.keys())
+        
+        for player_id in player_ids:
+            player_data = self.players[player_id]
+            if player_data['username'] == player_name:
+                self.players[new_player_id] = player_data
+                self.players[new_player_id]['id'] = new_player_id
+                del self.players[player_id]
+        await self.send_game_state()
     
     def move_paddle(self, player_id, direction):
         if player_id in self.players:
