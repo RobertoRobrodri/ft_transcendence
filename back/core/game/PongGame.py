@@ -5,6 +5,7 @@ import asyncio
 import random
 from core.socket import *
 from .models import Game
+from .models import CustomUser
 
 import logging
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ WALL_COLLISON   = 'wall_collison',
 PADDLE_COLLISON = 'paddle_collison',
 
 class PongGame:
-    def __init__(self, game_id, consumer):
+    def __init__(self, game_id, consumer, storeResults):
 
         ##############################
         # ADJUST WITH FRONTEND SIZES #
@@ -29,10 +30,12 @@ class PongGame:
         self.canvas_y           = 200 # Canvas Height 
         self.ball_radius        = 5   # Ball Radious
         self.border_thickness   = 5   # Canvas frame border thickness (always 1/2 of lineWidth)
-        self.sleep              = 3   # Seconds of pause between each point
+        self.sleep_match        = 3   # Seconds of pause at start of game
+        self.sleep              = 1   # Seconds of pause between each point
 
         self.points_to_win      = 3
         ######
+        self.storeResults = storeResults
         self.game_id = game_id
         self.players = {}
         self.scores = [0, 0]
@@ -51,7 +54,7 @@ class PongGame:
     async def start_game(self):
         self.running = True
         await self.send_game_state()
-        await asyncio.sleep(self.sleep)
+        await asyncio.sleep(self.sleep_match)
         while self.running:
             await self.detect_collisions()
             if not self.running:
@@ -62,10 +65,11 @@ class PongGame:
             # Wait a short period before the next update
             await asyncio.sleep(1 / 60)
             
-    async def checkEndGame(self, players_list):
+    async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
-            await self.send_game_end(players_list)
-            await self.save_game_result()
+            await self.send_game_end()
+            if self.storeResults:
+                await self.save_game_result(players_list, winner)
             self.running = False
             self.finished = True
 
@@ -117,9 +121,9 @@ class PongGame:
                 self.scores[0] += 1
                 winner = 0
             
-            await self.send_game_score(players_list)    # Send current score
-            await self.checkEndGame(players_list)       # Check if game end
-            await self.reset_game(winner)               # Reset Game
+            await self.send_game_score()                    # Send current score
+            await self.checkEndGame(players_list, winner)   # Check if game end
+            await self.reset_game(winner)                   # Reset Game
             return
         
         # Collision detection with upper and lower walls
@@ -163,12 +167,12 @@ class PongGame:
         # Send updated status to all players in the game
         await send_to_group(self.consumer, self.game_id, GAME_STATE, {'message': self.get_game_state()})
     
-    async def send_game_end(self, players_list):
+    async def send_game_end(self):
         # Send game finish
         scores = {0: self.scores[0], 1: self.scores[1]}
         await send_to_group(self.consumer, self.game_id, GAME_END, {'message': scores})
     
-    async def send_game_score(self, players_list):
+    async def send_game_score(self):
         # Send players score
         scores = {0: self.scores[0], 1: self.scores[1]}
         await send_to_group(self.consumer, self.game_id, GAME_SCORE, {'message': scores})
@@ -221,7 +225,17 @@ class PongGame:
     ## FUNCTIONS TO STORE DATA ##
     #############################
                 
-    async def save_game_result(self):
-        # Game.store_match(self)
-        pass
+    async def save_game_result(self, players_list, winner):
+        user1   = await CustomUser.get_user_by_username(players_list[0]['username'])
+        user2   = await CustomUser.get_user_by_username(players_list[1]['username'])
+        winner  = user1 if winner == 0 else user2
+        loser   = user2 if winner == user1 else user1
+        # Add match to db
+        await Game.store_match(user1, user2, winner, self.scores)
+        # Increment win in 1
+        await CustomUser.user_win(winner)
+        # Increment loss in 1
+        await CustomUser.user_lose(loser)
+
+
         

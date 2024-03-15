@@ -146,7 +146,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     ####################
 
     async def start_game(self, player1_id, player1_name, player2_id, player2_name, game_id=None):
-        game = PongGame(game_id, self)
+        game = PongGame(game_id, self, True)
         games[game_id] = game
 
         game.add_player(player1_id, player1_name, 1)

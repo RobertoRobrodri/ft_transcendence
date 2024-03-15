@@ -10,8 +10,8 @@ class Game(models.Model):
     score_player_1 = models.IntegerField(default=0)
     score_player_2 = models.IntegerField(default=0)
     
-    # @classmethod
-    # @database_sync_to_async
-    # def store_match(cls, players_list):
-    #     new_message = cls(player_1=players_list[0][''], player_2=player_2, receiver=receiver, msg=message)
-    #     new_message.save()
+    @classmethod
+    @database_sync_to_async
+    def store_match(cls, user1, user2, winner, scores):
+        new_message = cls(player_1=user1, player_2=user2, winner=winner, score_player_1=scores[0], score_player_2=scores[1])
+        new_message.save()
