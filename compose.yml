@@ -5,7 +5,7 @@ services:
     build: ./front/
     container_name: nginx
     ports:
-      - 80:80
+      - 443:443
     volumes:
       - profile_pictures:/media
     depends_on:
@@ -95,7 +95,7 @@ services:
     expose:
       - 9113
     command:
-      - --nginx.scrape-uri=http://nginx:80/nginx_status
+      - --nginx.scrape-uri=https://nginx:443/nginx_status
     depends_on:
       - prometheus
       - nginx
@@ -105,3 +105,5 @@ volumes:
   profile_pictures:
   prom_data:
   graf_data:
+#TODO meter daphne para los wss https://forum.djangoproject.com/t/secure-websocket-with-https/16801
+# https://github.com/django/daphne

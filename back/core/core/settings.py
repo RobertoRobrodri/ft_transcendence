@@ -29,9 +29,9 @@ SECRET_KEY = 'django-insecure-qfcaph4ab)-2t0nvaj_4tzndz!4@s1ej^^vb3b1gu@&j)r2c)a
 DEBUG = True
 
 # Development
-ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['*']
 # Production all containers that should be able to call django endpoints
-#ALLOWED_HOSTS = ['prometheus', 'nginx', 'db']
+ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db']
 
 
 # Application definition
@@ -204,12 +204,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
 #    "http://localhost:80",
-    "http://nginx:80",
+    "https://nginx:443",
 ]
 
 CORS_ORIGIN_WHITELIST = [
 #    "http://localhost:80",
-    "http://nginx:80",
+    "https://nginx:443",
 ]
 
 LOGGING = {

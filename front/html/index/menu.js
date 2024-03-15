@@ -3,7 +3,7 @@ import { renewJWT } from "../components/updatejwt.js"
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
     try {
-        const response = await fetch('http://localhost:80/api/user_management/user_list/', {
+        const response = await fetch('https://localhost:443/api/user_management/user_list/', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

@@ -11,7 +11,7 @@ async function handleSubmitUpdatedData(e) {
         username: username,
       };
       try {
-            const response = await fetch('http://localhost:80/api/user_management/user_update/', {
+            const response = await fetch('https://localhost:443/api/user_management/user_update/', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export async function callback42(e) {
 
     // Make a POST request to your backend with the authorization code
     if (authorizationCode) {
-        const response = await fetch('http://localhost:80/api/pong_auth/42/callback/', {
+        const response = await fetch('https://localhost:443/api/pong_auth/42/callback/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

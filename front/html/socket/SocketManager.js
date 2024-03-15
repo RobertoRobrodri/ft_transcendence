@@ -8,7 +8,8 @@ export class SocketManager {
         if(this.socket === undefined)
         {
             let token = sessionStorage.getItem('token');
-            this.socket = new WebSocket(`ws://localhost:8000/${this.path}/?token=${token}`);
+            console.error(this.path);
+            this.socket = new WebSocket(`wss://localhost:8000/${this.path}/?token=${token}`);
             this.setupSocketEvents();
         }
     }
@@ -16,7 +17,7 @@ export class SocketManager {
     disconnect()
     {
         const code = 3008;
-        const reasson = 'Unespected';
+        const reasson = 'Unexpected';
         if(this.socket.readyState === WebSocket.OPEN) {
             this.socket.close(code, reasson);
             this.socket = undefined;
@@ -49,6 +50,7 @@ export class SocketManager {
             }));
         } else {
             console.error('WebSocket connection not open. Unable to send message:', sendMessage);
+            console.error("No se si pasa popr aquí:", this.path);
         }
     }
 
