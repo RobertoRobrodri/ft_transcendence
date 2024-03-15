@@ -4,6 +4,7 @@ import math
 import asyncio
 import random
 from core.socket import *
+from .models import Game
 
 import logging
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ class PongGame:
         self.canvas_y           = 200 # Canvas Height 
         self.ball_radius        = 5   # Ball Radious
         self.border_thickness   = 5   # Canvas frame border thickness (always 1/2 of lineWidth)
+        self.sleep              = 3   # Seconds of pause between each point
 
         self.points_to_win = 3
         ######
@@ -47,7 +49,7 @@ class PongGame:
     async def start_game(self):
         self.running = True
         await self.send_game_state()
-
+        await asyncio.sleep(self.sleep)
         while self.running:
             await self.detect_collisions()
             if not self.running:
@@ -57,8 +59,14 @@ class PongGame:
             await self.send_game_state()
             # Wait a short period before the next update
             await asyncio.sleep(1 / 60)
+            
+    async def checkEndGame(self, players_list):
+        if players_list[0]['score'] == self.points_to_win or players_list[1]['score'] == self.points_to_win:
+            await self.send_game_end(players_list)
+            await self.save_game_result()
+            self.running = False
 
-    def reset_game(self, winner):
+    async def reset_game(self, winner):
         self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2}
         self.ball['speed_y'] = self.get_random_angle()
         # If left player win, next round start right and overwise
@@ -69,6 +77,8 @@ class PongGame:
         for player_info in self.players.values():
             player_info['paddle_x'] = self.player1_paddle_x if player_info['nbr'] == 1 else self.player2_paddle_x
             player_info['paddle_y'] = self.player1_paddle_y if player_info['nbr'] == 1 else self.player2_paddle_y
+        
+        await asyncio.sleep(self.sleep)
 
     def move_ball(self):
         self.ball['x'] += self.ball['speed_x']
@@ -104,12 +114,9 @@ class PongGame:
                 players_list[0]['score'] += 1
                 winner = 0
             
-            await self.send_game_score()
-            if players_list[0]['score'] == self.points_to_win or players_list[1]['score'] == self.points_to_win:
-                await self.send_game_end()
-                self.running = False
-
-            self.reset_game(winner)
+            await self.send_game_score(players_list)    # Send current score
+            await self.checkEndGame(players_list)       # Check if game end
+            await self.reset_game(winner)               # Reset Game
             return
         
         # Collision detection with upper and lower walls
@@ -153,15 +160,13 @@ class PongGame:
         # Send updated status to all players in the game
         await send_to_group(self.consumer, self.game_id, GAME_STATE, {'message': self.get_game_state()})
     
-    async def send_game_end(self):
+    async def send_game_end(self, players_list):
         # Send game finish
-        players_list = list(self.players.values())
         scores = {0: players_list[0]['score'], 1: players_list[0]['score']}
         await send_to_group(self.consumer, self.game_id, GAME_END, {'message': scores})
     
-    async def send_game_score(self):
+    async def send_game_score(self, players_list):
         # Send players score
-        players_list = list(self.players.values())
         scores = {0: players_list[0]['score'], 1: players_list[0]['score']}
         await send_to_group(self.consumer, self.game_id, GAME_SCORE, {'message': scores})
 
@@ -179,11 +184,11 @@ class PongGame:
             'ball': self.ball,
     }
 
-    def add_player(self, player, player_number):
+    def add_player(self, player_id, player_name, player_number):
         if player_number == 1:
-            self.players[player] = {'id': player, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'score': 0}
+            self.players[player_id] = {'id': player_id, 'name': player_name, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'score': 0}
         else:
-            self.players[player] = {'id': player, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'score': 0}
+            self.players[player_id] = {'id': player_id, 'name': player_name, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'score': 0}
     
     def move_paddle(self, player_id, direction):
         if player_id in self.players:
@@ -198,3 +203,13 @@ class PongGame:
             del self.players[player_id]
             if not self.players:
                 self.running = False
+
+    
+    #############################
+    ## FUNCTIONS TO STORE DATA ##
+    #############################
+                
+    async def save_game_result(self):
+        # Game.store_match(self)
+        pass
+        
