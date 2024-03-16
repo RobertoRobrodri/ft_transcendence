@@ -2,6 +2,47 @@ import { loadUserInfo } from "./menu.js"
 import { connectChat } from "./chat.js"
 import { renewJWT } from "../components/updatejwt.js"
 
+export function loadMainPage() {
+    // Renew jwt
+    renewJWT();
+
+    // Remove previous styles
+    const existingStyles = document.head.querySelectorAll('style');
+    existingStyles.forEach(style => {
+        document.head.removeChild(style);
+    });
+
+    let mainPage = document.getElementById("root");
+    Promise.all([
+        fetch('./index/index.html').then(response => response.text()),
+        fetch('../styles.css').then(response => response.text()),
+        fetch('./index/styleIndex.css').then(response => response.text())
+    ]).then(([html, css, css2]) => {
+        // Importamos el estilo base y el de esta pagina
+        mainPage.innerHTML = html;
+        let style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+        let style2 = document.createElement('style');
+        style2.textContent = css2;
+        document.head.appendChild(style2);
+        //clear hash
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+        //loadUserInfo();
+        //connectChat();
+
+		checkDiv();
+		checkMenu();
+		setWindowsMovement();
+
+    }).catch(error => {
+        console.error('Error al cargar el formulario:', error);
+    });
+
+    // Actualiza la hora cada segundo
+    setInterval(updateTime, 1000);
+}
+
 function updateTime() {
     var now = new Date();
     var hours = now.getHours();
@@ -98,77 +139,58 @@ export function checkMenu() {
 // }
 
 
-function makeDrag(element) {
-    if (element.target.matches('#draggable') === false) {
-        return;
-    }
+function makeDraggable(element) {
+    // if (element.target.matches('#draggable') === false) {
+    //     return;
+    // }
 
-    console.log (element)
+    // Make an element draggable (or if it has a .window-top class, drag based on the .window-top element)
     let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
 
-    document.onmousedown = function (e) {
+		// If there is a window-top classed element, attach to that element instead of full window
+    if (element.querySelector('.window-top')) {
+        // If present, the window-top element is where you move the parent element from
+        element.querySelector('.window-top').onmousedown = dragMouseDown;
+    } 
+    else {
+        // Otherwise, move the element itself
+        element.onmousedown = dragMouseDown;
+    }
+
+    function dragMouseDown (e) {
+        // Prevent any default action on this element (you can remove if you need this element to perform its default action)
         e.preventDefault();
+        // Get the mouse cursor position and set the initial previous positions to begin
         previousPosX = e.clientX;
         previousPosY = e.clientY;
+        // When the mouse is let go, call the closing event
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves
+        document.onmousemove = elementDrag;
+    }
 
-        document.onmouseup = function (e) {
-            console.log("Suelto el ratón");
-            document.onmouseup = null;
-            document.onmousemove = null;
-        };
-
-        document.onmousemove = moveHandler;
-    };
-
-    function moveHandler(e) {
-        console.log("Muevo el raton")
+    function elementDrag (e) {
+        // Prevent any default action on this element (you can remove if you need this element to perform its default action)
         e.preventDefault();
+        // Calculate the new cursor position by using the previous x and y positions of the mouse
         currentPosX = previousPosX - e.clientX;
         currentPosY = previousPosY - e.clientY;
+        // Replace the previous positions with the new x and y positions of the mouse
         previousPosX = e.clientX;
         previousPosY = e.clientY;
-        element.target.style.top = (element.offsetTop - currentPosY) + 'px';
-        element.target.style.left = (element.offsetLeft - currentPosX) + 'px';
+        // Set the element's new position
+        element.style.top = (element.offsetTop - currentPosY) + 'px';
+        element.style.left = (element.offsetLeft - currentPosX) + 'px';
+    }
+
+    function closeDragElement () {
+        // Stop moving when mouse button is released and release events
+        document.onmouseup = null;
+        document.onmousemove = null;
     }
 }
 
 
 export function setWindowsMovement() {
-    document.getElementById('root').addEventListener('click', makeDrag);
-}
-
-export function loadMainPage() {
-    // Renew jwt
-    renewJWT();
-
-    // Remove previous styles
-    const existingStyles = document.head.querySelectorAll('style');
-    existingStyles.forEach(style => {
-        document.head.removeChild(style);
-    });
-
-    let mainPage = document.getElementById("root");
-    Promise.all([
-        fetch('./index/index.html').then(response => response.text()),
-        fetch('../styles.css').then(response => response.text()),
-        fetch('./index/styleIndex.css').then(response => response.text())
-    ]).then(([html, css, css2]) => {
-        // Importamos el estilo base y el de esta pagina
-        mainPage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
-        let style2 = document.createElement('style');
-        style2.textContent = css2;
-        document.head.appendChild(style2);
-        //clear hash
-        history.pushState("", document.title, window.location.pathname + window.location.search);
-        loadUserInfo();
-        connectChat();
-    }).catch(error => {
-        console.error('Error al cargar el formulario:', error);
-    });
-
-    // Actualiza la hora cada segundo
-    setInterval(updateTime, 1000);
+    makeDraggable(document.querySelector('#myWindow2'));
 }
