@@ -12,4 +12,4 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/ngi
 #Use wsgi when going to production
 #python3 manage.py runserver 0.0.0.0:8000
 export DJANGO_SETTINGS_MODULE=core.settings
-daphne -e ssl:8000:privateKey=/etc/ssl/private/nginx-selfsigned.key:certKey=/etc/ssl/certs/nginx-selfsigned.crt core.asgi:application
+daphne -v 3 -e ssl:8000:privateKey=/etc/ssl/private/nginx-selfsigned.key:certKey=/etc/ssl/certs/nginx-selfsigned.crt core.asgi:application

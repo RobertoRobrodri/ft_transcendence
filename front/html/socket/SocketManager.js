@@ -5,11 +5,15 @@ export class SocketManager {
 
     connect() {
         // Prevent reconnection on navigation
+        console.error("Se conecta el cokset 1");
         if(this.socket === undefined)
         {
             let token = sessionStorage.getItem('token');
-            console.error(this.path);
-            this.socket = new WebSocket(`wss://localhost:8000/${this.path}/?token=${token}`);
+            //console.error(this.path);
+            this.socket = new WebSocket(`wss://localhost:443/${this.path}/?token=${token}`);
+            //console.log('WebSocket object created:', this.socket);
+            //console.log('WebSocket readyState:', this.socket.readyState);
+            //console.error("Se conecta el socket");
             this.setupSocketEvents();
         }
     }
