@@ -31,9 +31,7 @@ export function loadMainPage() {
         //loadUserInfo();
         //connectChat();
 
-		checkDiv();
-		checkMenu();
-		setWindowsMovement();
+		setClickEvents();
 
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
@@ -72,6 +70,30 @@ function removeClassFromClass(classNameToRemove, classNameToFind) {
         element.classList.remove(classNameToRemove);
     });
 }
+
+function configureMenu(e) {
+    if (e.target.matches('#menuContainer') === false &&
+		e.target.matches('#menuLogo') === false) {
+        return;
+    }
+    var menu = document.getElementById('menu');
+    if (getComputedStyle(menu).display === 'none') {
+        menu.style.display = 'flex';
+    } else {
+        menu.style.display = 'none';
+    }
+    e.preventDefault()
+}
+
+export function setClickEvents() {
+	// Menu click
+    document.getElementById('root').addEventListener('click', configureMenu);
+	// Program selection
+	document.getElementById('root').addEventListener('click', selectProgram);
+	// Close window
+	document.getElementById('root').addEventListener('click', closeWindow);
+}
+
 //TODO: Modificar que el modal salga cuando se está llamando a una API.
 function selectProgram(e) {
     // Esto importa el modal
@@ -93,104 +115,113 @@ function selectProgram(e) {
     var parentIcon = e.target.closest('.icon');
     parentIcon.classList.add('selected_program');
     e.preventDefault()
+	
+	// Open window and load specific content
+	if (parentIcon.id === 'profile') {
+        createWindow('Profile');
+    } else if (parentIcon.id === 'chat') {
+        createWindow('Chat');
+    } else if (parentIcon.id === 'terminal') {
+        createWindow('Terminal');
+    }
+
 }
 
-export function checkDiv() {
-    document.getElementById('root').addEventListener('click', selectProgram);
-}
-
-function configureMenu(e) {
-    if (e.target.matches('#menuLogo') === false) {
+function createWindow(appName) {
+    var uniqueId = "myWindow" + appName;
+    // Comprobar que la ventana no existe (prevenir abrir 2 veces una app)
+    var windowExist = document.getElementById(uniqueId);
+    if (windowExist)
         return;
-    }
-    var menu = document.getElementById('menu');
-    if (menu.style.display === 'none') {
-        menu.style.display = 'flex';
-    } else {
-        menu.style.display = 'none';
-    }
-    e.preventDefault()
+    
+    // Crear el HTML dinámico
+    var htmlDinamico = `
+        <div id="${uniqueId}" class="window">
+            <div class="window-top">
+                <button class="round green"></button>
+                <button class="round yellow"></button>
+                <button class="round red"></button>
+            </div>
+            <div class="window-content">
+            </div>
+        </div>
+    `;
+
+    var divRow = document.querySelector('.row');
+    divRow.innerHTML += htmlDinamico;
+    document.querySelectorAll('.window').forEach(makeDraggable);
 }
 
-export function checkMenu() {
-    document.getElementById('root').addEventListener('click', configureMenu);
+function closeWindow(e)
+{
+	if (e.target.closest('.round.red')) {
+		e.target.closest('.window').remove();
+	}
 }
-
-// // Con esta funcion hago que los objetos puedan tener movimiento con click
-// function makeDrag(e) {
-//     if (e.target.matches('#draggable') === false) {
-//         return ;
-//     }
-//     document.onmousedown = function(e) {
-//         if (e.target.matches('#draggable') === false) {
-//             return ;
-//         }
-//         e.preventDefault();
-//         document.onmouseup = function(e) {
-//             console.log("Suelto el raton");
-//             document.onmouseup = null;
-//             document.onmousemove = null;
-//         };
-//         document.onmousemove = function(e) {
-//             console.log("Muevo el raton");
-//         };
-//     }
-//     e.preventDefault();
-// }
-
 
 function makeDraggable(element) {
-    // if (element.target.matches('#draggable') === false) {
-    //     return;
-    // }
+	console.log("makeDraggable called for element:", element);
+    if (!element) return;
 
-    // Make an element draggable (or if it has a .window-top class, drag based on the .window-top element)
+	//set initial z-index
+	let windows = document.querySelectorAll('.window');
+	element.style.zIndex = windows.length;
+
     let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
 
-		// If there is a window-top classed element, attach to that element instead of full window
-    if (element.querySelector('.window-top')) {
-        // If present, the window-top element is where you move the parent element from
-        element.querySelector('.window-top').onmousedown = dragMouseDown;
-    } 
-    else {
-        // Otherwise, move the element itself
-        element.onmousedown = dragMouseDown;
-    }
+    // If there is a window-top classed element, attach to that element instead of full window
+    let dragHandle = element.querySelector('.window-top') || element;
 
-    function dragMouseDown (e) {
-        // Prevent any default action on this element (you can remove if you need this element to perform its default action)
+    dragHandle.addEventListener('mousedown', dragMouseDown);
+	
+	function setNewZIndex() {
+		// Obtener todas las ventanas
+		let windows = document.querySelectorAll('.window');
+	
+		// Obtener el índice de la ventana que se está arrastrando
+		let draggedWindowIndex = Array.from(windows).indexOf(element);
+	
+		// Calcular el nuevo z-index para la ventana arrastrada
+		let newDraggedWindowZIndex = windows.length;
+	
+		// Establecer el nuevo z-index para la ventana arrastrada
+		windows[draggedWindowIndex].style.zIndex = newDraggedWindowZIndex;
+		
+		// Ajustar el z-index para las demás ventanas
+		windows.forEach((window, index) => {
+			if (index !== draggedWindowIndex) {
+				// Calcular el nuevo z-index para la ventana actual
+				let originalIndex = parseInt(window.style.zIndex);
+				
+				if (originalIndex > 1)
+					window.style.zIndex = originalIndex - 1;
+			}
+		});
+	}
+    function dragMouseDown(e) {
         e.preventDefault();
-        // Get the mouse cursor position and set the initial previous positions to begin
         previousPosX = e.clientX;
         previousPosY = e.clientY;
-        // When the mouse is let go, call the closing event
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves
-        document.onmousemove = elementDrag;
+        document.addEventListener('mousemove', elementDrag);
+        document.addEventListener('mouseup', closeDragElement);
+		//Set new z-index
+		setNewZIndex();
     }
 
-    function elementDrag (e) {
-        // Prevent any default action on this element (you can remove if you need this element to perform its default action)
+    function elementDrag(e) {
         e.preventDefault();
-        // Calculate the new cursor position by using the previous x and y positions of the mouse
         currentPosX = previousPosX - e.clientX;
         currentPosY = previousPosY - e.clientY;
-        // Replace the previous positions with the new x and y positions of the mouse
         previousPosX = e.clientX;
         previousPosY = e.clientY;
-        // Set the element's new position
         element.style.top = (element.offsetTop - currentPosY) + 'px';
         element.style.left = (element.offsetLeft - currentPosX) + 'px';
     }
 
-    function closeDragElement () {
-        // Stop moving when mouse button is released and release events
-        document.onmouseup = null;
-        document.onmousemove = null;
+    function closeDragElement() {
+        document.removeEventListener('mouseup', closeDragElement);
+        document.removeEventListener('mousemove', elementDrag);
+
+		
     }
-}
-
-
-export function setWindowsMovement() {
-    makeDraggable(document.querySelector('#myWindow2'));
 }

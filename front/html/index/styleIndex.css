@@ -32,14 +32,17 @@ main {
 
 /* Estilo para el icono del menu de la pagina */
 .menuLogo {
-    float: left;
+    /* float: left; */
     width: 25px;
     height: 25px;
 }
 
 /* Estilo para el contenedor del menu */
 .menuContainer {
-    float: left;
+    width: 100px; /* Ancho deseado */
+    height: 30px; /* Alto deseado */
+    padding-left: 5px; /* Espaciado interno para el contenido dentro del contenedor */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra para efecto de elevación */
 }
 
 /* Estilo para el desplegable */
@@ -48,12 +51,13 @@ main {
     flex-direction: column;
     justify-content: flex-end; /* Alinea los elementos al final del eje principal (abajo) */
     position: fixed;
-    bottom: 0; /* Pegado al borde inferior de la ventana */
+    bottom: 50px; /* Pegado al borde superior de la barra de inicio */
     left: 0;
     background-color: #333;
     color: #fff;
     max-height: 80vh; /* Ajusta la altura máxima según necesites */
     overflow-y: auto;
+	z-index: 9999; /* Se superpone por encima de todo */
 }
 
 .menu ul {
@@ -83,6 +87,10 @@ main {
     width: 70px;
 }
 
+.terminal {
+    height: 70px;
+    width: 70px;
+}
 
 /* Estilo de los programas */
 .program_name {
