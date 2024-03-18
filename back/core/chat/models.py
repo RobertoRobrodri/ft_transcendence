@@ -44,10 +44,11 @@ class ChatModel(models.Model):
         # Update unseen messages to seen
         if user1 not in ignored_users_recipient and user2 not in ignored_users_sender:
             cls.objects.filter(
-                (models.Q(sender=user2_instance, receiver=user1_instance, seen=False) |
-                models.Q(sender=user1_instance, receiver=user2_instance, seen=False))
+                sender=user2_instance,
+                receiver=user1_instance,
+                seen=False
             ).update(seen=True)
-            
+        
         # Order by timestamp in descending order and get last 50 messages
         messages = messages.order_by('timestamp')[:50]
         # messages = messages.order_by('-timestamp')[:50]

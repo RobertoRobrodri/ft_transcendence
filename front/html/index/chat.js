@@ -107,6 +107,7 @@ chatSM.registerCallback(CHAT_TYPES.GAME_REQUEST, data => {
 chatSM.registerCallback(CHAT_TYPES.ACCEPT_GAME, data => {
     // Now the users are connected to room in game, open game window if are closed, send RESTORE_GAME to join to the created room, and then, send PLAYER_READY (remember do in game socket)
     //i do all automatically for test propusses
+	console.log("ACCEPT_GAME")
 	gameSM.send(GAME_TYPES.RESTORE_GAME);
 	gameSM.send(GAME_TYPES.PLAYER_READY);
 

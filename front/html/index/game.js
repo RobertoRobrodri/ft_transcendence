@@ -23,8 +23,7 @@ export function connectGame()
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
-    //when game open, try restore any running game
-    gameSM.send(GAME_TYPES.RESTORE_GAME);
+    
 }
 
 function InitMatchmaking()
@@ -39,7 +38,8 @@ function CancelMatchmaking()
 
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
-
+	//when game open, try restore any running game, i put here for test
+    gameSM.send(GAME_TYPES.RESTORE_GAME);
 });
 
 // Callback socket disconnected

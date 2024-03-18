@@ -5,7 +5,7 @@ from pong_auth.models import CustomUser
 from .models import ChatModel
 from core.socket import *
 from jwt import ExpiredSignatureError
-from game.consumers import games
+from game.consumers import games, get_game_id
 from game.PongGame import PongGame
 import asyncio
 
@@ -26,7 +26,7 @@ IGNORE_USER         = 'ignore_user'
 UNIGNORE_USER       = 'unignore_user'
 IGNORE_LIST         = 'ignore_list'
 SEEN_MSG            = 'seen_msg'
-GAME_REQUES         = 'game_request'
+GAME_REQUEST        = 'game_request'
 ACCEPT_GAME         = 'accept_game'
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -95,7 +95,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     await self.get_ignore_list(user, data)
                 elif type == SEEN_MSG:
                     await self.mark_message_seen(user, data)
-                elif type == GAME_REQUES:
+                elif type == GAME_REQUEST:
                     await self.game_request(user, data)
                 elif type == ACCEPT_GAME:
                     await self.accept_game(user, data)
@@ -104,18 +104,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.warning(f'Exception in receive: {e}')
             await self.close(code=4003)
             
-    ####################
-    ## GAME FUNCTIONS ##
-    ####################
+    #########################
+    ## PRIV GAME FUNCTIONS ##
+    #########################
     
     async def game_request(self, user, data):
+        # Check if user is already in game
+        game_id = get_game_id(user.username)
+        if game_id is not None:
+            return
         rival = data["message"]
         userChannel = await CustomUser.get_user_by_username(rival)
         if(userChannel and rival != user.username):
-            await send_to_user(self, userChannel.channel_name, GAME_REQUES, {'sender': user.username, 'message': rival})
+            logger.warning(f'game_request {userChannel.channel_name}')
+            data["sender"] = user.username
+            # await send_to_user(self, userChannel.channel_name, GAME_REQUEST, {'sender': user.username, 'message': rival})
+            await send_to_user(self, userChannel.channel_name, GAME_REQUEST, data)
             
     async def accept_game(self, user, data):
         rival = data['message']
+        data['sender'] = user.username
         userChannel = await CustomUser.get_user_by_username(rival)
         # Generate unique room name
         sorted_usernames = sorted([user.username, rival])
@@ -127,9 +135,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not game.running:
             asyncio.create_task(game.start_game())
         # Send message to recipient user
-        await send_to_user(self, userChannel.channel_name, ACCEPT_GAME)
+        await send_to_user(self, userChannel.channel_name, ACCEPT_GAME, data)
         # and send message to me too
-        await send_to_me(self, ACCEPT_GAME)
+        await send_to_me(self, ACCEPT_GAME, data)
 
     ####################
     ## CHAT FUNCTIONS ##
