@@ -100,8 +100,24 @@ services:
       - prometheus
       - nginx
 
+# Vault
+  vault:
+    build: ./vault/
+    container_name: vault
+    ports:
+      - "8201:8201"
+    environment:
+      VAULT_ADDR: 'https://0.0.0.0:8201'
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/data
+    env_file:
+      - .env
+
 volumes:
   ddbb:
   profile_pictures:
   prom_data:
   graf_data:
+  vault_data:
