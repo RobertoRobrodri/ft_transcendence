@@ -33,7 +33,7 @@ class PongGame:
         self.sleep_match        = 3   # Seconds of pause at start of game
         self.sleep              = 1   # Seconds of pause between each point
 
-        self.points_to_win      = 3
+        self.points_to_win      = 6
         ######
         self.storeResults = storeResults
         self.game_id = game_id
@@ -52,11 +52,22 @@ class PongGame:
         self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_height / 2)
 
     async def start_game(self):
-        self.running = True
         await self.send_game_state()
+        # Waiting 2 players set ready status
+        try:
+            await asyncio.wait_for(self.wait_for_players_ready(), timeout=30)
+        except asyncio.TimeoutError:
+            self.running = False
+            self.finished = True
+            logger.warning("Players are not ready after 30 seconds. Leaving game.")
+            return
+            
+        # Sleep time before game
         await asyncio.sleep(self.sleep_match)
+        # Main Game while
         while self.running:
             await self.detect_collisions()
+            # If game finish, exit
             if not self.running:
                 return
             self.move_ball()
@@ -64,7 +75,25 @@ class PongGame:
             await self.send_game_state()
             # Wait a short period before the next update
             await asyncio.sleep(1 / 60)
-            
+    
+    async def wait_for_players_ready(self):
+        # Esperar a que los jugadores estén listos
+        while not self.running:
+            logger.warning(f"game waiting")
+            await self.are_players_ready()
+            await asyncio.sleep(1)
+
+    async def are_players_ready(self):
+        players_list = list(self.players.values())
+        if len(players_list) < 2:
+            return
+        ready_count = 0
+        for player in players_list:
+            if player['ready']:
+                ready_count += 1
+        if ready_count == len(players_list):
+            self.running = True
+    
     async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
             await self.send_game_end()
@@ -191,10 +220,14 @@ class PongGame:
 
     def add_player(self, player_id, player_name, player_number):
         if player_number == 1:
-            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y}
+            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'ready': False}
         else:
-            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y}
-            
+            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'ready': False}
+    
+    async def player_ready(self, player_id):
+        if player_id in self.players:
+            self.players[player_id]['ready'] = True
+
     async def change_player(self, new_player_id, player_name):
         player_ids = list(self.players.keys())
         

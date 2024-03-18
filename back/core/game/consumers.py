@@ -12,7 +12,6 @@ from .MatchmakingQueue import MatchmakingQueue
 import logging
 logger = logging.getLogger(__name__)
 
-connected_users = {}
 games = {}
 matchmaking_lock = asyncio.Lock()
 matchmaking_queue = MatchmakingQueue()
@@ -25,6 +24,8 @@ INQUEUE             = 'queue_matchmaking'
 INITMATCHMAKING     = 'init_matchmaking'
 CANCELMATCHMAKING   = 'cancel_matchmaking'
 DIRECTION           = 'direction'
+PLAYER_READY        = 'player_ready'
+RESTORE_GAME        = 'restore_game'
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
       
@@ -56,8 +57,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         try:
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
-                # TODO if user is in matchmaking, leave it, if user is in room, dont
-                await self.channel_layer.group_discard(MATCHMAKING_C, self.channel_name)
+                # If the user leaves and is inside queue, remove it
+                await self.leaveMatchmaking(self)
                 
         except Exception as e:
             logger.warning(f'Exception in disconnect: {e}')
@@ -68,11 +69,20 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             if user.is_authenticated and not user.is_anonymous:
                 data = json.loads(text_data)
                 type = data["type"]
-
+                
+                # Normal matchmaking
                 if type == INITMATCHMAKING:
                     await self.enterMarchmaking()
                 elif type == CANCELMATCHMAKING:
                     await self.leaveMatchmaking()
+                elif type == DIRECTION:
+                    await self.move_paddle(data["message"])
+                elif type == PLAYER_READY:
+                    await self.player_ready()
+                elif type == RESTORE_GAME:
+                    await self.restoreGame()
+                    
+                # Tournament
                 elif type == DIRECTION:
                     await self.move_paddle(data["message"])
 
@@ -83,15 +93,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     ###########################
     ## MATCHMAKING FUNCTIONS ##
     ###########################
-            
-    async def directGame(self):
-        pass
-      
+
     async def enterMarchmaking(self):
-        # Restore game
+        # If user is already in queue
+        if matchmaking_queue.is_user_in_queue(self.channel_name):
+            return
+        # And prevent sockets if player is already in game
         game_id = self.get_game_id(self.scope["user"].username)
         if game_id is not None:
-            await self.restoreGame(game_id)
             return
         
         # If queue have 0 users, join
@@ -100,6 +109,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 matchmaking_queue.add_user(self.channel_name, self.scope["user"].username)
                 await send_to_me(self, INQUEUE, {'message': 'Waiting for another player...'})
                 return
+            
         # Get oponent
         async with matchmaking_lock: # Block this section to prevent 2 or more users pop user and only have 1
             rival = matchmaking_queue.pop_users()
@@ -108,7 +118,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 return
         
         # Generate unique room name
-        room_name = self.generate_unique_room_name([rival['username'], self.scope["user"].username])
+        sorted_usernames = sorted([rival['username'], self.scope["user"].username])
+        room_name = f'room_{hash("".join(sorted_usernames))}'
                 
         # Add users to new group
         await self.channel_layer.group_add(room_name, rival['channel_name'])
@@ -117,24 +128,28 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         message = {'message': f'Pairing successful! United in the room {room_name}'}
         await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
         await self.start_game(self.channel_name, self.scope["user"].username, rival['channel_name'], rival['username'], room_name)
+    
+    async def player_ready(self):
+        game_id = self.get_game_id(self.scope["user"].username)
+        if game_id:
+            await games[game_id].player_ready(self.channel_name)
 
     async def leaveMatchmaking(self):
         matchmaking_queue.remove_user(self.channel_name)
     
-    async def restoreGame(self, game_id):
-        message = {'message': f'Game restored {game_id}'}
-        await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
-        await self.channel_layer.group_add(game_id, self.channel_name)
-        await games[game_id].change_player(self.channel_name, self.scope["user"].username)
+    async def restoreGame(self):
+        # Restore game
+        game_id = self.get_game_id(self.scope["user"].username)
+        logger.warning(f'game_id: {game_id}')
+        if game_id is not None:
+            message = {'message': f'Game restored {game_id}'}
+            await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
+            await self.channel_layer.group_add(game_id, self.channel_name)
+            await games[game_id].change_player(self.channel_name, self.scope["user"].username)
     
     ######################
     ## HELPER FUNCTIONS ##
     ######################
-        
-    def generate_unique_room_name(self, matched_channels):
-        sorted_usernames = sorted(matched_channels)
-        room_name = f'room_{hash("".join(sorted_usernames))}'
-        return room_name
     
     async def get_user_groups(self):
         # Get all groups the socket is joined to
@@ -145,12 +160,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     ## GAME FUNCTIONS ##
     ####################
 
-    async def start_game(self, player1_id, player1_name, player2_id, player2_name, game_id=None):
+    async def start_game(self, player1_id, player1_name, player2_id, player2_name, game_id):
         game = PongGame(game_id, self, True)
-        games[game_id] = game
-
         game.add_player(player1_id, player1_name, 1)
         game.add_player(player2_id, player2_name, 2)
+        games[game_id] = game
 
         # Iniciar el juego en segundo plano si aún no ha comenzado
         if not game.running:
@@ -175,9 +189,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     def get_game_id(self, username):
         # Buscar el game_id asociado al player_id
         for game_id, game in games.items():
+            logger.warning(f'get_game_id: {game_id}')
             if any(player['username'] == username for player in game.players.values()):
                 if game.finished:
-                    logger.warning(f"game.finished: {game.finished}")
                     del games[game_id]
                     return None
                 return game_id

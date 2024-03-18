@@ -18,6 +18,8 @@ export const CHAT_TYPES = {
     UNIGNORE_USER:     'unignore_user',         // Sender: Request to unignore user
     IGNORE_LIST:       'ignore_list',           // Callback and sender: Request and get ignored list
     SEEN_MSG:          'seen_msg',              // Sender: mark message as seen
+    GAME_REQUEST:      'game_request',          // Sender: Invite user to private game
+    ACCEPT_GAME:       'accept_game',           // Sender: Accept game
 };
 
 // Game socket events
@@ -25,7 +27,9 @@ export const GAME_TYPES = {
     INITMATCHMAKING:    'init_matchmaking',
     CANCELMATCHMAKING:  'cancel_matchmaking',
     INQUEUE:            'queue_matchmaking',
-
+    PLAYER_READY:       'player_ready',
+    RESTORE_GAME:       'restore_game',
+    
     GAME_STATE:         'game_state',
     GAME_SCORE:         'game_score',
     GAME_END:           'game_end',
