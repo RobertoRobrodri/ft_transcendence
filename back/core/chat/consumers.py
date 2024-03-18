@@ -5,6 +5,9 @@ from pong_auth.models import CustomUser
 from .models import ChatModel
 from core.socket import *
 from jwt import ExpiredSignatureError
+from game.consumers import games
+from game.PongGame import PongGame
+import asyncio
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,6 +26,8 @@ IGNORE_USER         = 'ignore_user'
 UNIGNORE_USER       = 'unignore_user'
 IGNORE_LIST         = 'ignore_list'
 SEEN_MSG            = 'seen_msg'
+GAME_REQUES         = 'game_request'
+ACCEPT_GAME         = 'accept_game'
 
 class ChatConsumer(AsyncWebsocketConsumer):
     
@@ -89,43 +94,67 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 elif type == IGNORE_LIST:
                     await self.get_ignore_list(user, data)
                 elif type == SEEN_MSG:
-                    await self.mark_message_seen(data)
+                    await self.mark_message_seen(user, data)
+                elif type == GAME_REQUES:
+                    await self.game_request(user, data)
+                elif type == ACCEPT_GAME:
+                    await self.accept_game(user, data)
 
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
             await self.close(code=4003)
-
+            
+    ####################
+    ## GAME FUNCTIONS ##
+    ####################
+    
+    async def game_request(self, user, data):
+        rival = data["message"]
+        userChannel = await CustomUser.get_user_by_username(rival)
+        if(userChannel and rival != user.username):
+            await send_to_user(self, userChannel.channel_name, GAME_REQUES, {'sender': user.username, 'message': rival})
+            
+    async def accept_game(self, user, data):
+        rival = data['message']
+        userChannel = await CustomUser.get_user_by_username(rival)
+        # Generate unique room name
+        sorted_usernames = sorted([user.username, rival])
+        room_name = f'room_{hash("".join(sorted_usernames))}'
+        game = PongGame(room_name, self, True)
+        game.add_player(user.username, user.username, 1)
+        game.add_player(rival, rival, 2)
+        games[room_name] = game
+        if not game.running:
+            asyncio.create_task(game.start_game())
+        # Send message to recipient user
+        await send_to_user(self, userChannel.channel_name, ACCEPT_GAME)
+        # and send message to me too
+        await send_to_me(self, ACCEPT_GAME)
 
     ####################
     ## CHAT FUNCTIONS ##
     ####################
-    
-    async def mark_message_seen(self, data):
-        user = self.scope["user"]
+        
+    async def mark_message_seen(self, user, data):
         message_data = json.loads(data["message"])
         await ChatModel.mark_message_as_seen(user.username, message_data["sender"])
 
     async def get_ignore_list(self, user, data):
-        user = self.scope["user"]
         ignored_list = await CustomUser.get_ignored_users(user.username)
         await send_to_me(self, IGNORE_LIST, ignored_list)
 
     async def unignore_user(self, user, data):
-        user = self.scope["user"]
         message_data = json.loads(data["message"])
         await CustomUser.unignore_user(user, message_data["user"])
 
     async def ignore_user(self, user, data):
-        user = self.scope["user"]
         message_data = json.loads(data["message"])
         await CustomUser.ignore_user(user, message_data["user"])
 
     async def get_messages_between_users(self, user, data):
-        user = self.scope["user"]
         message_data = json.loads(data["message"])
         recipient = message_data["recipient"]
         messages = await ChatModel.get_messages_between_users(user, recipient)
-        # parsed_json = await ChatModel.serialize_messages(messages)
         await send_to_me(self, LIST_MSG, messages)
 
     async def send_user_list(self):
@@ -142,7 +171,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_data = json.loads(data["message"])
         recipient = message_data["recipient"]
         userChannel = await CustomUser.get_user_by_username(recipient)
-        # userChannel = get_channel_name_by_username(recipient, connected_users)
         if(userChannel and recipient != user.username):
             data["sender"] = user.username
             data["message"] = message_data["message"]

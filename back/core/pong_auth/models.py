@@ -78,3 +78,15 @@ class CustomUser(AbstractUser):
         user = CustomUser.objects.get(username=user)
         ignored_users = user.ignored_users.values_list('username', flat=True)
         return list(ignored_users)
+    
+    @classmethod
+    @database_sync_to_async
+    def user_win(cls, user):
+        user.wins += 1
+        user.save()
+    
+    @classmethod
+    @database_sync_to_async
+    def user_lose(cls, user):
+        user.losses += 1
+        user.save()

@@ -1,6 +1,7 @@
 
 import { ChatSocketManager } from "../socket/ChatSocketManager.js"
-import { CHAT_TYPES, SOCKET } from '../socket/Constants.js';
+import { GameSocketManager } from "../socket/GameSocketManager.js"
+import { CHAT_TYPES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
 import { renewJWT } from "../components/updatejwt.js"
 
 function register() {
@@ -10,10 +11,12 @@ function register() {
     document.getElementById("disconnect").addEventListener("click", disconnect);
     document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
+    document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
 }
 
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
+let gameSM = new GameSocketManager();
 
 export function connectChat()
 {
@@ -88,17 +91,37 @@ chatSM.registerCallback(CHAT_TYPES.LIST_MSG, data => {
 
 // Callback get list of ignored users
 chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, data => {
-    //fillHistoryMsg(data);
     data.forEach((username) => {
         console.log(`Ignored username: ${username}`);
     });
 });
 
+// Callback someone request play a game
+chatSM.registerCallback(CHAT_TYPES.GAME_REQUEST, data => {
+    console.log(data);
+    //show message to acept or something... then
+    chatSM.send(CHAT_TYPES.ACCEPT_GAME, data.sender);
+});
+
+// Callback someone request play a game
+chatSM.registerCallback(CHAT_TYPES.ACCEPT_GAME, data => {
+    // Now the users are connected to room in game, open game window if are closed, send RESTORE_GAME to join to the created room, and then, send PLAYER_READY (remember do in game socket)
+    //i do all automatically for test propusses
+	gameSM.send(GAME_TYPES.RESTORE_GAME);
+	gameSM.send(GAME_TYPES.PLAYER_READY);
+
+});
 
 
 /////////////////
 // Manage chat //
 /////////////////
+
+function inviteToTame()
+{
+    var rival = document.getElementById("dstUser");
+    chatSM.send(CHAT_TYPES.GAME_REQUEST, rival.value);
+}
 
 function getIgnoreList()
 {

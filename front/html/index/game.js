@@ -19,11 +19,17 @@ export function connectGame()
 {
     gameSM.connect();
     register();
+
+    canvas = document.getElementById("pongCanvas");
+    ctx = canvas.getContext("2d");
+
+    //when game open, try restore any running game
+    gameSM.send(GAME_TYPES.RESTORE_GAME);
 }
 
 function InitMatchmaking()
 {
-	initializeGame()
+    initializeGame()
 }
 
 function CancelMatchmaking()
@@ -49,6 +55,8 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 // MATCHMAKING
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
     //Game matched! game started
+    // send ready request after open game, message to ask about ready etc
+    gameSM.send(GAME_TYPES.PLAYER_READY);
 });
 
 gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
@@ -90,9 +98,8 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 ////////////////
 
 function initializeGame() {
-    canvas = document.getElementById("pongCanvas");
-    ctx = canvas.getContext("2d");
-	gameSM.send(GAME_TYPES.INITMATCHMAKING);
+    
+    gameSM.send(GAME_TYPES.INITMATCHMAKING);
     
 }
 
@@ -104,12 +111,12 @@ function updateGame(gameState) {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-	// Draw paddles
+    // Draw paddles
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];
         drawPaddle(player.paddle_x, player.paddle_y);
     }
-	// Draw ball
+    // Draw ball
     drawBall(gameState.ball.x, gameState.ball.y);
 }
 

@@ -23,4 +23,4 @@ class MatchmakingQueue:
         return len(self.queue)
     
     def is_user_in_queue(self, channel_name):
-        return channel_name in self.queue
+        return any(user_info['channel_name'] == channel_name for user_info in self.queue)
