@@ -7,18 +7,10 @@ alerting:
     - scheme: http
       static_configs:
         - targets:
-            - "alertmanagers::9093"
+            - "alertmanager:9093"
 rule_files:
   - "./alert_rules.yml"
 scrape_configs:
-  #- job_name: prometheus
-  #  scrape_interval: 15s
-  #  scrape_timeout: 10s
-  #  scheme: http
-  #  static_configs:
-  #  - targets:
-  #    - localhost:9090
-
   - job_name: 'postgres'
     static_configs:
       - targets:
@@ -28,6 +20,9 @@ scrape_configs:
       - targets:
         - nginx_exporter:9113
   - job_name: 'django'
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
     static_configs:
       - targets:
         - django:8000
