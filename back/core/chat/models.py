@@ -33,9 +33,10 @@ class ChatModel(models.Model):
             (models.Q(sender=user2_instance) & models.Q(receiver=user1_instance))
         )
         
-        # If user are ignored by other, get only already seen messages and own messages
         ignored_users_sender =  user1_instance.ignored_users.values_list('username', flat=True)
         ignored_users_recipient = user2_instance.ignored_users.values_list('username', flat=True)
+
+        # Check if either user has blocked the other
         if user1 in ignored_users_recipient or user2 in ignored_users_sender:
             messages = messages.filter(
                 models.Q(seen=True) | models.Q(seen=False, sender=user1_instance)
@@ -50,8 +51,7 @@ class ChatModel(models.Model):
             ).update(seen=True)
         
         # Order by timestamp in descending order and get last 50 messages
-        messages = messages.order_by('timestamp')[:50]
-        # messages = messages.order_by('-timestamp')[:50]
+        messages = messages.order_by('-timestamp')[:50]
 
         # Format and fill messages
         formatted_messages = [
@@ -61,7 +61,7 @@ class ChatModel(models.Model):
                 'receiver'  : cls.serialize_custom_user(msg.receiver.username if msg.receiver == user2_instance else user1),
                 'message'   : msg.msg,
                 'timestamp' : msg.timestamp.timestamp() * 1000,
-                # 'seen'      : msg.seen,
+                'seen'      : msg.seen,
             }
             for msg in messages
         ]

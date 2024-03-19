@@ -118,7 +118,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if(userChannel and rival != user.username):
             logger.warning(f'game_request {userChannel.channel_name}')
             data["sender"] = user.username
-            # await send_to_user(self, userChannel.channel_name, GAME_REQUEST, {'sender': user.username, 'message': rival})
             await send_to_user(self, userChannel.channel_name, GAME_REQUEST, data)
             
     async def accept_game(self, user, data):
@@ -145,7 +144,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
     async def mark_message_seen(self, user, data):
         message_data = json.loads(data["message"])
-        await ChatModel.mark_message_as_seen(user.username, message_data["sender"])
+        sender = message_data.get("sender")
+        if sender and sender.strip():
+            await ChatModel.mark_message_as_seen(user.username, message_data["sender"])
 
     async def get_ignore_list(self, user, data):
         ignored_list = await CustomUser.get_ignored_users(user.username)
@@ -153,17 +154,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def unignore_user(self, user, data):
         message_data = json.loads(data["message"])
-        await CustomUser.unignore_user(user, message_data["user"])
+        userdata = message_data.get("user")
+        if userdata and userdata.strip():
+            await CustomUser.unignore_user(user, userdata)
 
     async def ignore_user(self, user, data):
         message_data = json.loads(data["message"])
-        await CustomUser.ignore_user(user, message_data["user"])
+        userdata = message_data.get("user")
+        if userdata and userdata.strip():
+            await CustomUser.ignore_user(user, userdata)
 
     async def get_messages_between_users(self, user, data):
         message_data = json.loads(data["message"])
-        recipient = message_data["recipient"]
-        messages = await ChatModel.get_messages_between_users(user, recipient)
-        await send_to_me(self, LIST_MSG, messages)
+        recipient = message_data.get("recipient")
+        if recipient and recipient.strip():
+            recipient = recipient
+            messages = await ChatModel.get_messages_between_users(user.username, recipient)
+            await send_to_me(self, LIST_MSG, messages)
 
     async def send_user_list(self):
         user = self.scope["user"]
@@ -177,17 +184,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def process_priv_msg(self, user, data):
         message_data = json.loads(data["message"])
-        recipient = message_data["recipient"]
-        userChannel = await CustomUser.get_user_by_username(recipient)
-        if(userChannel and recipient != user.username):
-            data["sender"] = user.username
-            data["message"] = message_data["message"]
-            # Store message
-            await ChatModel.save_message(user, userChannel, data["message"])
-            # Send message to recipient user
-            await send_to_user(self, userChannel.channel_name, PRIV_MSG, data)
-            # and send message to me too
-            await send_to_me(self, PRIV_MSG, data)
+        recipient = message_data.get("recipient")
+        message = message_data.get("message")
+
+        if recipient and message and recipient.strip() and message.strip():
+            userChannel = await CustomUser.get_user_by_username(recipient)
+            if(userChannel and recipient != user.username):
+                data["sender"] = user.username
+                data["message"] = message
+                # Store message
+                await ChatModel.save_message(user, userChannel, message)
+                # Send message to recipient user
+                await send_to_user(self, userChannel.channel_name, PRIV_MSG, data)
+                # and send message to me too
+                await send_to_me(self, PRIV_MSG, data)
 
 
     ######################

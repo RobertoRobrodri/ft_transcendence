@@ -140,7 +140,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     async def restoreGame(self, user):
         # Restore game
         game_id = get_game_id(user.username)
-        logger.warning(f'game_id: {game_id}')
         if game_id is not None:
             message = {'message': f'Game restored {game_id}'}
             await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
