@@ -11,6 +11,7 @@ async function handleSubmitUpdatedData(e) {
         username: username,
       };
       try {
+            // TODO probably we need to change localhost to domain
             const response = await fetch('https://localhost:443/api/user_management/user_update/', {
             method: 'PATCH',
             headers: {

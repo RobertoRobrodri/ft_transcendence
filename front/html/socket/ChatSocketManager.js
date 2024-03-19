@@ -25,7 +25,6 @@ export class ChatSocketManager extends SocketManager {
     
     onError(event)
     {
-        console.error("estoy on error =(")
         if (this.callbacks[SOCKET.ERROR]) {
             this.callbacks[SOCKET.ERROR].forEach(callback => callback(event));
         }

@@ -9,11 +9,7 @@ export class SocketManager {
         if(this.socket === undefined)
         {
             let token = sessionStorage.getItem('token');
-            //console.error(this.path);
             this.socket = new WebSocket(`wss://localhost:443/${this.path}/?token=${token}`);
-            //console.log('WebSocket object created:', this.socket);
-            //console.log('WebSocket readyState:', this.socket.readyState);
-            //console.error("Se conecta el socket");
             this.setupSocketEvents();
         }
     }
@@ -54,7 +50,6 @@ export class SocketManager {
             }));
         } else {
             console.error('WebSocket connection not open. Unable to send message:', sendMessage);
-            console.error("No se si pasa popr aquí:", this.path);
         }
     }
 
