@@ -165,16 +165,51 @@ class PongGame:
         paddle_x = player['paddle_x']
         paddle_y = player['paddle_y']
         player_nbr = player['nbr']
-        ball_x_check = ball['x'] + self.ball_radius >= paddle_x
-        if player_nbr == 1:
-            ball_x_check = ball['x'] - self.ball_radius <= paddle_x + paddle_width
-        # Check collision with left paddle
-        if (ball_x_check and ball['y'] >= paddle_y and ball['y'] <= paddle_y + paddle_height):
-            # Change ball's direction based on impact zone
+
+        # Calcular los límites de la pala
+        paddle_left = paddle_x
+        paddle_right = paddle_x + paddle_width
+        paddle_top = paddle_y
+        paddle_bottom = paddle_y + paddle_height
+        
+        # Prevent ball stuck between paddle and top/bottom
+        if player_nbr == 1 and ball['speed_x'] > 0:
+            return False
+        elif player_nbr == 2 and ball['speed_x'] < 0:
+            return False
+        
+        # If middle of ball through inner side of paddle, then don't collide
+        if player_nbr == 1 and ball['x'] < paddle_left:
+            return False
+        elif player_nbr == 2 and ball['x'] > paddle_left:
+            return False
+        
+        # Check if the ball is within the limits of the paddle
+        if (paddle_left <= ball['x'] + self.ball_radius <= paddle_right or
+            paddle_left <= ball['x'] - self.ball_radius <= paddle_right) and \
+            (paddle_top <= ball['y'] + self.ball_radius <= paddle_bottom or
+            paddle_top <= ball['y'] - self.ball_radius <= paddle_bottom):
+            
+            # Change the direction of the ball based on the impact zone
             self.handle_paddle_collision(ball, paddle_y)
             return True
 
         return False
+    
+    # def check_paddle_collision(self, ball, player, paddle_width, paddle_height):
+    #     paddle_x = player['paddle_x']
+    #     paddle_y = player['paddle_y']
+    #     player_nbr = player['nbr']
+    #     ball_x_check = ball['x'] + self.ball_radius >= paddle_x
+    #     if player_nbr == 1:
+    #         ball_x_check = ball['x'] - self.ball_radius <= paddle_x + paddle_width
+    #     # Check collision with left paddle
+    #     if (ball_x_check and ball['y'] >= paddle_y and ball['y'] <= paddle_y + paddle_height):
+    #         # Change ball's direction based on impact zone
+    #         self.handle_paddle_collision(ball, paddle_y)
+    #         return True
+
+    #     return False
     
     def handle_paddle_collision(self, ball, paddle_y):
         # Determine the impact zone on the paddle
