@@ -32,6 +32,7 @@ DEBUG = True
 #ALLOWED_HOSTS = ['*']
 # Production all containers that should be able to call django endpoints
 ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db']
+# TODO review if all these hosts are necesary to be allowed
 
 
 # Application definition
