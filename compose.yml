@@ -5,19 +5,24 @@ services:
     build: ./front/
     container_name: nginx
     ports:
-      - 80:80
+      - 443:443
     volumes:
       - profile_pictures:/media
+    networks:
+      - transcendence
     depends_on:
       - django
 
   django:
     build: ./back/
     container_name: django
-    ports:
-      - 8000:8000
     volumes:
       - profile_pictures:/core/media
+    # Please only access directly to django if you want to go admin or swagger dashboard 
+    ports:
+      - 8000:8000
+    networks:
+      - transcendence
     env_file:
       - .env
     depends_on:
@@ -26,10 +31,10 @@ services:
   db:
     build: ./db/
     container_name: db
-    expose:
-      - 5432
     volumes:
       - ddbb:/var/lib/postgresql/data
+    networks:
+      - transcendence
     env_file:
       - .env
 
@@ -37,25 +42,35 @@ services:
     image: "redis:7.2.3-alpine"
     container_name: "redis"
     command: ["redis-server", "--bind", "redis", "--port", "6379"]
+    networks:
+      - transcendence
       
 # Monitoring
   prometheus:
     image: prom/prometheus:v2.49.1
     container_name: prometheus
-    ports:
-      - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
       - prom_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.route-prefix=/'
+      - '--web.external-url=https://localhost/monitoring/prometheus'
+    networks:
+      - transcendence
   
   alertmanager:
     image: prom/alertmanager:v0.21.0
     container_name: alertmanager
-    ports:
-      - "9093:9093"
     volumes:
       - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--web.route-prefix=/'
+      - '--web.external-url=https://localhost/monitoring/alertmanager'
+    networks:
+      - transcendence
 
 
 # Django dashboard 17658
@@ -64,16 +79,17 @@ services:
   grafana:
     image: grafana/grafana:10.3.1
     container_name: grafana
-    ports:
-      - 3000:3000
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
       - graf_data:/var/lib/grafana
+    networks:
+      - transcendence
     environment:
     #TODO Secure this credentials, for now development doesnt matter
       - GF_SECURITY_ADMIN_USER=test-user
       - GF_SECURITY_ADMIN_PASSWORD=test
+      - GF_SERVER_ROOT_URL=https://localhost/monitoring/grafana/
     depends_on:
       - prometheus
 
@@ -81,8 +97,8 @@ services:
   postgres_exporter:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
     container_name: postgres_exporter
-    expose:
-      - 9187
+    networks:
+      - transcendence
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@db:5432/postgres?sslmode=disable
     depends_on:
@@ -92,13 +108,17 @@ services:
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:1.1.0
     container_name: nginx_exporter
-    expose:
-      - 9113
+    networks:
+      - transcendence
     command:
-      - --nginx.scrape-uri=http://nginx:80/nginx_status
+      - --nginx.scrape-uri=https://nginx:443/nginx_status
     depends_on:
       - prometheus
       - nginx
+
+networks:
+  transcendence:
+    name: transcendence
 
 volumes:
   ddbb:
