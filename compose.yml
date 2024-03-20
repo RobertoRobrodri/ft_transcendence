@@ -18,6 +18,9 @@ services:
     container_name: django
     volumes:
       - profile_pictures:/core/media
+    # Please only access directly to django if you want to go admin or swagger dashboard 
+    ports:
+      - 8000:8000
     networks:
       - transcendence
     env_file:
