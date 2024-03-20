@@ -22,6 +22,8 @@ class CustomUser(AbstractUser):
     #TODO add default profile picture
     profile_picture     = models.ImageField(upload_to='media/', null=True, blank=True)
     friends             = models.ManyToManyField('self', blank=True)
+    # 2FA
+    TwoFactorAuth       = models.BooleanField(default=False)
     #TODO Historial should be a table of tournaments
     #history
     
