@@ -5,4 +5,5 @@ COPY . .
 WORKDIR contract
 
 # Launch truffle migrations with this script to prevent re compile smart contract
+RUN chmod +x script.sh
 CMD ./script.sh

@@ -149,6 +149,7 @@ services:
 networks:
   transcendence:
     name: transcendence
+    driver: bridge
 
 volumes:
   ddbb:
