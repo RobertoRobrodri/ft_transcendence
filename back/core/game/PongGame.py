@@ -32,6 +32,10 @@ class PongGame:
         self.border_thickness   = 5   # Canvas frame border thickness (always 1/2 of lineWidth)
         self.sleep_match        = 3   # Seconds of pause at start of game
         self.sleep              = 1   # Seconds of pause between each point
+        self.ball_speed         = 3   # Base ball speed
+        self.inc_ball_speed     = 1   # Increment of ball speed
+        self.max_ball_speed     = 6   # Base ball speed
+        self.paddle_speed       = 1   # Speed of paddles
 
         self.points_to_win      = 6
         ######
@@ -124,7 +128,7 @@ class PongGame:
         return random.uniform(-75 * math.pi / 180, 75 * math.pi / 180)  # -75 y 75 angle
     
     def get_random_direction(self):
-        return random.choice([3, -3]) # Return 3 or -3
+        return random.choice([self.ball_speed, self.ball_speed * -1]) # Return 3 or -3
 
     async def detect_collisions(self):
         ball = self.ball
@@ -210,22 +214,32 @@ class PongGame:
     #         return True
 
     #     return False
-    
+
     def handle_paddle_collision(self, ball, paddle_y):
         # Determine the impact zone on the paddle
         relative_intersect_y = (paddle_y + self.paddle_height / 2) - ball['y']
         # Normalize the relative intersection
         normalized_relative_intersect_y = relative_intersect_y / (self.paddle_height / 2)
         # Calculate bounce angle
-        # bounce_angle = normalized_relative_intersect_y * (5 * math.pi / 12)  # 75 degrees
         bounce_angle = math.atan2(normalized_relative_intersect_y, 1)
+        # Limit bounce angle to maximum 75 degrees
+        max_bounce_angle = math.radians(75)  # Convert 75 degrees to radians
+        bounce_angle = min(abs(bounce_angle), max_bounce_angle) * math.copysign(1, bounce_angle)
         # Adjust the angle based on the paddle's side
         if ball['speed_x'] > 0:
             bounce_angle = math.pi - bounce_angle
-        # Calculate new ball velocities using magic, called by people who are intelligent "trigonometry"
+        # Speed base
         ball_speed = math.sqrt(ball['speed_x']**2 + ball['speed_y']**2)
-        ball['speed_x'] = ball_speed * math.cos(bounce_angle)
-        ball['speed_y'] = ball_speed * -math.sin(bounce_angle)
+        # Increase speed based on initial angle and final angle
+        if (ball['speed_y'] > 0 and math.sin(bounce_angle) > 0) or (ball['speed_y'] < 0 and math.sin(bounce_angle) < 0):
+            ball_speed = max(ball_speed - self.inc_ball_speed, self.ball_speed)
+        else:
+            ball_speed = min(ball_speed + self.inc_ball_speed, self.max_ball_speed)
+
+        new_speed_x = ball_speed * math.cos(bounce_angle)
+        new_speed_y = ball_speed * -math.sin(bounce_angle)
+        ball['speed_x'] = new_speed_x
+        ball['speed_y'] = new_speed_y
     
     async def send_game_state(self):
         # Send updated status to all players in the game
@@ -276,11 +290,12 @@ class PongGame:
     
     def move_paddle(self, player_id, direction):
         if player_id in self.players:
+
             player = self.players[player_id]
             paddle_y = player['paddle_y']
             # Prevent move out of bounds
             if (paddle_y + int(direction)) >= 0 + self.border_thickness and (paddle_y + self.paddle_height + int(direction)) <= self.canvas_y - self.border_thickness:
-                player['paddle_y'] += int(direction)
+                player['paddle_y'] += int(direction) * self.paddle_speed
     
     def remove_player(self, player_id):
         if player_id in self.players:
