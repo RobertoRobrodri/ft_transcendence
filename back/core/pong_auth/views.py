@@ -2,13 +2,17 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import CustomUser
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, UserTokenObtainPairSerializer, User42RegistrationSerializer
-import requests, os, random, string, logging
+from .serializers import UserRegistrationSerializer, \
+    UserTokenObtainPairSerializer, User42RegistrationSerializer, \
+        TwoFactorAuthObtainPairSerializer
+import requests, os, pyotp
 from django.core.exceptions import ValidationError
 
+from .utils import GenerateQR, generate_random_string,  get_token_with_custom_claim
+from django.conf import settings
 
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
@@ -36,18 +40,58 @@ class UserLoginView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        # TokenObtainPairSerializer takes care of authentication and generating both tokens
-        login_serializer = self.serializer_class(data=request.data)
-        if login_serializer.is_valid():
-            user = login_serializer.user
-            user.status = CustomUser.Status.INMENU
-            user.save()
-            return Response({
-                    'token' : login_serializer.validated_data.get('access'),
-                    'refresh' : login_serializer.validated_data.get('refresh'),
-                    'message': 'Login successful',
-                },
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+        user = authenticate(username=username, password=password)
+        if (user is not None):
+            if (user.TwoFactorAuth == True):
+                # Send qr image as base64
+                encoded_qr = GenerateQR(user)
+                verification_serializer = TwoFactorAuthObtainPairSerializer(data=request.data)
+                if (verification_serializer.is_valid()):
+                    return Response({
+                        # Send a token ONLY for verification
+                        'verification_token' : verification_serializer.validated_data.get('access'),
+                        'message' : 'Verify Login',
+                        'QR' : encoded_qr,
+                    },
                 status=status.HTTP_200_OK)
+            else:
+                # TokenObtainPairSerializer takes care of authentication and generating both tokens
+                login_serializer = self.serializer_class(data=request.data)
+                if login_serializer.is_valid():
+                    user.status = CustomUser.Status.INMENU
+                    user.save()
+                    return Response({
+                            'token' : login_serializer.validated_data.get('access'),
+                            'refresh' : login_serializer.validated_data.get('refresh'),
+                            'message': 'Login successful',
+                        },
+                        status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class UserValidateOTPView(generics.GenericAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        if ('2FA' not in request.auth.payload):
+            return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
+        if (user.TwoFactorAuth == True):
+            otp = request.data.get('otp', None)
+            # Verify
+            totp = pyotp.TOTP(settings.OTP_SECRET_KEY)
+            if totp.verify(otp):
+                user.status = CustomUser.Status.INMENU
+                user.save()
+                # Refresh verification token
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'token' : str(refresh.access_token),
+                    'refresh' : str(refresh),
+                    'message': 'Login successful',
+                    },status=status.HTTP_200_OK)
         return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # We are not using logout because we are not using sessions
@@ -59,11 +103,6 @@ class UserLogoutView(generics.GenericAPIView):
         user.status = CustomUser.Status.INMENU
         user.save()
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
-
-def generate_random_string(length=10):
-        characters = string.ascii_letters + string.digits
-        random_string = ''.join(random.choice(characters) for _ in range(length))
-        return random_string
 
 class User42Callback(generics.GenericAPIView):
     permission_classes = [AllowAny]
@@ -80,7 +119,7 @@ class User42Callback(generics.GenericAPIView):
             'client_id': client_id,
             'client_secret': client_secret,
             'code': code,
-            'redirect_uri': "http://localhost:80",
+            'redirect_uri': "https://localhost:443", ## If we set a domain, we need to change this variable
             'state': state
         }
         # Make request to get 42 credentials for more information
@@ -95,14 +134,25 @@ class User42Callback(generics.GenericAPIView):
             external_id = user_request.json()['id']
             user = CustomUser.objects.filter(external_id=external_id).first()
             if user is not None:
-                user.status = CustomUser.Status.INMENU
-                user.save()
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'token' : str(refresh.access_token),
-                    'refresh' : str(refresh),
-                    'message': 'Login successful',
-                },status=status.HTTP_200_OK)
+                if (user.TwoFactorAuth == True):
+                    # Send qr image as base64
+                    encoded_qr = GenerateQR(user)
+                    verification_token = get_token_with_custom_claim(user)
+                    return Response({
+                        # Send a token ONLY for verification
+                        'verification_token' : str(verification_token.access_token),
+                        'message' : 'Verify Login',
+                        'QR' : encoded_qr,
+                    },status=status.HTTP_200_OK)
+                else:
+                    user.status = CustomUser.Status.INMENU
+                    user.save()
+                    refresh = RefreshToken.for_user(user)
+                    return Response({
+                        'token' : str(refresh.access_token),
+                        'refresh' : str(refresh),
+                        'message': 'Login successful',
+                    },status=status.HTTP_200_OK)
             else:
                 # Create ramdom username and return the token
                 registration_data = {

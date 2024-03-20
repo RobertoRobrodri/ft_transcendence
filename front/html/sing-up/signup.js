@@ -14,7 +14,7 @@ async function handleSubmitRegister(e) {
         password: password,
     };
     try {
-        const response = await fetch('http://localhost:80/api/pong_auth/register/', {
+        const response = await fetch('https://localhost:443/api/pong_auth/register/', {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
