@@ -50,8 +50,8 @@ services:
     container_name: ganache
     volumes:
       - ganache:/ganache_data
-    ports:
-        - '8545:8545'
+    expose:
+      - 8545
     networks:
       - transcendence
     entrypoint:
@@ -149,7 +149,6 @@ services:
 networks:
   transcendence:
     name: transcendence
-    driver: bridge
 
 volumes:
   ddbb:
