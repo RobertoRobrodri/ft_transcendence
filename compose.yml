@@ -50,22 +50,22 @@ services:
       
 # Monitoring
   prometheus:
-    # TODO secure with user password
     image: prom/prometheus:v2.49.1
     container_name: prometheus
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - ./prometheus/web.yml:/etc/prometheus/web.yml
       - prom_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.config.file=/etc/prometheus/web.yml'
       - '--web.route-prefix=/'
       - '--web.external-url=https://localhost/monitoring/prometheus'
     networks:
       - transcendence
   
   alertmanager:
-    # TODO secure with user password
     image: prom/alertmanager:v0.21.0
     container_name: alertmanager
     volumes:
@@ -77,44 +77,68 @@ services:
     networks:
       - transcendence
 
+  setup:
+    build: ./setup/
+    container_name: setup
+    networks:
+      - transcendence
+    depends_on:
+      - elasticsearch
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASS=123456
+      - KIBANA_SYSTEM_PASSWORD=mi_contrasena_kibana_system
+
   elasticsearch:
-    # TODO secure with user password
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
     container_name: elasticsearch
+    #TODO Secure this credentials, for now development doesnt matter
     environment:
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-    #mem_limit: 1g #in case we think is necesary to Mac of 42
-    #cpus: '0.5'
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+      - "ES_JAVA_OPTS= -Xms512m -Xmx512m"
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=123456
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
       - ./elk-config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - transcendence
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.12.1
     container_name: logstash
-    ports:
-      - "5000:5000"
-      - "5054:5054"
-    ## TODO ssl enable to secure logstah
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - ELASTIC_PASSWORD=123456
+      - ELASTIC_USER=elastic
+      - xpack.monitoring.elasticsearch.username=elastic
+      - xpack.monitoring.elasticsearch.password="123456"
     volumes:
       - ./elk-config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./.logs:/var/log/services
     depends_on:
       - elasticsearch
+    networks:
+      - transcendence
 
   kibana:
-    # TODO secure with user password
     image: docker.elastic.co/kibana/kibana:8.12.1
     container_name: kibana
     volumes:
       - ./elk-config/kibana.yml:/usr/share/kibana/config/kibana.yml
-    ports:
-      - "5601:5601"
     depends_on:
       - elasticsearch
+      - setup
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - XPACK_MONITORING_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED=true
+      - XPACK_SECURITY_ENABLED=true
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=mi_contrasena_kibana_system
+    networks:
+      - transcendence
 # Django    dashboard    17658
 # Postgres  dashboard  9628
 # Nginx     dashboard     12708
