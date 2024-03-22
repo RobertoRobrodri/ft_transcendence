@@ -267,22 +267,22 @@ class PongGame:
             'ball'      : self.ball,
         }
 
-    def add_player(self, player_id, player_name, player_number):
+    def add_player(self, player_id, userid, player_number):
         if player_number == 1:
-            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'ready': False}
+            self.players[player_id] = {'id': player_id, 'userid': userid, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'ready': False}
         else:
-            self.players[player_id] = {'id': player_id, 'username': player_name, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'ready': False}
+            self.players[player_id] = {'id': player_id, 'userid': userid, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'ready': False}
     
     async def player_ready(self, player_id):
         if player_id in self.players:
             self.players[player_id]['ready'] = True
 
-    async def change_player(self, new_player_id, player_name):
+    async def change_player(self, new_player_id, userid):
         player_ids = list(self.players.keys())
         
         for player_id in player_ids:
             player_data = self.players[player_id]
-            if player_data['username'] == player_name:
+            if player_data['userid'] == userid:
                 self.players[new_player_id] = player_data
                 self.players[new_player_id]['id'] = new_player_id
                 del self.players[player_id]
@@ -290,7 +290,6 @@ class PongGame:
     
     def move_paddle(self, player_id, direction):
         if player_id in self.players:
-
             player = self.players[player_id]
             paddle_y = player['paddle_y']
             # Prevent move out of bounds
@@ -309,8 +308,8 @@ class PongGame:
     #############################
                 
     async def save_game_result(self, players_list, winner):
-        user1   = await CustomUser.get_user_by_username(players_list[0]['username'])
-        user2   = await CustomUser.get_user_by_username(players_list[1]['username'])
+        user1   = await CustomUser.get_user_by_id(players_list[0]['userid'])
+        user2   = await CustomUser.get_user_by_id(players_list[1]['userid'])
         winner  = user1 if winner == 0 else user2
         loser   = user2 if winner == user1 else user1
         # Add match to db

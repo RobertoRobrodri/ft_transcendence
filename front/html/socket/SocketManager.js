@@ -5,7 +5,6 @@ export class SocketManager {
 
     connect() {
         // Prevent reconnection on navigation
-        console.error("Se conecta el cokset 1");
         if(this.socket === undefined)
         {
             let token = sessionStorage.getItem('token');

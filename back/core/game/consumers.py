@@ -58,7 +58,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
                 # If the user leaves and is inside queue, remove it
-                await self.leaveMatchmaking(self)
+                await self.leaveMatchmaking()
                 
         except Exception as e:
             logger.warning(f'Exception in disconnect: {e}')
@@ -99,17 +99,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if matchmaking_queue.is_user_in_queue(self.channel_name):
             return
         # And prevent sockets if player is already in game
-        game_id = get_game_id(user.username)
+        game_id = get_game_id(user.id)
         if game_id is not None:
             return
         
         # If queue have 0 users, join
         async with matchmaking_lock: # Block this section to prevent 2 or more users add self to queue
             if matchmaking_queue.get_queue_size() == 0:
-                matchmaking_queue.add_user(self.channel_name, user.username)
+                matchmaking_queue.add_user(self.channel_name, user.id)
                 await send_to_me(self, INQUEUE, {'message': 'Waiting for another player...'})
                 return
-            
+        
         # Get oponent
         async with matchmaking_lock: # Block this section to prevent 2 or more users pop user and only have 1
             rival = matchmaking_queue.pop_users()
@@ -118,33 +118,35 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 return
         
         # Generate unique room name
-        sorted_usernames = sorted([rival['username'], user.username])
-        room_name = f'room_{hash("".join(sorted_usernames))}'
-                
+        sorted_ids = sorted([rival["userid"], user.id])
+        room_name = f'room_{hash("".join(map(str, sorted_ids)))}'
+        
+        logger.warning(f'room_name: {room_name}')
+
         # Add users to new group
         await self.channel_layer.group_add(room_name, rival['channel_name'])
         await self.channel_layer.group_add(room_name, self.channel_name)
-                
+        
         message = {'message': f'Pairing successful! United in the room {room_name}'}
         await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
-        await self.start_game(self.channel_name, user.username, rival['channel_name'], rival['username'], room_name)
-    
+        await self.start_game(self.channel_name, user.id, rival['channel_name'], rival['userid'], room_name)
+
     async def player_ready(self, user):
-        game_id = get_game_id(user.username)
+        game_id = get_game_id(user.id)
         if game_id:
             await games[game_id].player_ready(self.channel_name)
-
+    
     async def leaveMatchmaking(self):
         matchmaking_queue.remove_user(self.channel_name)
     
     async def restoreGame(self, user):
         # Restore game
-        game_id = get_game_id(user.username)
+        game_id = get_game_id(user.id)
         if game_id is not None:
             message = {'message': f'Game restored {game_id}'}
             await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
             await self.channel_layer.group_add(game_id, self.channel_name)
-            await games[game_id].change_player(self.channel_name, user.username)
+            await games[game_id].change_player(self.channel_name, user.id)
     
     ######################
     ## HELPER FUNCTIONS ##
@@ -170,7 +172,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             asyncio.create_task(game.start_game())
 
     async def move_paddle(self, direction, user):
-        game_id = get_game_id(user.username)
+        game_id = get_game_id(user.id)
         if game_id:
             games[game_id].move_paddle(self.channel_name, direction)
 
@@ -185,10 +187,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     #             del games[game_id]
     #             game.running = False
 
-def get_game_id(username):
+def get_game_id(userid):
     # Buscar el game_id asociado al player_id
     for game_id, game in games.items():
-        if any(player['username'] == username for player in game.players.values()):
+        if any(player['userid'] == userid for player in game.players.values()):
             if game.finished:
                 del games[game_id]
                 return None

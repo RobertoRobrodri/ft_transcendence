@@ -16,8 +16,8 @@ class ChatModel(models.Model):
     @classmethod
     @database_sync_to_async
     def mark_message_as_seen(cls, user1, user2):
-        user1_instance = CustomUser.objects.get(username=user1)
-        user2_instance = CustomUser.objects.get(username=user2)
+        user1_instance = CustomUser.objects.get(id=user1)
+        user2_instance = CustomUser.objects.get(id=user2)
         cls.objects.filter(
             models.Q(sender=user2_instance, receiver=user1_instance, seen=False)
         ).update(seen=True)
@@ -25,16 +25,16 @@ class ChatModel(models.Model):
     @classmethod
     @database_sync_to_async
     def get_messages_between_users(cls, user1, user2):
-        user1_instance = CustomUser.objects.get(username=user1)
-        user2_instance = CustomUser.objects.get(username=user2)
+        user1_instance = CustomUser.objects.get(id=user1)
+        user2_instance = CustomUser.objects.get(id=user2)
         
         messages = cls.objects.filter(
             (models.Q(sender=user1_instance) & models.Q(receiver=user2_instance)) |
             (models.Q(sender=user2_instance) & models.Q(receiver=user1_instance))
         )
         
-        ignored_users_sender =  user1_instance.ignored_users.values_list('username', flat=True)
-        ignored_users_recipient = user2_instance.ignored_users.values_list('username', flat=True)
+        ignored_users_sender =  user1_instance.ignored_users.values_list('id', flat=True)
+        ignored_users_recipient = user2_instance.ignored_users.values_list('id', flat=True)
 
         # Check if either user has blocked the other
         if user1 in ignored_users_recipient or user2 in ignored_users_sender:
@@ -57,8 +57,8 @@ class ChatModel(models.Model):
         formatted_messages = [
             {
                 'direction' : 'out' if msg.sender == user1_instance else 'in',
-                'sender'    : cls.serialize_custom_user(msg.sender.username if msg.sender == user1_instance else user2),
-                'receiver'  : cls.serialize_custom_user(msg.receiver.username if msg.receiver == user2_instance else user1),
+                'sender'    : cls.serialize_custom_user(msg.sender if msg.sender == user1_instance else user2),
+                'receiver'  : cls.serialize_custom_user(msg.receiver if msg.receiver == user2_instance else user1),
                 'message'   : msg.msg,
                 'timestamp' : msg.timestamp.timestamp() * 1000,
                 'seen'      : msg.seen,
@@ -68,7 +68,7 @@ class ChatModel(models.Model):
         return formatted_messages
 
     def serialize_custom_user(user):
-        return user.username if isinstance(user, CustomUser) else user
+        return user.id if isinstance(user, CustomUser) else user
 
     @classmethod
     @database_sync_to_async

@@ -26,16 +26,6 @@ export function connectGame()
     
 }
 
-function InitMatchmaking()
-{
-    initializeGame()
-}
-
-function CancelMatchmaking()
-{
-    gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
-}
-
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
 	//when game open, try restore any running game, i put here for test
@@ -97,10 +87,14 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 // GAME LOGIC //
 ////////////////
 
-function initializeGame() {
-    
+function InitMatchmaking()
+{
     gameSM.send(GAME_TYPES.INITMATCHMAKING);
-    
+}
+
+function CancelMatchmaking()
+{
+    gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
 }
 
 function updateGame(gameState) {

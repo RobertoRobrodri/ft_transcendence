@@ -4,9 +4,9 @@ class MatchmakingQueue:
     def __init__(self):
         self.queue = []
 
-    def add_user(self, channel_name, username):
+    def add_user(self, channel_name, userid):
         if not self.is_user_in_queue(channel_name):
-            self.queue.append({'channel_name': channel_name, 'username': username})
+            self.queue.append({'channel_name': channel_name, 'userid': userid})
 
     def remove_user(self, channel_name):
         for user_info in self.queue:
