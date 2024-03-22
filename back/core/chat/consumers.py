@@ -124,18 +124,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def accept_game(self, user, data):
         rival = data['message']
         data['sender'] = user.id
-        userChannel = await CustomUser.get_user_by_id(rival)
+        rivalUser = await CustomUser.get_user_by_id(rival)
         # Generate unique room name
         sorted_ids = sorted([rival, user.id])
         room_name = f'room_{hash("".join(map(str, sorted_ids)))}'
         game = PongGame(room_name, self, True)
-        game.add_player(user.id, user.id, 1)
-        game.add_player(rival, rival, 2)
+        game.add_player(user.username, user.id, 1)
+        game.add_player(rivalUser.username, rivalUser.id, 2)
         games[room_name] = game
         if not game.running:
             asyncio.create_task(game.start_game())
         # Send message to recipient user
-        await send_to_user(self, userChannel.channel_name, ACCEPT_GAME, data)
+        await send_to_user(self, rivalUser.channel_name, ACCEPT_GAME, data)
         # and send message to me too
         await send_to_me(self, ACCEPT_GAME, data)
 

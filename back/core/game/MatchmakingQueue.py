@@ -8,9 +8,9 @@ class MatchmakingQueue:
         if not self.is_user_in_queue(channel_name):
             self.queue.append({'channel_name': channel_name, 'userid': userid})
 
-    def remove_user(self, channel_name):
+    def remove_user(self, userid):
         for user_info in self.queue:
-            if user_info['channel_name'] == channel_name:
+            if user_info['userid'] == userid:
                 self.queue.remove(user_info)
 
     def pop_users(self):
@@ -22,5 +22,5 @@ class MatchmakingQueue:
     def get_queue_size(self):
         return len(self.queue)
     
-    def is_user_in_queue(self, channel_name):
-        return any(user_info['channel_name'] == channel_name for user_info in self.queue)
+    def is_user_in_queue(self, userid):
+        return any(user_info['userid'] == userid for user_info in self.queue)

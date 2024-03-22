@@ -29,7 +29,7 @@ class PongGame:
         self.canvas_x           = 400 # Canvas Width 
         self.canvas_y           = 200 # Canvas Height 
         self.ball_radius        = 5   # Ball Radious
-        self.border_thickness   = 5   # Canvas frame border thickness (always 1/2 of lineWidth)
+        self.border_thickness   = 0   # Canvas frame border thickness (always 1/2 of lineWidth)
         self.sleep_match        = 3   # Seconds of pause at start of game
         self.sleep              = 1   # Seconds of pause between each point
         self.ball_speed         = 3   # Base ball speed
@@ -56,7 +56,6 @@ class PongGame:
         self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_height / 2)
 
     async def start_game(self):
-        await self.send_game_state()
         # Waiting 2 players set ready status
         try:
             await asyncio.wait_for(self.wait_for_players_ready(), timeout=30)
@@ -83,6 +82,7 @@ class PongGame:
     async def wait_for_players_ready(self):
         # Esperar a que los jugadores estén listos
         while not self.running:
+            await self.send_game_state()
             logger.warning(f"game waiting")
             await self.are_players_ready()
             await asyncio.sleep(1)
@@ -260,45 +260,44 @@ class PongGame:
         players_without_id_score = {}
         for player_id, player_info in self.players.items():
             player_info_copy = player_info.copy()
-            del player_info_copy['id']
             players_without_id_score[player_id] = player_info_copy
         return {
             'players'   : players_without_id_score,
             'ball'      : self.ball,
         }
 
-    def add_player(self, player_id, userid, player_number):
+    def add_player(self, username, userid, player_number):
         if player_number == 1:
-            self.players[player_id] = {'id': player_id, 'userid': userid, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'ready': False}
+            self.players[userid] = {'username': username, 'userid': userid, 'nbr': player_number, 'paddle_x': self.player1_paddle_x, 'paddle_y': self.player1_paddle_y, 'ready': False}
         else:
-            self.players[player_id] = {'id': player_id, 'userid': userid, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'ready': False}
+            self.players[userid] = {'username': username, 'userid': userid, 'nbr': player_number, 'paddle_x': self.player2_paddle_x, 'paddle_y': self.player2_paddle_y, 'ready': False}
     
-    async def player_ready(self, player_id):
-        if player_id in self.players:
-            self.players[player_id]['ready'] = True
+    async def player_ready(self, userid):
+        if userid in self.players:
+            self.players[userid]['ready'] = True
 
-    async def change_player(self, new_player_id, userid):
-        player_ids = list(self.players.keys())
+    # async def change_player(self, new_player_id, userid):
+    #     player_ids = list(self.players.keys())
         
-        for player_id in player_ids:
-            player_data = self.players[player_id]
-            if player_data['userid'] == userid:
-                self.players[new_player_id] = player_data
-                self.players[new_player_id]['id'] = new_player_id
-                del self.players[player_id]
-        await self.send_game_state()
+    #     for player_id in player_ids:
+    #         player_data = self.players[player_id]
+    #         if player_data['userid'] == userid:
+    #             self.players[new_player_id] = player_data
+    #             self.players[new_player_id]['id'] = new_player_id
+    #             del self.players[player_id]
+    #     await self.send_game_state()
     
-    def move_paddle(self, player_id, direction):
-        if player_id in self.players:
-            player = self.players[player_id]
+    def move_paddle(self, userid, direction):
+        if userid in self.players:
+            player = self.players[userid]
             paddle_y = player['paddle_y']
             # Prevent move out of bounds
             if (paddle_y + int(direction)) >= 0 + self.border_thickness and (paddle_y + self.paddle_height + int(direction)) <= self.canvas_y - self.border_thickness:
                 player['paddle_y'] += int(direction) * self.paddle_speed
     
-    def remove_player(self, player_id):
-        if player_id in self.players:
-            del self.players[player_id]
+    def remove_player(self, userid):
+        if userid in self.players:
+            del self.players[userid]
             if not self.players:
                 self.running = False
 
