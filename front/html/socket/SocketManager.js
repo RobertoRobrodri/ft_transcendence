@@ -5,10 +5,11 @@ export class SocketManager {
 
     connect() {
         // Prevent reconnection on navigation
+        console.error("Se conecta el cokset 1");
         if(this.socket === undefined)
         {
             let token = sessionStorage.getItem('token');
-            this.socket = new WebSocket(`ws://localhost:8000/${this.path}/?token=${token}`);
+            this.socket = new WebSocket(`wss://localhost:443/${this.path}/?token=${token}`);
             this.setupSocketEvents();
         }
     }
@@ -16,7 +17,7 @@ export class SocketManager {
     disconnect()
     {
         const code = 3008;
-        const reasson = 'Unespected';
+        const reasson = 'Unexpected';
         if(this.socket.readyState === WebSocket.OPEN) {
             this.socket.close(code, reasson);
             this.socket = undefined;

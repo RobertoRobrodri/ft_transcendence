@@ -119,7 +119,7 @@ class User42Callback(generics.GenericAPIView):
             'client_id': client_id,
             'client_secret': client_secret,
             'code': code,
-            'redirect_uri': "http://localhost:80",
+            'redirect_uri': "https://localhost:443", ## If we set a domain, we need to change this variable
             'state': state
         }
         # Make request to get 42 credentials for more information
