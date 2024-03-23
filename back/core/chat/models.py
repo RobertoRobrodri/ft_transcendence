@@ -4,6 +4,9 @@ from channels.db import database_sync_to_async
 from django.core.serializers import serialize
 import json
 
+import logging
+logger = logging.getLogger(__name__)
+
 class ChatModel(models.Model):
 
     sender = models.ForeignKey(CustomUser, related_name='msg_sender', on_delete=models.CASCADE)
@@ -27,15 +30,20 @@ class ChatModel(models.Model):
     def get_messages_between_users(cls, user1, user2):
         user1_instance = CustomUser.objects.get(id=user1)
         user2_instance = CustomUser.objects.get(id=user2)
+
+        logger.warning(f'user1_instance: {user1_instance.username}')
+        logger.warning(f'user2_instance: {user2_instance.username}')
         
         messages = cls.objects.filter(
             (models.Q(sender=user1_instance) & models.Q(receiver=user2_instance)) |
             (models.Q(sender=user2_instance) & models.Q(receiver=user1_instance))
         )
         
-        ignored_users_sender =  user1_instance.ignored_users.values_list('id', flat=True)
-        ignored_users_recipient = user2_instance.ignored_users.values_list('id', flat=True)
-
+        ignored_users_sender = user1_instance.ignored_users.values_list('username', flat=True)
+        ignored_users_recipient = user2_instance.ignored_users.values_list('username', flat=True)
+        
+        logger.warning(f'user1 in: {user1 in ignored_users_recipient}')
+        logger.warning(f'user2 in: {user2 in ignored_users_sender}')
         # Check if either user has blocked the other
         if user1 in ignored_users_recipient or user2 in ignored_users_sender:
             messages = messages.filter(
