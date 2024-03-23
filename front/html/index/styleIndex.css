@@ -5,6 +5,7 @@ body {
     padding: 0;
     height: 100vh; /* Altura del 100% de la ventana */
     cursor: url('../assets/cursor3.svg'), auto !important;
+    background-image: url('../assets/fondo.png');
     user-select: none;
 }
 
@@ -128,17 +129,21 @@ main {
 /* Estilo de las ventanas */
 .window {
 	position: fixed;
-	width: 400px;
-	height: 250px;
+	width: 800px;
+	height: 450px;
 	border-radius: 10px;
 	border: none;
 	box-shadow: 1px 1px 4px rgba(0,0,0,0,0.9), -1px 1px 4px rgba(0,0,0,0,0.9);
-	background: #fff;
+	background: #45f3ff33;
+    /* Centra la ventana del programa en el centro de la página web */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .window-content {
-	background: #000;
-	color: #fff;
+	background: #28292da8;
+	color: #45f3ff33;
 	height: 100%;
 	font-family: monospace;
 	padding: 5px;
@@ -147,12 +152,12 @@ main {
 .window-top, .window-top-no-bind {
 	cursor: move;
 	text-align: right;
-	height: 20px;
+	height: 30px;
 	border-bottom: 1px solid rgba(0,0,0,0.5);
 	border-top-right-radius: 5px;
 	border-top-left-radius: 5px;
 	padding: 5px;
-	background-color: #ddd;
+	background-color: #45f3ff33;
 }
 
 .window-top-no-bind {

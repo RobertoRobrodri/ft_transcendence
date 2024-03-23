@@ -90,12 +90,13 @@ export function setClickEvents() {
     document.getElementById('root').addEventListener('click', configureMenu);
 	// Program selection
 	document.getElementById('root').addEventListener('click', selectProgram);
+	// Open window
+	document.getElementById('root').addEventListener('dblclick', openWindow);
 	// Close window
 	document.getElementById('root').addEventListener('click', closeWindow);
 }
 
-//TODO: Modificar que el modal salga cuando se está llamando a una API.
-function selectProgram(e) {
+function openWindow() {
     // Esto importa el modal
     // var modal = document.getElementById('exampleModal');
 
@@ -124,6 +125,38 @@ function selectProgram(e) {
     } else if (parentIcon.id === 'terminal') {
         createWindow('Terminal');
     }
+}
+
+//TODO: Modificar que el modal salga cuando se está llamando a una API.
+function selectProgram(e) {
+    // Esto importa el modal
+    // var modal = document.getElementById('exampleModal');
+
+    var parentIcon = e.target.closest('.icon');
+    if (parentIcon === false || !parentIcon) {
+        removeClassFromClass('selected_program', 'selected_program')
+        // Estas dos lineas desactivan el modal
+        // modal.classList.remove('show');
+        // modal.style.display = 'none';
+        return;
+    }
+    // Estas dos lineas activan el modal
+    // modal.classList.add('show');
+    // modal.style.display = 'block';
+
+    removeClassFromClass('selected_program', 'selected_program')
+    var parentIcon = e.target.closest('.icon');
+    parentIcon.classList.add('selected_program');
+    e.preventDefault()
+	
+	// // Open window and load specific content
+	// if (parentIcon.id === 'profile') {
+    //     createWindow('Profile');
+    // } else if (parentIcon.id === 'chat') {
+    //     createWindow('Chat');
+    // } else if (parentIcon.id === 'terminal') {
+    //     createWindow('Terminal');
+    // }
 
 }
 
