@@ -137,9 +137,8 @@ main {
 	box-shadow: 1px 1px 4px rgba(0,0,0,0,0.9), -1px 1px 4px rgba(0,0,0,0,0.9);
 	background: #45f3ff33;
     /* Centra la ventana del programa en el centro de la página web */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: calc(50% - 225px); /* Calcula la posición top height/2 */
+    left: calc(50% - 400px); /* Calcula la posición left width/2 */
 }
 
 .window-content {

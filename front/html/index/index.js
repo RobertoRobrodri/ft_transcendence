@@ -91,88 +91,20 @@ export function setClickEvents() {
     // Program selection
     document.getElementById('root').addEventListener('click', selectProgram);
     // Move programs
-    document.getElementById('root').addEventListener('click', movePrograms);
+    // document.getElementById('root').addEventListener('click', movePrograms);
     // Open window
     document.getElementById('root').addEventListener('dblclick', openWindow);
     // Close window
     document.getElementById('root').addEventListener('click', closeWindow);
+
+	// Make icons draggable
+	makeIconsDraggable();
 }
 
-function makeDraggableIcon(element) {
-    // console.log("makeDraggable called for element:", element);
-    if (!element) return;
-
-    //set initial z-index
-    let icon = document.querySelectorAll('.icon');
-    element.style.zIndex = icon.length;
-
-    let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
-
-    // If there is a window-top classed element, attach to that element instead of full window
-    let dragHandle = element.querySelector('.icon') || element;
-
-    dragHandle.addEventListener('mousedown', dragMouseDown);
-
-    function setNewZIndex() {
-        // Obtener todas las ventanas
-        let icon = document.querySelectorAll('.icon');
-
-        // Obtener el índice de la ventana que se está arrastrando
-        let draggedWindowIndex = Array.from(icon).indexOf(element);
-
-        // Calcular el nuevo z-index para la ventana arrastrada
-        let newDraggedWindowZIndex = icon.length;
-
-        // Establecer el nuevo z-index para la ventana arrastrada
-        icon[draggedWindowIndex].style.zIndex = newDraggedWindowZIndex;
-
-        // Ajustar el z-index para las demás ventanas
-        icon.forEach((window, index) => {
-            if (index !== draggedWindowIndex) {
-                // Calcular el nuevo z-index para la ventana actual
-                let originalIndex = parseInt(window.style.zIndex);
-
-                if (originalIndex > 1)
-                    window.style.zIndex = originalIndex - 1;
-            }
-        });
-    }
-    function dragMouseDown(e) {
-        console.log("pulso");
-        e.preventDefault();
-        previousPosX = e.clientX;
-        previousPosY = e.clientY;
-        document.addEventListener('mousemove', elementDrag);
-        document.addEventListener('mouseup', closeDragElement);
-        //Set new z-index
-        setNewZIndex();
-    }
-
-    function elementDrag(e) {
-        console.log("Muevo");
-        e.preventDefault();
-        currentPosX = previousPosX - e.clientX;
-        currentPosY = previousPosY - e.clientY;
-        previousPosX = e.clientX;
-        previousPosY = e.clientY;
-        element.style.top = (element.offsetTop - currentPosY) + 'px';
-        element.style.left = (element.offsetLeft - currentPosX) + 'px';
-    }
-
-    function closeDragElement() {
-        console.log("Levanto movimiento");
-        document.removeEventListener('mouseup', closeDragElement);
-        document.removeEventListener('mousemove', elementDrag);
-    }
-}
-
-function movePrograms(e) {
-    var parentIcon = e.target.closest('.icon');
-    if (parentIcon === false || !parentIcon) {
-        return;
-    }
-    e.preventDefault()
-    makeDraggableIcon(parentIcon);
+function makeIconsDraggable()
+{
+	var iconClass = '.icon.text-center.col-md-1';
+	document.querySelectorAll(iconClass).forEach(icon => makeDraggable(icon, iconClass));
 }
 
 function openWindow(e) {
@@ -251,7 +183,9 @@ function createWindow(appName) {
 
     var divRow = document.querySelector('.row');
     divRow.innerHTML += htmlDinamico;
-    document.querySelectorAll('.window').forEach(makeDraggable);
+    document.querySelectorAll('.window').forEach(window => makeDraggable(window, '.window-top'));
+	// No se la razón, pero solo por agregar el html los iconos dejan de ser movibles, asi que se setea de nuevo
+	makeIconsDraggable();
 }
 
 function closeWindow(e) {
@@ -260,42 +194,61 @@ function closeWindow(e) {
     }
 }
 
-function makeDraggable(element) {
+function makeDraggable(element, elementClick) {
     // console.log("makeDraggable called for element:", element);
     if (!element) return;
 
     //set initial z-index
-    let windows = document.querySelectorAll('.window');
-    element.style.zIndex = windows.length;
+    let windows = document.querySelectorAll('.window'); // Cantidad de ventanas abiertas
+	let icons = document.querySelectorAll('.icon.text-center.col-md-1'); // Cantidad de iconos en el escritorio
+	element.style.zIndex = icons.length; // Por defecto manejamos el index como si fuesen iconos
+	if (elementClick == '.window-top') // En caso de llamar a la funcion para las ventanas, el Z index es la cantidad de iconos + las ventanas
+    	element.style.zIndex = windows.length + icons.length;
 
-    let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
+    let previousPosX = 0, previousPosY = 0;
 
     // If there is a window-top classed element, attach to that element instead of full window
-    let dragHandle = element.querySelector('.window-top') || element;
+    let dragHandle = element.querySelector(elementClick) || element;
 
     dragHandle.addEventListener('mousedown', dragMouseDown);
 
     function setNewZIndex() {
         // Obtener todas las ventanas
         let windows = document.querySelectorAll('.window');
+		// Obtener todos los iconos
+		let icons = document.querySelectorAll('.icon.text-center.col-md-1');
 
-        // Obtener el índice de la ventana que se está arrastrando
-        let draggedWindowIndex = Array.from(windows).indexOf(element);
-
+		// Manejo del Z index para ventanas
+		if (elementClick == '.window-top') {
+			// Obtener el índice de la ventana que se está arrastrando
+			let draggedWindowIndex = Array.from(windows).indexOf(element);
+			// Calcular el nuevo z-index para la ventana arrastrada
+			let newDraggedWindowZIndex = windows.length + icons.length;
+			windows[draggedWindowIndex].style.zIndex = newDraggedWindowZIndex;
+			windows.forEach((window, index) => {
+				if (index !== draggedWindowIndex) {
+					// Calcular el nuevo z-index para la ventana actual
+					let originalIndex = parseInt(window.style.zIndex);
+					if (originalIndex > 1)
+						window.style.zIndex = originalIndex - 1;
+				}
+			});
+			return;
+		}
+		// Z Index para iconos
+		// Obtener el índice de la ventana que se está arrastrando
+        let draggedIconIndex = Array.from(icons).indexOf(element);
         // Calcular el nuevo z-index para la ventana arrastrada
-        let newDraggedWindowZIndex = windows.length;
-
+        let newDraggedIconZIndex = icons.length;
         // Establecer el nuevo z-index para la ventana arrastrada
-        windows[draggedWindowIndex].style.zIndex = newDraggedWindowZIndex;
-
+        icons[draggedIconIndex].style.zIndex = newDraggedIconZIndex;
         // Ajustar el z-index para las demás ventanas
-        windows.forEach((window, index) => {
-            if (index !== draggedWindowIndex) {
+        icons.forEach((icon, index) => {
+            if (index !== draggedIconIndex) {
                 // Calcular el nuevo z-index para la ventana actual
-                let originalIndex = parseInt(window.style.zIndex);
-
+                let originalIndex = parseInt(icon.style.zIndex);
                 if (originalIndex > 1)
-                    window.style.zIndex = originalIndex - 1;
+				icon.style.zIndex = originalIndex - 1;
             }
         });
     }
@@ -311,12 +264,31 @@ function makeDraggable(element) {
 
     function elementDrag(e) {
         e.preventDefault();
-        currentPosX = previousPosX - e.clientX;
-        currentPosY = previousPosY - e.clientY;
-        previousPosX = e.clientX;
-        previousPosY = e.clientY;
-        element.style.top = (element.offsetTop - currentPosY) + 'px';
-        element.style.left = (element.offsetLeft - currentPosX) + 'px';
+		// Movimiento de los elementos pero previniendo que salgan por completo de la pantalla
+		// Calcula los límites de la pantalla
+		const maxX = window.innerWidth - 40;
+		const maxY = window.innerHeight - 40 - 50; // Guarda 50px adicionales en la parte inferior
+	
+		// Calcula las nuevas coordenadas del elemento
+		let newPosX = element.offsetLeft - (previousPosX - e.clientX);
+		let newPosY = element.offsetTop - (previousPosY - e.clientY);
+	
+		// Calcula los límites de la ventana
+		const windowWidth = element.offsetWidth;
+		const windowHeight = element.offsetHeight;
+	
+		// Limita las coordenadas para que al menos 40px queden dentro de la pantalla en todas las direcciones,
+		// y guarda 50px adicionales en la parte inferior
+		newPosX = Math.max(-windowWidth + 40, Math.min(newPosX, maxX - 40)); // Resta windowWidth para considerar el ancho de la ventana
+		newPosY = Math.max(0, Math.min(newPosY, maxY - 40)); // Resta windowHeight para considerar la altura de la ventana
+	
+		// Actualiza la posición del elemento
+		element.style.left = newPosX + 'px';
+		element.style.top = newPosY + 'px';
+	
+		// Actualiza las coordenadas anteriores para el próximo movimiento
+		previousPosX = e.clientX;
+		previousPosY = e.clientY;
     }
 
     function closeDragElement() {
