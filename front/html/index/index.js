@@ -229,7 +229,7 @@ function makeDraggable(element, elementClick) {
 				if (index !== draggedWindowIndex) {
 					// Calcular el nuevo z-index para la ventana actual
 					let originalIndex = parseInt(window.style.zIndex);
-					if (originalIndex > 1)
+					if (originalIndex > icons.length + 1)
 						window.style.zIndex = originalIndex - 1;
 				}
 			});
