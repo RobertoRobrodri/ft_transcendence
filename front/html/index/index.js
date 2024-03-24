@@ -31,7 +31,7 @@ export function loadMainPage() {
         //loadUserInfo();
         //connectChat();
 
-		setClickEvents();
+        setClickEvents();
 
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
@@ -73,7 +73,7 @@ function removeClassFromClass(classNameToRemove, classNameToFind) {
 
 function configureMenu(e) {
     if (e.target.matches('#menuContainer') === false &&
-		e.target.matches('#menuLogo') === false) {
+        e.target.matches('#menuLogo') === false) {
         return;
     }
     var menu = document.getElementById('menu');
@@ -86,20 +86,98 @@ function configureMenu(e) {
 }
 
 export function setClickEvents() {
-	// Menu click
+    // Menu click
     document.getElementById('root').addEventListener('click', configureMenu);
-	// Program selection
-	document.getElementById('root').addEventListener('click', selectProgram);
-	// Open window
-	document.getElementById('root').addEventListener('dblclick', openWindow);
-	// Close window
-	document.getElementById('root').addEventListener('click', closeWindow);
+    // Program selection
+    document.getElementById('root').addEventListener('click', selectProgram);
+    // Move programs
+    document.getElementById('root').addEventListener('click', movePrograms);
+    // Open window
+    document.getElementById('root').addEventListener('dblclick', openWindow);
+    // Close window
+    document.getElementById('root').addEventListener('click', closeWindow);
 }
 
-function openWindow() {
+function makeDraggableIcon(element) {
+    // console.log("makeDraggable called for element:", element);
+    if (!element) return;
+
+    //set initial z-index
+    let icon = document.querySelectorAll('.icon');
+    element.style.zIndex = icon.length;
+
+    let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
+
+    // If there is a window-top classed element, attach to that element instead of full window
+    let dragHandle = element.querySelector('.icon') || element;
+
+    dragHandle.addEventListener('mousedown', dragMouseDown);
+
+    function setNewZIndex() {
+        // Obtener todas las ventanas
+        let icon = document.querySelectorAll('.icon');
+
+        // Obtener el índice de la ventana que se está arrastrando
+        let draggedWindowIndex = Array.from(icon).indexOf(element);
+
+        // Calcular el nuevo z-index para la ventana arrastrada
+        let newDraggedWindowZIndex = icon.length;
+
+        // Establecer el nuevo z-index para la ventana arrastrada
+        icon[draggedWindowIndex].style.zIndex = newDraggedWindowZIndex;
+
+        // Ajustar el z-index para las demás ventanas
+        icon.forEach((window, index) => {
+            if (index !== draggedWindowIndex) {
+                // Calcular el nuevo z-index para la ventana actual
+                let originalIndex = parseInt(window.style.zIndex);
+
+                if (originalIndex > 1)
+                    window.style.zIndex = originalIndex - 1;
+            }
+        });
+    }
+    function dragMouseDown(e) {
+        console.log("pulso");
+        e.preventDefault();
+        previousPosX = e.clientX;
+        previousPosY = e.clientY;
+        document.addEventListener('mousemove', elementDrag);
+        document.addEventListener('mouseup', closeDragElement);
+        //Set new z-index
+        setNewZIndex();
+    }
+
+    function elementDrag(e) {
+        console.log("Muevo");
+        e.preventDefault();
+        currentPosX = previousPosX - e.clientX;
+        currentPosY = previousPosY - e.clientY;
+        previousPosX = e.clientX;
+        previousPosY = e.clientY;
+        element.style.top = (element.offsetTop - currentPosY) + 'px';
+        element.style.left = (element.offsetLeft - currentPosX) + 'px';
+    }
+
+    function closeDragElement() {
+        console.log("Levanto movimiento");
+        document.removeEventListener('mouseup', closeDragElement);
+        document.removeEventListener('mousemove', elementDrag);
+    }
+}
+
+function movePrograms(e) {
+    var parentIcon = e.target.closest('.icon');
+    if (parentIcon === false || !parentIcon) {
+        return;
+    }
+    e.preventDefault()
+    makeDraggableIcon(parentIcon);
+}
+
+function openWindow(e) {
     // Esto importa el modal
     // var modal = document.getElementById('exampleModal');
-
     var parentIcon = e.target.closest('.icon');
     if (parentIcon === false || !parentIcon) {
         removeClassFromClass('selected_program', 'selected_program')
@@ -116,9 +194,9 @@ function openWindow() {
     var parentIcon = e.target.closest('.icon');
     parentIcon.classList.add('selected_program');
     e.preventDefault()
-	
-	// Open window and load specific content
-	if (parentIcon.id === 'profile') {
+
+    // Open window and load specific content
+    if (parentIcon.id === 'profile') {
         createWindow('Profile');
     } else if (parentIcon.id === 'chat') {
         createWindow('Chat');
@@ -148,15 +226,6 @@ function selectProgram(e) {
     var parentIcon = e.target.closest('.icon');
     parentIcon.classList.add('selected_program');
     e.preventDefault()
-	
-	// // Open window and load specific content
-	// if (parentIcon.id === 'profile') {
-    //     createWindow('Profile');
-    // } else if (parentIcon.id === 'chat') {
-    //     createWindow('Chat');
-    // } else if (parentIcon.id === 'terminal') {
-    //     createWindow('Terminal');
-    // }
 
 }
 
@@ -166,7 +235,7 @@ function createWindow(appName) {
     var windowExist = document.getElementById(uniqueId);
     if (windowExist)
         return;
-    
+
     // Crear el HTML dinámico
     var htmlDinamico = `
         <div id="${uniqueId}" class="window">
@@ -185,20 +254,19 @@ function createWindow(appName) {
     document.querySelectorAll('.window').forEach(makeDraggable);
 }
 
-function closeWindow(e)
-{
-	if (e.target.closest('.round.red')) {
-		e.target.closest('.window').remove();
-	}
+function closeWindow(e) {
+    if (e.target.closest('.round.red')) {
+        e.target.closest('.window').remove();
+    }
 }
 
 function makeDraggable(element) {
-	console.log("makeDraggable called for element:", element);
+    // console.log("makeDraggable called for element:", element);
     if (!element) return;
 
-	//set initial z-index
-	let windows = document.querySelectorAll('.window');
-	element.style.zIndex = windows.length;
+    //set initial z-index
+    let windows = document.querySelectorAll('.window');
+    element.style.zIndex = windows.length;
 
     let currentPosX = 0, currentPosY = 0, previousPosX = 0, previousPosY = 0;
 
@@ -206,39 +274,39 @@ function makeDraggable(element) {
     let dragHandle = element.querySelector('.window-top') || element;
 
     dragHandle.addEventListener('mousedown', dragMouseDown);
-	
-	function setNewZIndex() {
-		// Obtener todas las ventanas
-		let windows = document.querySelectorAll('.window');
-	
-		// Obtener el índice de la ventana que se está arrastrando
-		let draggedWindowIndex = Array.from(windows).indexOf(element);
-	
-		// Calcular el nuevo z-index para la ventana arrastrada
-		let newDraggedWindowZIndex = windows.length;
-	
-		// Establecer el nuevo z-index para la ventana arrastrada
-		windows[draggedWindowIndex].style.zIndex = newDraggedWindowZIndex;
-		
-		// Ajustar el z-index para las demás ventanas
-		windows.forEach((window, index) => {
-			if (index !== draggedWindowIndex) {
-				// Calcular el nuevo z-index para la ventana actual
-				let originalIndex = parseInt(window.style.zIndex);
-				
-				if (originalIndex > 1)
-					window.style.zIndex = originalIndex - 1;
-			}
-		});
-	}
+
+    function setNewZIndex() {
+        // Obtener todas las ventanas
+        let windows = document.querySelectorAll('.window');
+
+        // Obtener el índice de la ventana que se está arrastrando
+        let draggedWindowIndex = Array.from(windows).indexOf(element);
+
+        // Calcular el nuevo z-index para la ventana arrastrada
+        let newDraggedWindowZIndex = windows.length;
+
+        // Establecer el nuevo z-index para la ventana arrastrada
+        windows[draggedWindowIndex].style.zIndex = newDraggedWindowZIndex;
+
+        // Ajustar el z-index para las demás ventanas
+        windows.forEach((window, index) => {
+            if (index !== draggedWindowIndex) {
+                // Calcular el nuevo z-index para la ventana actual
+                let originalIndex = parseInt(window.style.zIndex);
+
+                if (originalIndex > 1)
+                    window.style.zIndex = originalIndex - 1;
+            }
+        });
+    }
     function dragMouseDown(e) {
         e.preventDefault();
         previousPosX = e.clientX;
         previousPosY = e.clientY;
         document.addEventListener('mousemove', elementDrag);
         document.addEventListener('mouseup', closeDragElement);
-		//Set new z-index
-		setNewZIndex();
+        //Set new z-index
+        setNewZIndex();
     }
 
     function elementDrag(e) {
@@ -254,7 +322,5 @@ function makeDraggable(element) {
     function closeDragElement() {
         document.removeEventListener('mouseup', closeDragElement);
         document.removeEventListener('mousemove', elementDrag);
-
-		
     }
 }
