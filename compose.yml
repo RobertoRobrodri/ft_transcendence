@@ -35,8 +35,6 @@ services:
       - ddbb:/var/lib/postgresql/data
     networks:
       - transcendence
-    ports:
-      - 5432:5432
     env_file:
       - .env
 

@@ -31,27 +31,22 @@ class ChatModel(models.Model):
         user1_instance = CustomUser.objects.get(id=user1)
         user2_instance = CustomUser.objects.get(id=user2)
 
-        logger.warning(f'user1_instance: {user1_instance.username}')
-        logger.warning(f'user2_instance: {user2_instance.username}')
-        
         messages = cls.objects.filter(
             (models.Q(sender=user1_instance) & models.Q(receiver=user2_instance)) |
             (models.Q(sender=user2_instance) & models.Q(receiver=user1_instance))
         )
         
-        ignored_users_sender = user1_instance.ignored_users.values_list('username', flat=True)
-        ignored_users_recipient = user2_instance.ignored_users.values_list('username', flat=True)
+        ignored_users_sender = user1_instance.ignored_users.values_list('id', flat=True)
+        ignored_users_recipient = user2_instance.ignored_users.values_list('id', flat=True)
         
-        logger.warning(f'user1 in: {user1 in ignored_users_recipient}')
-        logger.warning(f'user2 in: {user2 in ignored_users_sender}')
         # Check if either user has blocked the other
-        if user1 in ignored_users_recipient or user2 in ignored_users_sender:
+        if user1_instance.id in ignored_users_recipient or user2_instance.id in ignored_users_sender:
             messages = messages.filter(
                 models.Q(seen=True) | models.Q(seen=False, sender=user1_instance)
             )
 
         # Update unseen messages to seen
-        if user1 not in ignored_users_recipient and user2 not in ignored_users_sender:
+        if user1_instance.id not in ignored_users_recipient and user2_instance.id not in ignored_users_sender:
             cls.objects.filter(
                 sender=user2_instance,
                 receiver=user1_instance,
@@ -65,8 +60,8 @@ class ChatModel(models.Model):
         formatted_messages = [
             {
                 'direction' : 'out' if msg.sender == user1_instance else 'in',
-                'sender'    : cls.serialize_custom_user(msg.sender if msg.sender == user1_instance else user2),
-                'receiver'  : cls.serialize_custom_user(msg.receiver if msg.receiver == user2_instance else user1),
+                'sender'    : cls.serialize_custom_user(msg.sender if msg.sender == user1_instance else user2_instance),
+                'receiver'  : cls.serialize_custom_user(msg.receiver if msg.receiver == user2_instance else user1_instance),
                 'message'   : msg.msg,
                 'timestamp' : msg.timestamp.timestamp() * 1000,
                 'seen'      : msg.seen,
