@@ -54,12 +54,12 @@ gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
-    console.log(data.message);
+    console.log(data);
 });
 
 // GAME
 gameSM.registerCallback(GAME_TYPES.GAME_STATE, data => {
-    updateGame(data.message);
+    updateGame(data);
 });
 
 gameSM.registerCallback(GAME_TYPES.WALL_COLLISON, data => {

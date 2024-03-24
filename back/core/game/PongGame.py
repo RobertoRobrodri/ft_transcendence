@@ -243,17 +243,17 @@ class PongGame:
     
     async def send_game_state(self):
         # Send updated status to all players in the game
-        await send_to_group(self.consumer, self.game_id, GAME_STATE, {'message': self.get_game_state()})
+        await send_to_group(self.consumer, self.game_id, GAME_STATE, self.get_game_state())
     
     async def send_game_end(self):
         # Send game finish
         scores = {0: self.scores[0], 1: self.scores[1]}
-        await send_to_group(self.consumer, self.game_id, GAME_END, {'message': scores})
+        await send_to_group(self.consumer, self.game_id, GAME_END, scores)
     
     async def send_game_score(self):
         # Send players score
         scores = {0: self.scores[0], 1: self.scores[1]}
-        await send_to_group(self.consumer, self.game_id, GAME_SCORE, {'message': scores})
+        await send_to_group(self.consumer, self.game_id, GAME_SCORE, scores)
 
     def get_game_state(self):
         # Return the current state of the game bt exclude id and score
