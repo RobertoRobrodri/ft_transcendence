@@ -1,6 +1,7 @@
 import { loadUserInfo } from "./menu.js"
 import { connectChat } from "./chat.js"
 import { renewJWT } from "../components/updatejwt.js"
+import { connectGame } from "./game.js"
 
 export function loadMainPage() {
 
@@ -26,6 +27,8 @@ export function loadMainPage() {
         history.pushState("", document.title, window.location.pathname + window.location.search);
         loadUserInfo();
         connectChat();
+        //register game example
+        connectGame();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
