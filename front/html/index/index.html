@@ -11,7 +11,15 @@
 
         <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
             <div>
-                <button class="btn btn-primary" id="disconnect">test disconnect socket</button>
+                <button id="initmatchmaking">Matchmaking</button>
+            </div>
+            <br>
+            <div>
+                <button id="cancelmatchmaking">Cancel Matchmaking</button>
+            </div>
+            <br>
+            <div>
+                <button id="disconnect">test disconnect socket</button>
             </div>
             <br>
             <div>
@@ -30,12 +38,12 @@
             <div>
                 <input type="text" class="form-control" id="newMessage" placeholder="New General Message">
                 <br>
-                <button class="btn btn-primary" id="sendMessageBtn">Send</button>
+                <button id="sendMessageBtn">Send</button>
             </div>
             <br>
             <br>
             <div>
-                <input type="text" class="form-control" id="dstUser" placeholder="Destination user">
+                <input type="text" id="dstUser" placeholder="Destination user">
                 <br>
                 <input type="text" class="form-control" id="newPrivMessage" placeholder="New Priv Message">
                 <button class="btn btn-primary" id="sendPrivMessageBtn">Send</button>
@@ -85,6 +93,7 @@
                     </div>
                 </div>
             </div>
+            <canvas id="pongCanvas" width="400" height="200"></canvas>
         </main>
     </div>
 </div> -->

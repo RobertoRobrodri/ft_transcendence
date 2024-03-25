@@ -1,6 +1,7 @@
 import { loadUserInfo } from "./menu.js"
 import { connectChat } from "./chat.js"
 import { renewJWT } from "../components/updatejwt.js"
+import { connectGame } from "./game.js"
 
 export function loadMainPage() {
     // Renew jwt
@@ -30,9 +31,9 @@ export function loadMainPage() {
         history.pushState("", document.title, window.location.pathname + window.location.search);
         //loadUserInfo();
         //connectChat();
-
+        //register game example
+        //connectGame();
         setClickEvents();
-
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
@@ -104,6 +105,7 @@ export function setClickEvents() {
 function makeIconsDraggable()
 {
 	var iconClass = '.icon.text-center.col-md-1';
+    console.log("PUTA");
 	document.querySelectorAll(iconClass).forEach(icon => makeDraggable(icon, iconClass));
 }
 

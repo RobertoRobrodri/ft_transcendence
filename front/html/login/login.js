@@ -15,7 +15,7 @@ async function handleSubmitLogin (e) {
     };
     try {
         // Make a POST request to the specified endpoint
-        const response = await fetch('http://localhost:80/api/pong_auth/login/', {
+        const response = await fetch('api/pong_auth/login/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
