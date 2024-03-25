@@ -30,6 +30,9 @@ let ballRadius = 5; //TODO: How's this going to be defined (?)
 let borderThickness = 5;
 let sleepMatch = 3;
 let sleep = 1;
+let incBallSpeed = 1;
+let maxBallSpeed = 6;
+let paddleSpeed = 1;
 
 const degToRad = Math.PI / 180;
 let intervalId = null;
@@ -131,11 +134,30 @@ function detectCollision() {
 function checkPaddleCollision(ball, paddle) {
     let paddleX = paddle.paddle_x;
     let paddleY = paddle.paddle_y;
-    let ballXCheck = paddle.nbr == 1 ?
-        ball.x - ballRadius <= paddleX + paddleWidth :
-        ball.x + ballRadius >= paddleX;
-    if (ballXCheck && ball.y >= paddleY && ball.y <= paddleY + paddleLenght) {
-        handlePaddleCollision(ball, paddleY);
+    let playerNbr = paddle.nbr;
+
+    let paddleLeft = paddleX;
+    let paddleRight = paddleX + paddleWidth;
+    let paddleTop = paddleY;
+    let paddleBottom = paddleY + paddleLenght;
+
+    if (playerNbr == 1 && ball.speed_x > 0) {
+        return ;
+    } else if (playerNbr == 2 && ball.speed_x < 0) {
+        return ;
+    }
+
+    if (playerNbr == 1 && ball.x < paddleRight) {
+        return ;
+    } else if (playerNbr == 2 && ball.x > paddleLeft) {
+        return ;
+    }
+
+    if ((paddleLeft <= ball.x + ballRadius && ball.x + ballRadius <= paddleRight ||
+        paddleLeft <= ball.x - ballRadius && ball.x - ballRadius <= paddleRight) &&
+        (paddleTop <= ball.y + ballRadius && ball.y + ballRadius <= paddleBottom ||
+        paddleTop <= ball.y - ballRadius && ball.y - ballRadius <= paddleBottom)) {
+            handlePaddleCollision(ball, paddleY);
     }
 }
 
@@ -147,6 +169,11 @@ function handlePaddleCollision(ball, paddleY) {
         bounceAngle = Math.PI - bounceAngle;
     }
     let ballSpeed = Math.sqrt(Math.pow(ball.speed_x, 2) + Math.pow(ball.speed_y, 2));
+    if ((ball.speed_y > 0 && Math.sin(bounceAngle) > 0) || (ball.speed_y < 0 && Math.sin(bounceAngle) < 0)) {
+        ballSpeed = Math.max(ballSpeed - incBallSpeed, ballSpeed);
+    } else {
+        ballSpeed = Math.min(ballSpeed + incBallSpeed, maxBallSpeed);
+    }
     ball.speed_x = ballSpeed * Math.cos(bounceAngle);
     ball.speed_y = ballSpeed * (-1 * Math.sin(bounceAngle));
 }
@@ -195,16 +222,16 @@ function getRandomYSpeed() {
 function handleKeyDown(event) {
     switch (event.keyCode) {
         case 87: // W
-            leftPlayerMovement = -1;
+            leftPlayerMovement = -paddleSpeed;
             break;
         case 83: // S
-            leftPlayerMovement = 1;
+            leftPlayerMovement = paddleSpeed;
             break;
         case 79: // O
-            rightPlayerMovement = -1;
+            rightPlayerMovement = -paddleSpeed;
             break;
         case 76: // L
-            rightPlayerMovement = 1;
+            rightPlayerMovement = paddleSpeed;
         default:;
     }
 }
