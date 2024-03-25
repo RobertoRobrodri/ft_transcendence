@@ -10,10 +10,11 @@ from .serializers import UserRegistrationSerializer, \
         TwoFactorAuthObtainPairSerializer
 import requests, os, pyotp
 from django.core.exceptions import ValidationError
-
+import logging
 from .utils import GenerateQR, generate_random_string,  get_token_with_custom_claim
 from django.conf import settings
 
+logger = logging.getLogger('mylogger')
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
@@ -40,6 +41,7 @@ class UserLoginView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
+        logger.debug('Processing login request')
         username = request.data.get('username', None)
         password = request.data.get('password', None)
         user = authenticate(username=username, password=password)
