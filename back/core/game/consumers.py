@@ -58,7 +58,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
                 # If the user leaves and is inside queue, remove it
-                await self.leaveMatchmaking()
+                await self.leaveMatchmaking(user)
                 
         except Exception as e:
             logger.warning(f'Exception in disconnect: {e}')
