@@ -23,23 +23,13 @@ export function connectGame()
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
-    //when game open, try restore any running game
-    gameSM.send(GAME_TYPES.RESTORE_GAME);
-}
-
-function InitMatchmaking()
-{
-    initializeGame()
-}
-
-function CancelMatchmaking()
-{
-    gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
+    
 }
 
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
-
+	//when game open, try restore any running game, i put here for test
+    gameSM.send(GAME_TYPES.RESTORE_GAME);
 });
 
 // Callback socket disconnected
@@ -64,12 +54,12 @@ gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
-    console.log(data.message);
+    console.log(data);
 });
 
 // GAME
 gameSM.registerCallback(GAME_TYPES.GAME_STATE, data => {
-    updateGame(data.message);
+    updateGame(data);
 });
 
 gameSM.registerCallback(GAME_TYPES.WALL_COLLISON, data => {
@@ -97,10 +87,14 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 // GAME LOGIC //
 ////////////////
 
-function initializeGame() {
-    
+function InitMatchmaking()
+{
     gameSM.send(GAME_TYPES.INITMATCHMAKING);
-    
+}
+
+function CancelMatchmaking()
+{
+    gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
 }
 
 function updateGame(gameState) {

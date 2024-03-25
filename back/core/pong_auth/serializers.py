@@ -8,17 +8,24 @@ from django.core.exceptions import ValidationError
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    password_2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = CustomUser
         # In case new fields are needed, create a custom model that inherits from User and add fields
-        fields = ('username', 'password',)
+        fields = ('username', 'password', 'password_2')
         # DO NOT SEND THE PASSWORD
         extra_kwargs = {
             'password': {
                 'write_only': True,
             },
         }
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+
+        return attrs
 
     def validate_password(self, value):
         try:
@@ -45,3 +52,12 @@ class User42RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('username', 'external_id')
+
+class TwoFactorAuthObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['2FA'] = True
+        return token

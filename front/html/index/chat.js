@@ -107,6 +107,7 @@ chatSM.registerCallback(CHAT_TYPES.GAME_REQUEST, data => {
 chatSM.registerCallback(CHAT_TYPES.ACCEPT_GAME, data => {
     // Now the users are connected to room in game, open game window if are closed, send RESTORE_GAME to join to the created room, and then, send PLAYER_READY (remember do in game socket)
     //i do all automatically for test propusses
+	console.log("ACCEPT_GAME")
 	gameSM.send(GAME_TYPES.RESTORE_GAME);
 	gameSM.send(GAME_TYPES.PLAYER_READY);
 
@@ -146,8 +147,8 @@ function unignoreUser()
 
 // Load all chat users
 function populateChat(userList) {
-    userList.forEach((username) => {
-        addSingleUser(username)
+    userList.forEach((user) => {
+        addSingleUser(user)
     });
 }
 
@@ -170,9 +171,9 @@ function sendPrivMessage() {
 }
 
 // Example to request chat history from this user
-export function requestHistory(selectedUsername) {
+export function requestHistory(user) {
     var dstUser = document.getElementById("dstUser");
-    dstUser.value = selectedUsername;
+    dstUser.value = user.id;
     
     chatSM.send(CHAT_TYPES.LIST_MSG, JSON.stringify({
         recipient: dstUser.value
@@ -184,26 +185,27 @@ export function requestHistory(selectedUsername) {
 //////////////////
 
 // Add new item to chat
-export function addSingleUser(username) {
+export function addSingleUser(user) {
     const userListElement = document.getElementById('userList');
     const listItem = document.createElement('li');
     listItem.classList.add('nav-item');  // Cambiado para que coincida con la estructura del menú
     const link = document.createElement('a');
     link.classList.add('nav-link');
-    link.textContent = username;
+    link.textContent = user.username;
+	link.id = user.id;
     link.addEventListener('click', () => {
-        requestHistory(username);
+        requestHistory(user);
     });
     listItem.appendChild(link);
     userListElement.appendChild(listItem);
 }
 
 // Remove item from chat
-export function removeSingleUser(username) {
+export function removeSingleUser(user) {
     const userListElement = document.getElementById('userList');
     const listItem = Array.from(userListElement.children).find(element => {
         const link = element.querySelector('.nav-link');
-        return link && link.textContent.trim() === username;
+        return link && link.id === String(user.id);
     });
 
     if (listItem) {
@@ -239,7 +241,7 @@ export function fillHistoryMsg(data) {
     
     data.forEach((message) => {
         var newmsg = document.createElement("li");
-        newmsg.textContent = `${message.receiver}: ${message.message}`;
+        newmsg.textContent = `${message.sender}: ${message.message}`;
         newmsg.classList.add("list-group-item");
         messageHistory.appendChild(newmsg);
         // Get message time example

@@ -58,7 +58,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
                 # If the user leaves and is inside queue, remove it
-                await self.leaveMatchmaking(self)
+                await self.leaveMatchmaking(user)
                 
         except Exception as e:
             logger.warning(f'Exception in disconnect: {e}')
@@ -72,15 +72,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 
                 # Normal matchmaking
                 if type == INITMATCHMAKING:
-                    await self.enterMarchmaking()
+                    await self.enterMarchmaking(user)
                 elif type == CANCELMATCHMAKING:
-                    await self.leaveMatchmaking()
+                    await self.leaveMatchmaking(user)
                 elif type == DIRECTION:
-                    await self.move_paddle(data["message"])
+                    await self.move_paddle(data["message"], user)
                 elif type == PLAYER_READY:
-                    await self.player_ready()
+                    await self.player_ready(user)
                 elif type == RESTORE_GAME:
-                    await self.restoreGame()
+                    await self.restoreGame(user)
                     
                 # Tournament
                 elif type == DIRECTION:
@@ -94,58 +94,61 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     ## MATCHMAKING FUNCTIONS ##
     ###########################
 
-    async def enterMarchmaking(self):
+    async def enterMarchmaking(self, user):
         # If user is already in queue
-        if matchmaking_queue.is_user_in_queue(self.channel_name):
+        if matchmaking_queue.is_user_in_queue(user.id):
             return
         # And prevent sockets if player is already in game
-        game_id = self.get_game_id(self.scope["user"].username)
+        game_id = get_game_id(user.id)
         if game_id is not None:
             return
         
         # If queue have 0 users, join
         async with matchmaking_lock: # Block this section to prevent 2 or more users add self to queue
             if matchmaking_queue.get_queue_size() == 0:
-                matchmaking_queue.add_user(self.channel_name, self.scope["user"].username)
+                matchmaking_queue.add_user(self.channel_name, user.id)
                 await send_to_me(self, INQUEUE, {'message': 'Waiting for another player...'})
                 return
-            
+        
         # Get oponent
         async with matchmaking_lock: # Block this section to prevent 2 or more users pop user and only have 1
             rival = matchmaking_queue.pop_users()
             if rival is None: # Anyway, let's check to prevent fails
-                self.enterMarchmaking()
+                self.enterMarchmaking(user)
                 return
         
         # Generate unique room name
-        sorted_usernames = sorted([rival['username'], self.scope["user"].username])
-        room_name = f'room_{hash("".join(sorted_usernames))}'
-                
+        sorted_ids = sorted([rival["userid"], user.id])
+        room_name = f'room_{hash("".join(map(str, sorted_ids)))}'
+        
         # Add users to new group
         await self.channel_layer.group_add(room_name, rival['channel_name'])
         await self.channel_layer.group_add(room_name, self.channel_name)
-                
+        
+		# Start game
+        rivalUser = await CustomUser.get_user_by_id(rival['userid'])
+        await self.start_game(user.id, user.username, rival['userid'], rivalUser.username, room_name)
+        
+		# Send info game start
         message = {'message': f'Pairing successful! United in the room {room_name}'}
         await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
-        await self.start_game(self.channel_name, self.scope["user"].username, rival['channel_name'], rival['username'], room_name)
-    
-    async def player_ready(self):
-        game_id = self.get_game_id(self.scope["user"].username)
-        if game_id:
-            await games[game_id].player_ready(self.channel_name)
 
-    async def leaveMatchmaking(self):
-        matchmaking_queue.remove_user(self.channel_name)
+    async def player_ready(self, user):
+        game_id = get_game_id(user.id)
+        if game_id:
+            await games[game_id].player_ready(user.id)
     
-    async def restoreGame(self):
+    async def leaveMatchmaking(self, user):
+        matchmaking_queue.remove_user(user.id)
+    
+    async def restoreGame(self, user):
         # Restore game
-        game_id = self.get_game_id(self.scope["user"].username)
-        logger.warning(f'game_id: {game_id}')
+        game_id = get_game_id(user.id)
         if game_id is not None:
             message = {'message': f'Game restored {game_id}'}
             await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
             await self.channel_layer.group_add(game_id, self.channel_name)
-            await games[game_id].change_player(self.channel_name, self.scope["user"].username)
+            # await games[game_id].change_player(self.channel_name, user.id)
     
     ######################
     ## HELPER FUNCTIONS ##
@@ -162,44 +165,26 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
     async def start_game(self, player1_id, player1_name, player2_id, player2_name, game_id):
         game = PongGame(game_id, self, True)
-        game.add_player(player1_id, player1_name, 1)
-        game.add_player(player2_id, player2_name, 2)
+        game.add_player(player1_name, player1_id, 1)
+        game.add_player(player2_name, player2_id, 2)
         games[game_id] = game
 
         # Iniciar el juego en segundo plano si aún no ha comenzado
         if not game.running:
             asyncio.create_task(game.start_game())
 
-    async def move_paddle(self, direction):
-        game_id = self.get_game_id(self.scope["user"].username)
+    async def move_paddle(self, direction, user):
+        game_id = get_game_id(user.id)
         if game_id:
-            games[game_id].move_paddle(self.channel_name, direction)
+            games[game_id].move_paddle(user.id, direction)
 
-    # async def leave_game(self):
-    #     game_id = self.get_game_id(self.channel_name)
-    #     if game_id:
-    #         game = games[game_id]
-    #         game.remove_player(self.channel_name)
-
-    #         # Eliminar la instancia del juego si no hay jugadores
-    #         if not game.players:
-    #             del games[game_id]
-    #             game.running = False
-
-    def get_game_id(self, username):
-        # Buscar el game_id asociado al player_id
-        for game_id, game in games.items():
-            logger.warning(f'get_game_id: {game_id}')
-            if any(player['username'] == username for player in game.players.values()):
-                if game.finished:
-                    del games[game_id]
-                    return None
-                return game_id
-        return None
-    # def get_game_id(self, username):
-    #     # Buscar el game_id asociado al username
-    #     for game_id, game in games.items():
-    #         for _, player_info in game.players.items():
-    #             if player_info['username'] == username:
-    #                 return game_id
-    #     return None
+def get_game_id(userid):
+    # Buscar el game_id asociado al player_id
+    for game_id, game in games.items():
+        
+        if any(player['userid'] == userid for player in game.players.values()):
+            if game.finished:
+                del games[game_id]
+                return None
+            return game_id
+    return None

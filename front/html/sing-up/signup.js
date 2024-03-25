@@ -8,10 +8,12 @@ async function handleSubmitRegister(e) {
     // Get the input values
     const username = document.querySelector('#new_username').value;
     const password = document.querySelector('#new_password').value;
+	const password_2 = document.querySelector('#new_password_2').value;
 
     const loginData = {
         username: username,
         password: password,
+		password_2: password_2,
     };
     try {
         const response = await fetch('api/pong_auth/register/', {

@@ -5,20 +5,29 @@ services:
     build: ./front/
     container_name: nginx
     ports:
-      - 80:80
+      - 443:443
     volumes:
       - profile_pictures:/media
+<<<<<<< HEAD
       - ./front/html:/usr/share/nginx/html/
+=======
+      - ./.logs/nginx:/var/log/nginx
+    networks:
+      - transcendence
+>>>>>>> main
     depends_on:
       - django
 
   django:
     build: ./back/
     container_name: django
-    ports:
-      - 8000:8000
     volumes:
       - profile_pictures:/core/media
+    # Please only access directly to django if you want to go admin or swagger dashboard 
+    ports:
+      - 8000:8000
+    networks:
+      - transcendence
     env_file:
       - .env
     depends_on:
@@ -27,10 +36,12 @@ services:
   db:
     build: ./db/
     container_name: db
-    expose:
-      - 5432
     volumes:
       - ddbb:/var/lib/postgresql/data
+      - ./.logs/db:/log
+    command: -c 'config_file=/etc/postgresql/postgresql.conf'
+    networks:
+      - transcendence
     env_file:
       - .env
 
@@ -38,43 +49,117 @@ services:
     image: "redis:7.2.3-alpine"
     container_name: "redis"
     command: ["redis-server", "--bind", "redis", "--port", "6379"]
+    networks:
+      - transcendence
       
 # Monitoring
   prometheus:
     image: prom/prometheus:v2.49.1
     container_name: prometheus
-    ports:
-      - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - ./prometheus/web.yml:/etc/prometheus/web.yml
       - prom_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.config.file=/etc/prometheus/web.yml'
+      - '--web.route-prefix=/'
+      - '--web.external-url=https://localhost/monitoring/prometheus'
+    networks:
+      - transcendence
   
   alertmanager:
     image: prom/alertmanager:v0.21.0
     container_name: alertmanager
-    ports:
-      - "9093:9093"
     volumes:
       - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--web.route-prefix=/'
+      - '--web.external-url=https://localhost/monitoring/alertmanager'
+    networks:
+      - transcendence
 
+  setup:
+    build: ./setup/
+    container_name: setup
+    networks:
+      - transcendence
+    depends_on:
+      - elasticsearch
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASS=123456
+      - KIBANA_SYSTEM_PASSWORD=mi_contrasena_kibana_system
 
-# Django dashboard 17658
-# Postgres dashboard 9628
-# Nginx dashboard 12708
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+    container_name: elasticsearch
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - "ES_JAVA_OPTS= -Xms512m -Xmx512m"
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=123456
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./elk-config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - transcendence
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.1
+    container_name: logstash
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - ELASTIC_PASSWORD=123456
+      - ELASTIC_USER=elastic
+      - xpack.monitoring.elasticsearch.username=elastic
+      - xpack.monitoring.elasticsearch.password="123456"
+    volumes:
+      - ./elk-config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./.logs:/var/log/services
+    depends_on:
+      - elasticsearch
+    networks:
+      - transcendence
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.1
+    container_name: kibana
+    volumes:
+      - ./elk-config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elasticsearch
+      - setup
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - XPACK_MONITORING_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED=true
+      - XPACK_SECURITY_ENABLED=true
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=mi_contrasena_kibana_system
+    networks:
+      - transcendence
+# Django    dashboard    17658
+# Postgres  dashboard  9628
+# Nginx     dashboard     12708
   grafana:
     image: grafana/grafana:10.3.1
     container_name: grafana
-    ports:
-      - 3000:3000
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
       - graf_data:/var/lib/grafana
+    networks:
+      - transcendence
     environment:
     #TODO Secure this credentials, for now development doesnt matter
       - GF_SECURITY_ADMIN_USER=test-user
       - GF_SECURITY_ADMIN_PASSWORD=test
+      - GF_SERVER_ROOT_URL=https://localhost/monitoring/grafana/
     depends_on:
       - prometheus
 
@@ -82,8 +167,8 @@ services:
   postgres_exporter:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
     container_name: postgres_exporter
-    expose:
-      - 9187
+    networks:
+      - transcendence
     environment:
       - DATA_SOURCE_NAME=postgresql://postgres:postgres@db:5432/postgres?sslmode=disable
     depends_on:
@@ -93,16 +178,21 @@ services:
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:1.1.0
     container_name: nginx_exporter
-    expose:
-      - 9113
+    networks:
+      - transcendence
     command:
-      - --nginx.scrape-uri=http://nginx:80/nginx_status
+      - --nginx.scrape-uri=https://nginx:443/nginx_status
     depends_on:
       - prometheus
       - nginx
+
+networks:
+  transcendence:
+    name: transcendence
 
 volumes:
   ddbb:
   profile_pictures:
   prom_data:
   graf_data:
+  elasticsearch_data:

@@ -9,7 +9,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'status', 'profile_picture',)
+        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth')
 
     def update(self, instance, validated_data):
         previous_profile_picture = instance.profile_picture
@@ -18,6 +18,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.username        = validated_data.get('username', instance.username)
         instance.status          = validated_data.get('status', instance.status)
+        instance.TwoFactorAuth   = validated_data.get('TwoFactorAuth', instance.TwoFactorAuth)
         instance.save()
         return instance
     
