@@ -2,7 +2,7 @@ import { loadUserInfo } from "./menu.js"
 import { connectChat } from "./chat.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame } from "./game.js"
-import { registerOneGame } from "./onegame.js"
+import { registerOneGame } from "./onegame python.js"
 
 export function loadMainPage() {
 
