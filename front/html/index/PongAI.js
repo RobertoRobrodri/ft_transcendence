@@ -15,42 +15,42 @@ export class PongAI {
         this.B = 1; // valor de la constante bias (sesgo)
         this.cost = 0; // valor de la tasa de coste
         this.resul;
-		this.loadTrainedWeights();
+        this.loadTrainedWeights();
 
         // Variables del algoritmo normal
         this.prevBallX = null;
         this.prevBallY = null;
     }
     
-	loadTrainedWeights() {
+    loadTrainedWeights() {
         this.WXE1 = [-0.015270523165288798,0.4757071442679575,-0.9136990110769312,-0.15236689800435801];
         this.WXE2 = [-0.002963426208980807,0.9694068855539781,-0.5885226854463134,0.028443858501022785];
         this.WO1E = [0.46745995821474484,0.6663174868997028];
         this.WO2E = [0.4340591391286907,0.5150288467507528];
         this.WS = [0.05680382439738113,0.7930956372213506];
-		this.cost = -0.02148083593692185;
+        this.cost = -0.02148083593692185;
     }
-	
+    
     process(ballX, ballY, paddleY, paddleSize, canvasHeight, canvasWidth) {
         this.fillData(ballX, ballY, paddleY, paddleSize, canvasHeight, canvasWidth);
         this.feedfoward();
         let ret = this.calculateOutput(this.S);
         this.updateWeights(this.cost);
-		return ret;
+        return ret;
     }
 
-	fillData(ballX, ballY, paddleY, paddleSize, canvasHeight, canvasWidth){
-		this.X = [
-			ballX / canvasWidth,                // Posición X actual de la pelota
-			ballY / canvasHeight,               // Posición Y actual de la pelota
-			//prevBallX / canvasWidth,            // Posición X anterior de la pelota
-			//prevBallY / canvasHeight,           // Posición Y anterior de la pelota
-			paddleY / canvasHeight,             // Posición Y de la raqueta
-			this.B                               // Sesgo
-		];
-		// Calcula el error: centro de la bola - centro de la raqueta
-		this.cost = ((ballY) - (paddleY + paddleSize / 2)) / canvasHeight;
-	}
+    fillData(ballX, ballY, paddleY, paddleSize, canvasHeight, canvasWidth){
+        this.X = [
+            ballX / canvasWidth,                // Posición X actual de la pelota
+            ballY / canvasHeight,               // Posición Y actual de la pelota
+            //prevBallX / canvasWidth,            // Posición X anterior de la pelota
+            //prevBallY / canvasHeight,           // Posición Y anterior de la pelota
+            paddleY / canvasHeight,             // Posición Y de la raqueta
+            this.B                               // Sesgo
+        ];
+        // Calcula el error: centro de la bola - centro de la raqueta
+        this.cost = ((ballY) - (paddleY + paddleSize / 2)) / canvasHeight;
+    }
     
     // Calcular el producto de 2 vectores
     vectorProduct(a, b) {
@@ -93,11 +93,11 @@ export class PongAI {
     calculateOutput(x){
         if (Math.abs(x - 0.5) <= 0.001)
             return 0;
-		else if(x <= 0.5)
-			return -1;
-		else if(x > 0.5)
-			return 1;
-	}
+        else if(x <= 0.5)
+            return -1;
+        else if(x > 0.5)
+            return 1;
+    }
 
     updateWeights(erro, alpha = 0.01) {
         let input, input1, input2; // variables locales
@@ -138,20 +138,20 @@ export class PongAI {
         }
     }
 
-	increaseCost()
-	{
-		this.cost *= 10;
-	}
+    increaseCost()
+    {
+        this.cost *= 10;
+    }
     
 
-	saveWeightsToFile() {
+    saveWeightsToFile() {
         const weightsData = {
             WXE1: this.WXE1,
             WXE2: this.WXE2,
             WO1E: this.WO1E,
             WO2E: this.WO2E,
             WS: this.WS,
-		    cost: this.cost
+            cost: this.cost
         };
         const jsonData = JSON.stringify(weightsData);
         console.log(`${jsonData}`);
@@ -164,7 +164,7 @@ export class PongAI {
     setPrevBall(ballX, ballY)
     {
         this.prevBallX = ballX;
-		this.prevBallY = ballY;
+        this.prevBallY = ballY;
     }
 
     ballImpactPoint(ballX, ballY, canvasHeight, canvasWidth) {

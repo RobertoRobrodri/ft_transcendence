@@ -27,7 +27,7 @@ export function connectGame()
 
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
-	//when game open, try restore any running game, i put here for test
+    //when game open, try restore any running game, i put here for test
     gameSM.send(GAME_TYPES.RESTORE_GAME);
 });
 
@@ -121,35 +121,35 @@ function updateGame(gameState) {
     // Draw ball
     drawBall(gameState.ball.x, gameState.ball.y);
 
-	// process AI (RNA or algorithm)
-	var rival = document.getElementById("dstUser").value;
-	for (const playerId in gameState.players) {
-		const player = gameState.players[playerId];
-		if (player.userid != rival)
-		{
-			// RNA
-			// let direction = ai.process(gameState.ball.x, gameState.ball.y, player.paddle_y, paddle_height, canvasHeight, canvasWidth);
-			// if(direction == 0)
-			// 	return;
-			// let toSend = (direction === 1) ? "1" : "-1";
-			// gameSM.send(GAME_TYPES.DIRECTION, toSend);
-			//if ai loss, increase cost
-			//ai.increaseCost();
+    // process AI (RNA or algorithm)
+    var rival = document.getElementById("dstUser").value;
+    for (const playerId in gameState.players) {
+        const player = gameState.players[playerId];
+        if (player.userid != rival)
+        {
+            // RNA
+            // let direction = ai.process(gameState.ball.x, gameState.ball.y, player.paddle_y, paddle_height, canvasHeight, canvasWidth);
+            // if(direction == 0)
+            //     return;
+            // let toSend = (direction === 1) ? "1" : "-1";
+            // gameSM.send(GAME_TYPES.DIRECTION, toSend);
+            //if ai loss, increase cost
+            //ai.increaseCost();
 
-			//Normal Bot
-			let dst = ai.ballImpactPoint(gameState.ball.x, gameState.ball.y, canvasHeight, canvasWidth);
-			let middlePaddle = player.paddle_y + paddle_height / 2;
-			if(dst == 0 || middlePaddle >= dst - 2 && middlePaddle <= dst + 2)
-				return
-			if (middlePaddle < dst)
-				gameSM.send(GAME_TYPES.DIRECTION, "1");
-			else if (middlePaddle > dst)
-				gameSM.send(GAME_TYPES.DIRECTION, "-1");
-			
+            //Normal Bot
+            let dst = ai.ballImpactPoint(gameState.ball.x, gameState.ball.y, canvasHeight, canvasWidth);
+            let middlePaddle = player.paddle_y + paddle_height / 2;
+            if(dst == 0 || middlePaddle >= dst - 2 && middlePaddle <= dst + 2)
+                return
+            if (middlePaddle < dst)
+                gameSM.send(GAME_TYPES.DIRECTION, "1");
+            else if (middlePaddle > dst)
+                gameSM.send(GAME_TYPES.DIRECTION, "-1");
+            
 
 
-		}
-	}
+        }
+    }
 }
 
 function drawPaddle(x, y) {

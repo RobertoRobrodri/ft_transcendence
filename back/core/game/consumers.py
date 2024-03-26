@@ -125,11 +125,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(room_name, rival['channel_name'])
         await self.channel_layer.group_add(room_name, self.channel_name)
         
-		# Start game
+        # Start game
         rivalUser = await CustomUser.get_user_by_id(rival['userid'])
         await self.start_game(user.id, user.username, rival['userid'], rivalUser.username, room_name)
         
-		# Send info game start
+        # Send info game start
         message = {'message': f'Pairing successful! United in the room {room_name}'}
         await send_to_group(self, room_name, INITMATCHMAKING, message)
 
