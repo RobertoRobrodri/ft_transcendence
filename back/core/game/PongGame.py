@@ -35,7 +35,7 @@ class PongGame:
         self.ball_speed         = 3   # Base ball speed
         self.inc_ball_speed     = 1   # Increment of ball speed
         self.max_ball_speed     = 6   # Base ball speed
-        self.paddle_speed       = 1   # Speed of paddles
+        self.paddle_speed       = 2   # Speed of paddles
 
         self.points_to_win      = 6
         ######
@@ -159,11 +159,15 @@ class PongGame:
             await self.reset_game(winner)                   # Reset Game
             return
         
-        # Collision detection with upper and lower walls
-        if ball['y'] <= top_side or ball['y'] >= bottom_side:
+        # Collision detection with upper and lower walls and revent infinite bounce on upper and lower
+        if (ball['y'] <= top_side and ball['speed_y'] < 0) or (ball['y'] >= bottom_side and ball['speed_y'] > 0):
             ball['speed_y'] *= -1  # Reverse direction on the y axis
             await send_to_group(self.consumer, self.game_id, WALL_COLLISON, {})
             return
+        # if ball['y'] <= top_side or ball['y'] >= bottom_side:
+        #     ball['speed_y'] *= -1  # Reverse direction on the y axis
+        #     await send_to_group(self.consumer, self.game_id, WALL_COLLISON, {})
+        #     return
     
     def check_paddle_collision(self, ball, player, paddle_width, paddle_height):
         paddle_x = player['paddle_x']
@@ -183,9 +187,9 @@ class PongGame:
             return False
         
         # If middle of ball through inner side of paddle, then don't collide
-        if player_nbr == 1 and ball['x'] < paddle_left:
+        if player_nbr == 1 and ball['x'] < paddle_right - 2: #before paddle_left
             return False
-        elif player_nbr == 2 and ball['x'] > paddle_left:
+        elif player_nbr == 2 and ball['x'] > paddle_left + 2:
             return False
         
         # Check if the ball is within the limits of the paddle
