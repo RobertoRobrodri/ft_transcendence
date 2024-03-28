@@ -81,6 +81,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
 let score1 = 0;
 gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
     console.log(data)
+    ai.setPrevBall(null, null);
 });
 
 
@@ -90,7 +91,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 // GAME LOGIC //
 ////////////////
 
-const ai = new PongAI();
+const ai = new PongAI(true); //false: use trained weights, true: train new model
 let paddle_height = 40;
 let canvasHeight = 200;
 let canvasWidth = 400;
@@ -127,27 +128,28 @@ function updateGame(gameState) {
         const player = gameState.players[playerId];
         if (player.userid != rival)
         {
-            // RNA
-            // let direction = ai.process(gameState.ball.x, gameState.ball.y, player.paddle_y, paddle_height, canvasHeight, canvasWidth);
-            // if(direction == 0)
-            //     return;
-            // let toSend = (direction === 1) ? "1" : "-1";
-            // gameSM.send(GAME_TYPES.DIRECTION, toSend);
-            //if ai loss, increase cost
-            //ai.increaseCost();
-
-            //Normal Bot
-            let dst = ai.ballImpactPoint(gameState.ball.x, gameState.ball.y, canvasHeight, canvasWidth);
-            let middlePaddle = player.paddle_y + paddle_height / 2;
-            if(dst == 0 || middlePaddle >= dst - 2 && middlePaddle <= dst + 2)
-                return
-            if (middlePaddle < dst)
-                gameSM.send(GAME_TYPES.DIRECTION, "1");
-            else if (middlePaddle > dst)
-                gameSM.send(GAME_TYPES.DIRECTION, "-1");
-            
-
-
+            if(rival == "1")
+            {
+                // RNA
+                let direction = ai.process(gameState.ball.x, gameState.ball.y, player.paddle_y, paddle_height, canvasHeight, canvasWidth, 0, 5);
+                if(direction == 0)
+                    return;
+                let toSend = (direction === 1) ? "1" : "-1";
+                gameSM.send(GAME_TYPES.DIRECTION, toSend);
+                //if ai loss, increase cost
+                //ai.increaseCost();
+            }else{
+                //Normal Bot
+                let dst = ai.ballImpactPoint(gameState.ball.x, gameState.ball.y, canvasHeight, canvasWidth, 0, 5);
+                let middlePaddle = player.paddle_y + paddle_height / 2;
+                //console.log(dst)
+                if(dst == NaN || middlePaddle >= dst - 2 && middlePaddle <= dst + 2)
+                    return
+                if (middlePaddle < dst)
+                    gameSM.send(GAME_TYPES.DIRECTION, "1");
+                else if (middlePaddle > dst)
+                    gameSM.send(GAME_TYPES.DIRECTION, "-1");
+            }
         }
     }
 }
@@ -178,6 +180,7 @@ function handleKeyDown(event) {
             // Set a flag to indicate that we are sending a request
             isSending = true;
             // Send key event to server
+            //ai.increaseCost()
             sendDirectionToServer();
         }
     }
@@ -206,6 +209,8 @@ function getDirectionFromKeyCode(keyCode) {
             return '-1';
         case 40: // DOWN
             return '1';
+        case 80: // "p" key, print trained AI weights
+            ai.printWeights()
         default:
             return null;
     }
