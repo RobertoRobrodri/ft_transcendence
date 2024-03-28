@@ -135,15 +135,15 @@ main {
 	border-radius: 10px;
 	border: none;
 	box-shadow: 1px 1px 4px rgba(0,0,0,0,0.9), -1px 1px 4px rgba(0,0,0,0,0.9);
-	background: #45f3ff33;
+	background: #45f3ff;
     /* Centra la ventana del programa en el centro de la página web */
     top: calc(50% - 225px); /* Calcula la posición top height/2 */
     left: calc(50% - 400px); /* Calcula la posición left width/2 */
 }
 
 .window-content {
-	background: #28292da8;
-	color: #45f3ff33;
+	background: #28292d;
+	color: #45f3ff;
 	height: 100%;
 	font-family: monospace;
 	padding: 5px;
@@ -152,7 +152,7 @@ main {
 .window-top, .window-top-no-bind {
 	cursor: move;
 	text-align: right;
-	height: 30px;
+	height: 40px;
 	border-bottom: 1px solid rgba(0,0,0,0.5);
 	border-top-right-radius: 5px;
 	border-top-left-radius: 5px;

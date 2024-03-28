@@ -105,7 +105,6 @@ export function setClickEvents() {
 function makeIconsDraggable()
 {
 	var iconClass = '.icon.text-center.col-md-1';
-    console.log("PUTA");
 	document.querySelectorAll(iconClass).forEach(icon => makeDraggable(icon, iconClass));
 }
 
@@ -163,6 +162,29 @@ function selectProgram(e) {
 
 }
 
+function setWindowContent(uniqueId) {
+    if (uniqueId == 'myWindowProfile') {
+        var htmlUrl = '../profile/profile.html';
+        var cssUrl = '../profile/profileStyle.css';
+        var scriptUrl = '../profile/profileScript.js';
+    }
+    console.log(uniqueId);
+    let window = document.getElementById(uniqueId + "-content");
+    Promise.all([
+        fetch(htmlUrl).then(response => response.text()),
+        fetch(cssUrl).then(response => response.text()),
+        fetch(scriptUrl).then(response => response.text())
+    ]).then(([html, css, javascript]) => {
+        // window.location.hash = '#/' + uniqueId;
+        window.innerHTML = html;
+        let style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+    }).catch(error => {
+        console.error('Error al cargar el formulario:', error);
+    });
+}
+
 function createWindow(appName) {
     var uniqueId = "myWindow" + appName;
     // Comprobar que la ventana no existe (prevenir abrir 2 veces una app)
@@ -178,7 +200,7 @@ function createWindow(appName) {
                 <button class="round yellow"></button>
                 <button class="round red"></button>
             </div>
-            <div class="window-content">
+            <div class="window-content" id="${uniqueId}-content">
             </div>
         </div>
     `;
@@ -188,6 +210,7 @@ function createWindow(appName) {
     document.querySelectorAll('.window').forEach(window => makeDraggable(window, '.window-top'));
 	// No se la razón, pero solo por agregar el html los iconos dejan de ser movibles, asi que se setea de nuevo
 	makeIconsDraggable();
+    setWindowContent(uniqueId);
 }
 
 function closeWindow(e) {
