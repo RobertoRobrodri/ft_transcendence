@@ -173,6 +173,8 @@ main {
 	box-shadow: 1px 1px 2px #000;
 }
 
+/* Colores de los botones gestor de ventanas */
+
 .green {
 	background-color: limegreen;
 }
@@ -184,4 +186,10 @@ main {
 .red {
 	cursor: pointer;
 	background-color: red;
+}
+
+/* Estilo de las letras dentro de las ventanas */
+
+.window-content {
+    font-family: 'Courier New', Courier, monospace;
 }

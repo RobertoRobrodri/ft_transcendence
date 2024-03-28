@@ -163,12 +163,12 @@ function selectProgram(e) {
 }
 
 function setWindowContent(uniqueId) {
-    if (uniqueId == 'myWindowProfile') {
+    // if (uniqueId == 'myWindowProfile') {
         var htmlUrl = '../profile/profile.html';
         var cssUrl = '../profile/profileStyle.css';
         var scriptUrl = '../profile/profileScript.js';
-    }
-    console.log(uniqueId);
+    // }
+    // console.log(uniqueId);
     let window = document.getElementById(uniqueId + "-content");
     Promise.all([
         fetch(htmlUrl).then(response => response.text()),
