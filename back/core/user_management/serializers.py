@@ -44,3 +44,9 @@ class UserUpdatePasswordSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data.get('password'))
         instance.save()
         return instance
+
+class UserListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth', 'wins', 'losses',)

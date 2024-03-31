@@ -14,9 +14,11 @@ export async function loadUserInfo() {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        let username = data.username;
         let user_info = document.getElementById("user_info");
-        let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, username);
+        let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, data.username);
+        user_updated = user_updated.replace(/{{WINS}}/g, data.wins);
+        user_updated = user_updated.replace(/{{LOSSES}}/g, data.losses);
+        user_updated = user_updated.replace(/{{STATUS}}/g, data.status);
         user_info.innerHTML = user_updated;
     }
     catch (error) {

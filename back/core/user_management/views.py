@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from pong_auth.models import CustomUser
-from .serializers import UserUpdateSerializer, UserUpdatePasswordSerializer
+from .serializers import UserUpdateSerializer, UserUpdatePasswordSerializer, UserListSerializer
 from pong_auth.permissions import IsLoggedInUser
 from django.core.exceptions import ValidationError
 
@@ -43,7 +43,7 @@ class UserListAllView(generics.ListAPIView):
 
 # Override the requirement for a PK, because we already know the user sending the request
 class UserListView(generics.GenericAPIView):
-	serializer_class = UserUpdateSerializer
+	serializer_class = UserListSerializer
 	queryset = CustomUser.objects.all()
 
 	def get(self, request):

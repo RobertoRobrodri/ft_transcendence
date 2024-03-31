@@ -142,7 +142,7 @@ class User42Callback(generics.GenericAPIView):
                     verification_token = get_token_with_custom_claim(user)
                     return Response({
                         # Send a token ONLY for verification
-                        'verification_token' : str(verification_token.access_token),
+                        'verification_token' : str(verification_token),
                         'message' : 'Verify Login',
                         'QR' : encoded_qr,
                     },status=status.HTTP_200_OK)

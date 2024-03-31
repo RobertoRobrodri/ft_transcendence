@@ -183,6 +183,7 @@ function setWindowContent(uniqueId) {
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
+    loadUserInfo();
 }
 
 function createWindow(appName) {
