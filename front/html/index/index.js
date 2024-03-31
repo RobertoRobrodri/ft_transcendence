@@ -1,5 +1,5 @@
 import { loadUserInfo } from "../profile/profileScript.js"
-import { connectChat } from "../chat/chatScript.js"
+import { connectChat, sendMessage } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame } from "./game.js"
 
@@ -161,6 +161,16 @@ function selectProgram(e) {
 
 }
 
+function setWindowEvents(uniqueId) {
+    if (uniqueId == 'myWindowProfile') {
+        loadUserInfo();
+    }
+    else if (uniqueId == 'myWindowChat') {
+        connectChat();
+        document.getElementById('root').addEventListener('click', sendMessage);
+    }
+}
+
 function setWindowContent(uniqueId) {
     if (uniqueId == 'myWindowProfile') {
         var htmlUrl = '../profile/profile.html';
@@ -187,7 +197,7 @@ function setWindowContent(uniqueId) {
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
-    loadUserInfo();
+    setWindowEvents(uniqueId)
 }
 
 function createWindow(appName) {

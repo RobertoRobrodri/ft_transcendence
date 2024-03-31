@@ -4,15 +4,15 @@ import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { CHAT_TYPES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
 import { renewJWT } from "../components/updatejwt.js"
 
-function register() {
-    document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
-    document.getElementById("Ignore").addEventListener("click", ignoreUser);
-    document.getElementById("Unignore").addEventListener("click", unignoreUser);
-    document.getElementById("disconnect").addEventListener("click", disconnect);
-    document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
-    document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
-    document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
-}
+// function register() {
+//     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
+//     document.getElementById("Ignore").addEventListener("click", ignoreUser);
+//     document.getElementById("Unignore").addEventListener("click", unignoreUser);
+//     document.getElementById("disconnect").addEventListener("click", disconnect);
+//     document.getElementById("send-button").addEventListener("click", sendMessage);
+//     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
+//     document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
+//}
 
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
@@ -21,7 +21,6 @@ let gameSM = new GameSocketManager();
 export function connectChat()
 {
     chatSM.connect();
-    register();
 }
 
 function disconnect()
@@ -153,7 +152,10 @@ function populateChat(userList) {
 }
 
 // Example to send a global message
-function sendMessage() {
+export function sendMessage(e) {
+    if (e.target.matches('#send-button') === false)
+        return ;
+    e.preventDefault();
     var input = document.getElementById("newMessage");
     chatSM.send(CHAT_TYPES.GENERAL_MSG, input.value);
     input.value = "";
