@@ -1,5 +1,5 @@
-import { loadUserInfo } from "./menu.js"
-import { connectChat } from "./chat.js"
+import { loadUserInfo } from "../profile/profileScript.js"
+import { connectChat } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame } from "./game.js"
 
@@ -29,7 +29,6 @@ export function loadMainPage() {
         document.head.appendChild(style2);
         //clear hash
         history.pushState("", document.title, window.location.pathname + window.location.search);
-        //loadUserInfo();
         //connectChat();
         //register game example
         //connectGame();
@@ -163,11 +162,16 @@ function selectProgram(e) {
 }
 
 function setWindowContent(uniqueId) {
-    // if (uniqueId == 'myWindowProfile') {
+    if (uniqueId == 'myWindowProfile') {
         var htmlUrl = '../profile/profile.html';
         var cssUrl = '../profile/profileStyle.css';
         var scriptUrl = '../profile/profileScript.js';
-    // }
+    }
+    else if (uniqueId == 'myWindowChat') {
+        var htmlUrl = '../chat/chat.html';
+        var cssUrl = '../chat/chatStyle.css';
+        var scriptUrl = '../chat/chatScript.js';
+    }
     // console.log(uniqueId);
     let window = document.getElementById(uniqueId + "-content");
     Promise.all([
