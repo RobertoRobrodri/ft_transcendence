@@ -1,5 +1,5 @@
 import { loadUserInfo } from "../profile/profileScript.js"
-import { connectChat, sendMessage } from "../chat/chatScript.js"
+import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame } from "./game.js"
 
@@ -168,6 +168,12 @@ function setWindowEvents(uniqueId) {
     else if (uniqueId == 'myWindowChat') {
         connectChat();
         document.getElementById('root').addEventListener('click', sendMessage);
+        document.getElementById('root').addEventListener('click', disconnect);
+//     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
+//     document.getElementById("Ignore").addEventListener("click", ignoreUser);
+//     document.getElementById("Unignore").addEventListener("click", unignoreUser);
+//     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
+//     document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
     }
 }
 
@@ -213,7 +219,7 @@ function createWindow(appName) {
             <div class="window-top">
                 <button class="round green"></button>
                 <button class="round yellow"></button>
-                <button class="round red"></button>
+                <button class="round red" id="red-${uniqueId}"></button>
             </div>
             <div class="window-content" id="${uniqueId}-content">
             </div>

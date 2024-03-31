@@ -4,16 +4,6 @@ import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { CHAT_TYPES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
 import { renewJWT } from "../components/updatejwt.js"
 
-// function register() {
-//     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
-//     document.getElementById("Ignore").addEventListener("click", ignoreUser);
-//     document.getElementById("Unignore").addEventListener("click", unignoreUser);
-//     document.getElementById("disconnect").addEventListener("click", disconnect);
-//     document.getElementById("send-button").addEventListener("click", sendMessage);
-//     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
-//     document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
-//}
-
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
 let gameSM = new GameSocketManager();
@@ -23,8 +13,11 @@ export function connectChat()
     chatSM.connect();
 }
 
-function disconnect()
+export function disconnect(e)
 {
+    if (e.target.matches('#red-myWindowChat') === false)
+        return ;
+    e.preventDefault();
     chatSM.disconnect();
 }
 
