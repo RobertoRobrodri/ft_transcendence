@@ -19,7 +19,7 @@ services:
     build: ./back/
     container_name: django
     volumes:
-      - profile_pictures:/core/media
+      - profile_pictures:/media
     # Please only access directly to django if you want to go admin or swagger dashboard 
     ports:
       - 8000:8000

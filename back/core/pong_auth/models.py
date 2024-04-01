@@ -20,7 +20,7 @@ class CustomUser(AbstractUser):
     # Used for 42 Auth
     external_id         = models.IntegerField(null=True, blank=True)
     #TODO add default profile picture
-    profile_picture     = models.ImageField(upload_to='media/', null=True, blank=True)
+    profile_picture     = models.ImageField(upload_to='../media/', null=True, blank=True)
     friends             = models.ManyToManyField('self', blank=True)
     # 2FA
     TwoFactorAuth       = models.BooleanField(default=False)

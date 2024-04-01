@@ -14,11 +14,14 @@ export async function loadUserInfo() {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
+        let default_picture = './assets/gigachad.jpg'
         let user_info = document.getElementById("user_info");
         let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, data.username);
         user_updated = user_updated.replace(/{{WINS}}/g, data.wins);
         user_updated = user_updated.replace(/{{LOSSES}}/g, data.losses);
         user_updated = user_updated.replace(/{{STATUS}}/g, data.status);
+        if (data.profile_picture != null)
+            user_updated = user_updated.replace(default_picture, 'data:image/png;base64,' + data.profile_picture);
         user_info.innerHTML = user_updated;
     }
     catch (error) {

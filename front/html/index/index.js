@@ -167,6 +167,7 @@ function setWindowEvents(uniqueId) {
     }
     else if (uniqueId == 'myWindowChat') {
         connectChat();
+        //TODO Include here all chat events
         document.getElementById('root').addEventListener('click', sendMessage);
         document.getElementById('root').addEventListener('click', disconnect);
 //     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
