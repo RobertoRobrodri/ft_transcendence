@@ -1,5 +1,6 @@
 import json
 import hashlib
+import time
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
 from pong_auth.models import CustomUser
@@ -136,9 +137,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data['sender'] = user.id
         rivalUser = await CustomUser.get_user_by_id(rival)
         # Generate unique room name
-        sorted_ids = sorted([rival, user.id])
-        room_name = f'room_{hashlib.sha256("".join(map(str, sorted_ids)).encode()).hexdigest()[:8]}'
-        # room_name = f'room_{hash("".join(map(str, sorted_ids)))}'
+        # sorted_ids = sorted([rival, user.id])
+        # room_name = f'room_{hashlib.sha256("".join(map(str, sorted_ids)).encode()).hexdigest()[:8]}'
+        room_name = f'room_{hashlib.sha256(str(int(time.time())).encode()).hexdigest()}'
         game = PongGame(room_name, self, True)
         game.add_player(user.username, user.id, 1)
         game.add_player(rivalUser.username, rivalUser.id, 2)

@@ -1,5 +1,4 @@
-import json
-import time
+from channels.layers import get_channel_layer
 import math
 import asyncio
 import random
@@ -162,10 +161,14 @@ class PongGame:
             return
         
         # Collision detection with upper and lower walls
-        if ball['y'] <= top_side or ball['y'] >= bottom_side:
+        if (ball['y'] <= top_side and ball['speed_y'] < 0) or (ball['y'] >= bottom_side and ball['speed_y'] > 0):
             ball['speed_y'] *= -1  # Reverse direction on the y axis
             await send_to_group(self.consumer, self.game_id, WALL_COLLISON, {})
             return
+        # if ball['y'] <= top_side or ball['y'] >= bottom_side:
+        #     ball['speed_y'] *= -1  # Reverse direction on the y axis
+        #     await send_to_group(self.consumer, self.game_id, WALL_COLLISON, {})
+        #     return
     
     def check_paddle_collision(self, ball, player, paddle_width, paddle_height):
         paddle_x = player['paddle_x']
@@ -185,9 +188,9 @@ class PongGame:
             return False
         
         # If middle of ball through inner side of paddle, then don't collide
-        if player_nbr == 1 and ball['x'] < paddle_left:
+        if player_nbr == 1 and ball['x'] < paddle_right - 2:
             return False
-        elif player_nbr == 2 and ball['x'] > paddle_left:
+        elif player_nbr == 2 and ball['x'] > paddle_left + 2:
             return False
         
         # Check if the ball is within the limits of the paddle
@@ -251,6 +254,11 @@ class PongGame:
         # Send game finish
         scores = {0: self.scores[0], 1: self.scores[1]}
         await send_to_group(self.consumer, self.game_id, GAME_END, scores)
+        # # Remove all sockts from group
+        # channel_layer = get_channel_layer()
+        # group_channels = await channel_layer.group_channels(self.game_id)
+        # for channel_name in group_channels:
+        #     await self.consumer.group_discard(self.game_id, channel_name)
     
     async def send_game_score(self):
         # Send players score
