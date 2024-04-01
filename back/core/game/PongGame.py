@@ -6,6 +6,7 @@ import random
 from core.socket import *
 from .models import Game
 from .models import CustomUser
+from .game_state import games
 
 import logging
 logger = logging.getLogger(__name__)
@@ -48,12 +49,12 @@ class PongGame:
         self.ball['speed_y'] = self.get_random_angle()
         self.ball['speed_x'] = self.get_random_direction()
         self.running = False
-        self.finished = False
         self.consumer = consumer
         self.player1_paddle_x = 0 + self.border_thickness + self.paddle_margin
         self.player1_paddle_y = (self.canvas_y / 2) - (self.paddle_height / 2)
         self.player2_paddle_x = self.canvas_x - self.border_thickness - self.paddle_width - self.paddle_margin
         self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_height / 2)
+        # del games[self.game_id]
 
     async def start_game(self):
         # Waiting 2 players set ready status
@@ -61,7 +62,7 @@ class PongGame:
             await asyncio.wait_for(self.wait_for_players_ready(), timeout=30)
         except asyncio.TimeoutError:
             self.running = False
-            self.finished = True
+            del games[self.game_id]
             logger.warning("Players are not ready after 30 seconds. Leaving game.")
             return
             
@@ -104,7 +105,8 @@ class PongGame:
             if self.storeResults:
                 await self.save_game_result(players_list, winner)
             self.running = False
-            self.finished = True
+            del games[self.game_id]
+            
 
     async def reset_game(self, winner):
         self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2}
@@ -287,13 +289,13 @@ class PongGame:
     #             del self.players[player_id]
     #     await self.send_game_state()
     
-    def move_paddle(self, userid, direction):
+    def execute_action(self, userid, action):
         if userid in self.players:
             player = self.players[userid]
             paddle_y = player['paddle_y']
             # Prevent move out of bounds
-            if (paddle_y + int(direction)) >= 0 + self.border_thickness and (paddle_y + self.paddle_height + int(direction)) <= self.canvas_y - self.border_thickness:
-                player['paddle_y'] += int(direction) * self.paddle_speed
+            if (paddle_y + int(action)) >= 0 + self.border_thickness and (paddle_y + self.paddle_height + int(action)) <= self.canvas_y - self.border_thickness:
+                player['paddle_y'] += int(action) * self.paddle_speed
     
     def remove_player(self, userid):
         if userid in self.players:

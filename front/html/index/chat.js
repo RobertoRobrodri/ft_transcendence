@@ -11,7 +11,7 @@ function register() {
     document.getElementById("disconnect").addEventListener("click", disconnect);
     document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
-    document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
+    document.getElementById("insiteToGame").addEventListener("click", inviteToGame);
 }
 
 // Singleton socket instance
@@ -79,9 +79,7 @@ chatSM.registerCallback(CHAT_TYPES.PRIV_MSG, data => {
     addPrivateMsg(data);
     
     // When message are received, send request to backend to mark as seen
-    chatSM.send(CHAT_TYPES.SEEN_MSG, JSON.stringify({
-        sender: data.sender
-    }));
+    chatSM.send(CHAT_TYPES.SEEN_MSG, data.sender);
 });
 
 // Callback get private message specific any user
@@ -118,10 +116,13 @@ chatSM.registerCallback(CHAT_TYPES.ACCEPT_GAME, data => {
 // Manage chat //
 /////////////////
 
-function inviteToTame()
+function inviteToGame()
 {
     var rival = document.getElementById("dstUser");
-    chatSM.send(CHAT_TYPES.GAME_REQUEST, rival.value);
+    chatSM.send(CHAT_TYPES.GAME_REQUEST, {
+		rival: rival.value,
+		game: "Pong"
+	});
 }
 
 function getIgnoreList()
@@ -132,17 +133,13 @@ function getIgnoreList()
 function ignoreUser()
 {
     var userToIgnore = document.getElementById("dstUser");
-    chatSM.send(CHAT_TYPES.IGNORE_USER, JSON.stringify({
-        user: userToIgnore.value
-    }));
+    chatSM.send(CHAT_TYPES.IGNORE_USER, userToIgnore.value);
 }
 
 function unignoreUser()
 {
     var userToUnignore = document.getElementById("dstUser");
-    chatSM.send(CHAT_TYPES.UNIGNORE_USER, JSON.stringify({
-        user: userToUnignore.value
-    }));
+    chatSM.send(CHAT_TYPES.UNIGNORE_USER, userToUnignore.value);
 }
 
 // Load all chat users
@@ -163,10 +160,10 @@ function sendMessage() {
 function sendPrivMessage() {
     var dstUser = document.getElementById("dstUser");
     var input = document.getElementById("newPrivMessage");
-    chatSM.send(CHAT_TYPES.PRIV_MSG, JSON.stringify({
+    chatSM.send(CHAT_TYPES.PRIV_MSG, {
         recipient: dstUser.value,
         message: input.value
-    }));
+    });
     input.value = "";
 }
 
@@ -175,9 +172,7 @@ export function requestHistory(user) {
     var dstUser = document.getElementById("dstUser");
     dstUser.value = user.id;
     
-    chatSM.send(CHAT_TYPES.LIST_MSG, JSON.stringify({
-        recipient: dstUser.value
-    }));
+    chatSM.send(CHAT_TYPES.LIST_MSG, dstUser.value);
 }
 
 //////////////////

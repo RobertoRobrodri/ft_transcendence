@@ -1,5 +1,4 @@
 // Defines to chat socket events
-
 export const SOCKET = {
     CONNECTED:      'Connected',
     DISCONNECTED:   'Disconnected',
@@ -24,17 +23,33 @@ export const CHAT_TYPES = {
 
 // Game socket events
 export const GAME_TYPES = {
+    // Matchmaking
     INITMATCHMAKING:    'init_matchmaking',
     CANCELMATCHMAKING:  'cancel_matchmaking',
     INQUEUE:            'queue_matchmaking',
-    PLAYER_READY:       'player_ready',
     RESTORE_GAME:       'restore_game',
-    
+
+    //Ingame
+    PLAYER_READY:       'player_ready',
+    ACTION:             'action',
     GAME_STATE:         'game_state',
     GAME_SCORE:         'game_score',
     GAME_END:           'game_end',
-    GAME_RIVAL_LEAVE:   'game_rival_leave',
-    DIRECTION:          'direction',
     WALL_COLLISON:      'wall_collison',
     PADDLE_COLLISON:    'paddle_collison',
+
+    // Tournament
+    CREATE_TOURNAMENT:  'create_tournament',
+    JOIN_TOURNAMENT:    'join_tournament',
+    LEAVE_TOURNAMENT:   'leave_tournament',
+    LIST_TOURNAMENTS:   'list_tournaments',
+
+    // Game
+    LIST_GAMES:         'list_games',
+    SPECTATE_GAME:      'spectate_game',
+};
+
+export const GAMES = {
+    PONG:       'Pong',
+    TOURNAMENT: 'Tournament',
 };

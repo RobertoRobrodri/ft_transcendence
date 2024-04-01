@@ -16,6 +16,10 @@
             </div>
             <br>
             <div>
+                <button id="initmatchmakingtournament">Tournament</button>
+            </div>
+            <br>
+            <div>
                 <button id="cancelmatchmaking">Cancel Matchmaking</button>
             </div>
             <br>
@@ -43,7 +47,7 @@
             </div>
             <br>
             <br>
-			<div>
+            <div>
                 <button id="insiteToGame">Invite to game</button>
             </div>
             <br>
@@ -67,14 +71,32 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card p-3 nav-option">
-                            <h5 class="card-title">Play</h5>
-                            <p class="card-text">Start a new game</p>
+                            <h5 class="card-title">Tournament</h5>
+                            <div class="form-group">
+                                <label for="nickname">Nickname:</label>
+                                <input type="text" class="form-control" id="nickname">
+                            </div>
+                            <div class="form-group">
+                                <label for="tournament-name">Tournament Name:</label>
+                                <input type="text" class="form-control" id="tournament-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="number-of-players">Number of Players:</label>
+                                <input type="number" class="form-control" id="number-of-players">
+                            </div>
+                            <button class="btn btn-primary" id="createTournament">Create Tournament</button>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="card p-3 nav-option">
-                            <h5 class="card-title">Settings</h5>
-                            <p class="card-text">Configure your preferences</p>
+                            <h5 class="sidebar-title">Tournament list (Click to join)</h5>
+                            <ul id="tournamentList" class="list-group"></ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card p-3 nav-option">
+                            <h5 class="sidebar-title">Game list (Click to spectate)</h5>
+                            <ul id="gameList" class="list-group"></ul>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -87,15 +109,13 @@
                     <div class="col-md-3">
                         <div class="card p-3">
                             <h5 class="card-title">Test private messages</h5>
-                            <ul id="private_msg" class="list-group">
-                            </ul>
+                            <ul id="private_msg" class="list-group"></ul>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card p-3">
                             <h6 class="card-title">Test chat history (click on other username)</h6>
-                            <ul id="private_msg_history" class="list-group">
-                            </ul>
+                            <ul id="private_msg_history" class="list-group"></ul>
                         </div>
                     </div>
                 </div>

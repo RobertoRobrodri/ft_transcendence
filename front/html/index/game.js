@@ -1,5 +1,5 @@
 import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { GAME_TYPES, SOCKET, GAMES } from '../socket/Constants.js';
 
 /////////////////
 // Global vars //
@@ -9,6 +9,8 @@ let ctx;
 
 function register() {
     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
+    document.getElementById("initmatchmakingtournament").addEventListener("click", InitMatchmakingTournament);
+    document.getElementById("createTournament").addEventListener("click", CreateTournament);
     document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
 }
 
@@ -28,8 +30,16 @@ export function connectGame()
 
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
-	//when game open, try restore any running game, i put here for test
+    //when game open, try restore any running game, i put here for test
     gameSM.send(GAME_TYPES.RESTORE_GAME);
+    // When need get list of current tournaments
+    gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, {
+        "game": GAMES.PONG //replace with specific game
+    });
+    // When need get list of current tournaments
+    gameSM.send(GAME_TYPES.LIST_GAMES, {
+        "game": GAMES.PONG //replace with specific game
+    }); 
 });
 
 // Callback socket disconnected
@@ -82,6 +92,14 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
     console.log(data)
 });
 
+gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
+    fillTournaments(data);
+});
+
+gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
+    fillGames(data);
+});
+
 
 ////////////////
 // GAME LOGIC //
@@ -89,7 +107,26 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 
 function InitMatchmaking()
 {
-    gameSM.send(GAME_TYPES.INITMATCHMAKING);
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+}
+
+function InitMatchmakingTournament()
+{
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.TOURNAMENT);
+}
+
+function CreateTournament()
+{
+    var customUsername = document.getElementById("nickname").value;
+    var tournamentName = document.getElementById("tournament-name").value;
+    var playerSize = document.getElementById("number-of-players").value;
+    gameSM.send(GAME_TYPES.CREATE_TOURNAMENT, {
+        game: "Pong",
+        nickname: customUsername,
+        size: playerSize,
+        tournament_name: tournamentName
+    });
+
 }
 
 function CancelMatchmaking()
@@ -153,7 +190,7 @@ function handleKeyUp(event) {
 function sendDirectionToServer() {
     if (direction) {
         // Send direction
-        gameSM.send(GAME_TYPES.DIRECTION, direction);
+        gameSM.send(GAME_TYPES.ACTION, direction);
         // Schedule the next update while the key is pressed
         requestAnimationFrame(sendDirectionToServer);
     } else {
@@ -171,4 +208,62 @@ function getDirectionFromKeyCode(keyCode) {
         default:
             return null;
     }
+}
+
+
+function LeaveTournament(tournamentId)
+{
+    gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+        id: tournamentId
+    });
+}
+
+// Fill Tournament list
+function fillTournaments(data) {
+    var tournaments = document.getElementById("tournamentList");
+
+    // Remove previous li elements
+    while (tournaments.firstChild)
+        tournaments.removeChild(tournaments.firstChild);
+    
+    data.forEach((element) => {
+        var curli = document.createElement("li");
+        curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
+        curli.classList.add("list-group-item");
+        // curli.dataset.tournamentId = element.id;
+        // Click example to join tournament
+        curli.addEventListener('click', function() {
+            var nickname = prompt(`¿Want join to ${element.name} tournament? Introduce your nickname:`);
+            if (nickname !== null && nickname !== "") {
+                //JOIN_TOURNAMENT
+                gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
+                    id: element.id,
+                    nick: nickname
+                })
+                console.log("El usuario confirmó la entrada al torneo.");
+            }
+        });
+        tournaments.appendChild(curli);
+    });
+}
+
+function fillGames(data) {
+    var games = document.getElementById("gameList");
+
+    // Remove previous li elements
+    while (games.firstChild)
+        games.removeChild(games.firstChild);
+    
+    data.forEach((element) => {
+        var curli = document.createElement("li");
+        curli.textContent = `${element.id}`;
+        curli.classList.add("list-group-item");
+        //Click example to join tournament
+        curli.addEventListener('click', function() {
+            gameSM.send(GAME_TYPES.SPECTATE_GAME, {
+                id: element.id
+            })
+        });
+        games.appendChild(curli);
+    });
 }

@@ -1,4 +1,5 @@
 import json
+import hashlib
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
 from pong_auth.models import CustomUser
@@ -32,6 +33,11 @@ ACCEPT_GAME         = 'accept_game'
 class ChatConsumer(AsyncWebsocketConsumer):
     
     # Base function to send message to all in group
+    async def systemmessage(self, event):
+        text = event["text"]
+        await self.send(text_data=text)
+
+    # Base function to send message to all in group except is not allowed
     async def general_message(self, event):
         text = event["text"]
         if await self.allowed_message(event):
@@ -66,7 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
                 await CustomUser.update_user_on_disconnect(user)
-                await self.channel_layer.group_discard(GENERAL_MSG, self.channel_name)
+                await self.channel_layer.group_discard(GENERAL_CHANNEL, self.channel_name)
                 await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_DISCONNECTED, {'id': user.id, 'username': user.username})
                 
         except Exception as e:
@@ -111,11 +117,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def game_request(self, user, data):
         # Check if user is already in game
         game_id = get_game_id(user.id)
-        if game_id is not None:
+        message_data = data.get("message")
+        if message_data is None or game_id is not None:
             return
-        # message_data = json.loads(data["message"])
         # rival = message_data.get("sender")
-        rival = data["message"]
+        rival = message_data.get("rival")
+        game_request = message_data.get("game")
+        if not rival or not game_request: # if not game
+            return
+        
         userChannel = await CustomUser.get_user_by_id(rival)
         if(userChannel and rival != user.id):
             data["sender"] = user.id
@@ -127,7 +137,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         rivalUser = await CustomUser.get_user_by_id(rival)
         # Generate unique room name
         sorted_ids = sorted([rival, user.id])
-        room_name = f'room_{hash("".join(map(str, sorted_ids)))}'
+        room_name = f'room_{hashlib.sha256("".join(map(str, sorted_ids)).encode()).hexdigest()[:8]}'
+        # room_name = f'room_{hash("".join(map(str, sorted_ids)))}'
         game = PongGame(room_name, self, True)
         game.add_player(user.username, user.id, 1)
         game.add_player(rivalUser.username, rivalUser.id, 2)
@@ -144,31 +155,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
     ####################
         
     async def mark_message_seen(self, user, data):
-        message_data = json.loads(data["message"])
-        sender = message_data.get("sender")
-        if sender:
-            await ChatModel.mark_message_as_seen(user.id, message_data["sender"])
+        sender = data.get("message")
+        if sender is not None:
+            await ChatModel.mark_message_as_seen(user.id, sender)
 
     async def get_ignore_list(self, user, data):
         ignored_list = await CustomUser.get_ignored_users(user.id)
         await send_to_me(self, IGNORE_LIST, ignored_list)
 
     async def unignore_user(self, user, data):
-        message_data = json.loads(data["message"])
-        userdata = message_data.get("user")
-        if userdata and userdata.strip():
+        userdata = data.get("message")
+        if userdata is not None and userdata.strip():
             await CustomUser.unignore_user(user, userdata)
 
     async def ignore_user(self, user, data):
-        message_data = json.loads(data["message"])
-        userdata = message_data.get("user")
+        userdata = data.get("message")
         if userdata and userdata.strip():
             await CustomUser.ignore_user(user, userdata)
 
     async def get_messages_between_users(self, user, data):
-        message_data = json.loads(data["message"])
-        recipient = message_data.get("recipient")
-        if recipient and recipient.strip():
+        recipient = data.get("message")
+        if recipient is not None and recipient.strip():
             messages = await ChatModel.get_messages_between_users(user.id, recipient)
             await send_to_me(self, LIST_MSG, messages)
 
@@ -179,12 +186,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     async def process_global_msg(self, user, data):
         # Receive new message, let's spread it, but including information
-        data["sender"] = user.id
+        data["sender"] = user.username
         del data["type"]
         await send_to_group(self, GENERAL_CHANNEL, GENERAL_MSG, data)
 
     async def process_priv_msg(self, user, data):
-        message_data = json.loads(data["message"])
+        message_data = data["message"]
         recipient = message_data.get("recipient")
         message = message_data.get("message")
 
@@ -209,7 +216,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text = event["text"]
         data = json.loads(text)
         sender_id = data["message"].get("sender")
-        if sender_id is None:
+        if sender_id is None or sender_id == "Admin":
             return True
         recipient_id = self.scope["user"].id
         ignored_users_sender = await CustomUser.get_ignored_users(sender_id)
