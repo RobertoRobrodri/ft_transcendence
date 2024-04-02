@@ -93,6 +93,11 @@ main {
     width: 70px;
 }
 
+.game {
+    height: 70px;
+    width: 70px;
+}
+
 /* Estilo de los programas */
 .program_name {
     color: #45f3ff;

@@ -1,7 +1,7 @@
 import { loadUserInfo } from "../profile/profileScript.js"
 import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
-import { connectGame } from "./game.js"
+import { connectGame } from "../game/gameScript.js"
 
 export function loadMainPage() {
     // Renew jwt
@@ -134,7 +134,10 @@ function openWindow(e) {
         createWindow('Chat');
     } else if (parentIcon.id === 'terminal') {
         createWindow('Terminal');
+    } else if (parentIcon.id === 'game') {
+        createWindow('Game');
     }
+    
 }
 
 //TODO: Modificar que el modal salga cuando se está llamando a una API.
@@ -176,6 +179,9 @@ function setWindowEvents(uniqueId) {
 //     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
 //     document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
     }
+    else if (uniqueId == 'myWindowGame') {
+        document.getElementById('root').addEventListener('click', connectGame);
+    }
 }
 
 function setWindowContent(uniqueId) {
@@ -188,6 +194,11 @@ function setWindowContent(uniqueId) {
         var htmlUrl = '../chat/chat.html';
         var cssUrl = '../chat/chatStyle.css';
         var scriptUrl = '../chat/chatScript.js';
+    }
+    else if (uniqueId == 'myWindowGame') {
+        var htmlUrl = '../game/game.html';
+        var cssUrl = '../game/gameStyle.css';
+        var scriptUrl = '../game/gameScript.js';
     }
     // console.log(uniqueId);
     let window = document.getElementById(uniqueId + "-content");
