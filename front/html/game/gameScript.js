@@ -21,11 +21,10 @@ export function connectGame(e)
         return ;
     e.preventDefault();
     gameSM.connect();
-    register();
+    // register();
+    loadMatchmaking();
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
-
-    
 }
 
 // Callback socket connected
@@ -173,4 +172,20 @@ function getDirectionFromKeyCode(keyCode) {
         default:
             return null;
     }
+}
+
+
+// Handle page loading
+function loadMatchmaking() {
+    // Replace the content with "Searching for an opponent..." text and a cancel button
+    document.getElementById("game_options").innerHTML = `
+        <div class="col-md-12 mt-5 text-center">
+            <h2>Searching for an opponent...</h2>
+        </div>
+        <div class="col-md-12 mt-5 text-center">
+            <button class="game-button" id="cancelMatchmakingButton">Cancel Matchmaking</button>
+        </div>
+    `;
+    // Add event listener to cancel matchmaking button
+    document.getElementById("cancelMatchmakingButton").addEventListener("click", CancelMatchmaking);
 }
