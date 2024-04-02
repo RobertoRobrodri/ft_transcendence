@@ -2,6 +2,7 @@ import json
 import time
 import asyncio
 import hashlib
+import random
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -40,6 +41,7 @@ PLAYER_READY        = 'player_ready'
 # games
 LIST_GAMES          = 'list_games'
 SPECTATE_GAME       = 'spectate_game'
+LEAVE_SPECTATE_GAME = 'leave_spectate_game'
 # tournament
 CREATE_TOURNAMENT   = 'create_tournament'
 JOIN_TOURNAMENT     = 'join_tournament'
@@ -64,9 +66,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         try:
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
-                # await self.channel_layer.group_add(GENERAL_GAME, self.channel_name)
-                await self.join_group(GENERAL_GAME, self.channel_name)
-
+                await self.channel_layer.group_add(GENERAL_GAME, self.channel_name)
                 await self.accept()
                 
         except ExpiredSignatureError as e:
@@ -80,12 +80,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         try:
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
-                # Disconnect from all groups
-                groups = await self.get_user_groups(self.channel_name)
-                for group_name in groups:
-                    await self.leave_group(group_name, self.channel_name)
-                    # await self.channel_layer.group_discard(group_name,self.channel_name)
-                # await self.channel_layer.group_discard(GENERAL_GAME, self.channel_name)
+                await self.channel_layer.group_discard(GENERAL_GAME, self.channel_name)
                 # If the user leaves and is inside queue, remove it
                 await self.leaveMatchmaking(user)
                 
@@ -125,6 +120,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     await self.listGames(data)
                 elif type == SPECTATE_GAME:
                     await self.spectateGame(data)
+                elif type == LEAVE_SPECTATE_GAME:
+                    await self.leaveSpectateGame(data)
                     
 
         except Exception as e:
@@ -170,6 +167,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if not user_exists:
             return
         async with join_tournament_lock:
+            # If owner leave, tounrament are removed
+            if tournaments[tournament_id]["owner"] == user.id:
+                del tournaments[tournament_id]
+                await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(data))
+                return
+            # Remove user from tournament participants
             for i, participant in enumerate(participants):
                 if participant['user_id'] == user.id:
                     participants.pop(i)
@@ -201,8 +204,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 })
                 # We can replace to send only information of only 1 tournament instead entire list
                 await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(data))
+            else:
+                self.startTournament(tournament_id)
                 
-            
     async def createTournament(self, user, data):
         alldata = data.get("message")
         if alldata is None:
@@ -214,29 +218,26 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         game_id = get_game_id(user.id)
         if game_id is not None:
             return
-        
-        tournament_name = f'room_{hashlib.sha256(str(int(time.time())).encode()).hexdigest()}'
-
+        tournament_name = f'room_{hashlib.sha256(str(user.id).encode()).hexdigest()}'
         # Check if user have a tournament
         if tournament_name in tournaments:
             return
-        
         # get rcv info
         game_req        = alldata.get("game")
         custom_nick     = alldata.get("nickname")
         size            = alldata.get("size")
         name            = alldata.get("tournament_name")
-        
         #if missing data, return
         if game_req is None or custom_nick is None or size is None or name is None:
             return
-        
         tournament_info = {
             'id': tournament_name,
             'name': name,
+            'owner': user.id,
             'size': int(size),
+            'started': False,
             'game_request': game_req,
-            'participants': [{ 'user_id': user.id, 'nickname': custom_nick }]
+            'participants': [{ 'userid': user.id, 'nickname': custom_nick }]
         }
         tournaments[tournament_name] = tournament_info
         # Send message to chat to anounce tournaments has created
@@ -246,6 +247,19 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         })
         await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(data))
 
+    async def startTournament(tournament_id):
+        tournament = tournaments[tournament_id]
+        participants = tournament['participants']
+        random.shuffle(participants)
+        pairings = [participants[i:i+2] for i in range(0, len(participants), 2)]
+        for pairing in pairings:
+            if len(pairing) == 2:  # Verificar que haya dos participantes en el emparejamiento
+                player1 = pairing[0]
+                player2 = pairing[1]
+
+                await self.start_game(player1, player2, tournament_id)
+
+        return
             
     ###########################
     ## MATCHMAKING FUNCTIONS ##
@@ -282,34 +296,24 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         ids = [r['userid'] for r in rival]
         ids.append(user.id)
         # Generate unique room name
-        # sorted_ids = sorted(ids)
-        # room_name = f'room_{hashlib.sha256("".join(map(str, sorted_ids)).encode()).hexdigest()[:8]}'
         room_name = f'room_{hashlib.sha256(str(int(time.time())).encode()).hexdigest()}'
         
         # Add users to new group
         for r in rival:
-            await self.join_group(room_name, r['channel_name'])
-            # await self.channel_layer.group_add(room_name, r['channel_name'])
-        await self.join_group(room_name, self.channel_name)
-        # await self.channel_layer.group_add(room_name, self.channel_name)
+            await self.channel_layer.group_add(room_name, r['channel_name'])
+        await self.channel_layer.group_add(room_name, self.channel_name)
         
-        # # Special to tournaments
-        # if game_request == "Tournament":
-        #     random.shuffle(ids)
-        #     tournament_matches = [(ids[i], ids[i+1]) for i in range(0, len(ids), 2)]
-        #     logger.warning(tournament_matches)
-            
-            
-
-        # else:
+        # rivalUser = await CustomUser.get_user_by_id(rival[0]['userid'])
+        # Add self to array
+        rival.append({'channel_name': self.channel_name, 'userid': user.id, 'game': game_request})
         # Start game
-        rivalUser = await CustomUser.get_user_by_id(rival[0]['userid'])
-        await self.start_game(user.id, user.username, rivalUser.id, rivalUser.username, room_name, game_request)
+        await self.start_game(rival, room_name, game_request)
             
         # Send info game start
         message = {'message': f'Pairing successful! United in the room {room_name}'}
         await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
-        await send_to_group(self, GENERAL_GAME, LIST_GAMES, self.getGamesList(game_request))
+        # await send_to_group(self, GENERAL_GAME, LIST_GAMES, self.getGamesList(game_request))
+        await self.sendlistGamesToAll(game_request)
 
     async def player_ready(self, user):
         game_id = get_game_id(user.id)
@@ -325,23 +329,27 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if game_id is not None:
             message = {'message': f'Game restored {game_id}'}
             await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
-            await self.join_group(game_id, self.channel_name)
-            # await self.channel_layer.group_add(game_id, self.channel_name)
+            await self.channel_layer.group_add(game_id, self.channel_name)
             # await games[game_id].change_player(self.channel_name, user.id)
 
     ####################
     ## GAME FUNCTIONS ##
     ####################
-
-    async def start_game(self, player1_id, player1_name, player2_id, player2_name, game_id, game_request = "Pong"):
+            
+    # async def start_game(self, player1_id, player1_name, player2_id, player2_name, game_id, game_request = "Pong"):
+    async def start_game(self, players, game_id, game_request = "Pong"):
         game = None
         if game_request == "Pong":
             game = {
                 "game": game_request,
                 "instance": PongGame(game_id, self, True)
             }
-        game["instance"].add_player(player1_name, player1_id, 1)
-        game["instance"].add_player(player2_name, player2_id, 2)
+        # Add players to game
+        player_number = 1
+        for player in players:
+            rivalUser = await CustomUser.get_user_by_id(player['userid'])
+            game["instance"].add_player(rivalUser.username, rivalUser.id, player_number)
+            player_number += 1
         games[game_id] = game
 
         # Iniciar el juego en segundo plano si aún no ha comenzado
@@ -357,7 +365,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         game_list = []
         for game_id, game_info in games.items():
             if game_info['game'] == game_req:
-                # current_players = len(game_info['participants'])
                 game_summary = {
                     'id': game_id
                 }
@@ -373,6 +380,18 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             return
         await send_to_me(self, LIST_GAMES, self.getGamesList(game_req))
 
+    async def sendlistGamesToAll(self, game_req):
+        await send_to_group(self, GENERAL_GAME, LIST_GAMES, self.getGamesList(game_req))
+
+    async def leaveSpectateGame(self, data):
+        alldata = data.get("message")
+        if alldata is None:
+            return
+        room_req = alldata.get("id")
+        if room_req is None:
+            return
+        await self.channel_layer.group_discard(room_req, self.channel_name)
+
     async def spectateGame(self, data):
         alldata = data.get("message")
         if alldata is None:
@@ -380,14 +399,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         room_req = alldata.get("id")
         if room_req is None:
             return
-        # Enter in room if are not in
-        groups = await self.get_user_groups(self.channel_name)
-        if room_req in groups:
-            await self.leave_group(room_req, self.channel_name)
-            # await self.channel_layer.group_discard(room_req, self.channel_name)
-        else:
-            await self.join_group(room_req, self.channel_name)
-            # await self.channel_layer.group_add(room_req, self.channel_name)
+        await self.channel_layer.group_add(room_req, self.channel_name)
             
     ######################
     ## HELPER FUNCTIONS ##
@@ -399,33 +411,33 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     #     groups_list = list(groups)
     #     return groups_list
     
-    async def get_user_groups(self, channel_name):
-        user_groups_key = f"user_groups:{channel_name}"
-        redis_conn = self.channel_layer.connection(0)
-        user_groups_json = await redis_conn.get(user_groups_key)
-        if not user_groups_json:
-            return []
-        user_groups = json.loads(user_groups_json)
-        return user_groups
+    # async def get_user_groups(self, channel_name):
+    #     user_groups_key = f"user_groups:{channel_name}"
+    #     redis_conn = self.channel_layer.connection(0)
+    #     user_groups_json = await redis_conn.get(user_groups_key)
+    #     if not user_groups_json:
+    #         return []
+    #     user_groups = json.loads(user_groups_json)
+    #     return user_groups
 
-    async def join_group(self, group_name, channel_name):
-        await self.channel_layer.group_add(group_name, channel_name)
-        user_groups_key = f"user_groups:{channel_name}"
-        redis_conn = self.channel_layer.connection(0)
-        user_groups_json = await redis_conn.get(user_groups_key)
-        user_groups = json.loads(user_groups_json) if user_groups_json else []
-        user_groups.append(group_name)
-        await redis_conn.set(user_groups_key, json.dumps(user_groups))
+    # async def join_group(self, group_name, channel_name):
+    #     await self.channel_layer.group_add(group_name, channel_name)
+    #     user_groups_key = f"user_groups:{channel_name}"
+    #     redis_conn = self.channel_layer.connection(0)
+    #     user_groups_json = await redis_conn.get(user_groups_key)
+    #     user_groups = json.loads(user_groups_json) if user_groups_json else []
+    #     user_groups.append(group_name)
+    #     await redis_conn.set(user_groups_key, json.dumps(user_groups))
 
-    async def leave_group(self, group_name, channel_name):
-        await self.channel_layer.group_discard(group_name, channel_name)
-        user_groups_key = f"user_groups:{channel_name}"
-        redis_conn = self.channel_layer.connection(0)
-        user_groups_json = await redis_conn.get(user_groups_key)
-        user_groups = json.loads(user_groups_json) if user_groups_json else []
-        if group_name in user_groups:
-            user_groups.remove(group_name)
-        await redis_conn.set(user_groups_key, json.dumps(user_groups))
+    # async def leave_group(self, group_name, channel_name):
+    #     await self.channel_layer.group_discard(group_name, channel_name)
+    #     user_groups_key = f"user_groups:{channel_name}"
+    #     redis_conn = self.channel_layer.connection(0)
+    #     user_groups_json = await redis_conn.get(user_groups_key)
+    #     user_groups = json.loads(user_groups_json) if user_groups_json else []
+    #     if group_name in user_groups:
+    #         user_groups.remove(group_name)
+    #     await redis_conn.set(user_groups_key, json.dumps(user_groups))
     
 def get_game_id(userid):
     # Buscar el game_id asociado al player_id

@@ -238,11 +238,25 @@ function fillTournaments(data) {
                 //JOIN_TOURNAMENT
                 gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
                     id: element.id,
-                    nick: nickname
+                    nick: nickname,
+                    game: GAMES.PONG
                 })
                 console.log("El usuario confirmó la entrada al torneo.");
             }
         });
+
+        // Leave
+        var leaveButton = document.createElement("button");
+        leaveButton.textContent = "Leave";
+        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+        leaveButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+                id: element.id,
+                game: GAMES.PONG
+            })
+        });
+        curli.appendChild(leaveButton);
         tournaments.appendChild(curli);
     });
 }
@@ -264,6 +278,18 @@ function fillGames(data) {
                 id: element.id
             })
         });
+        
+        // Leave
+        var leaveButton = document.createElement("button");
+        leaveButton.textContent = "Leave";
+        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+        leaveButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
+                id: element.id
+            })
+        });
+        curli.appendChild(leaveButton);
         games.appendChild(curli);
     });
 }

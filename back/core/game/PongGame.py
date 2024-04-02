@@ -105,6 +105,8 @@ class PongGame:
                 await self.save_game_result(players_list, winner)
             self.running = False
             del games[self.game_id]
+            await self.consumer.sendlistGamesToAll("Pong")
+
             
 
     async def reset_game(self, winner):
@@ -254,11 +256,6 @@ class PongGame:
         # Send game finish
         scores = {0: self.scores[0], 1: self.scores[1]}
         await send_to_group(self.consumer, self.game_id, GAME_END, scores)
-        # # Remove all sockts from group
-        # channel_layer = get_channel_layer()
-        # group_channels = await channel_layer.group_channels(self.game_id)
-        # for channel_name in group_channels:
-        #     await self.consumer.group_discard(self.game_id, channel_name)
     
     async def send_game_score(self):
         # Send players score

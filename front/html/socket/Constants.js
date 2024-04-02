@@ -24,29 +24,30 @@ export const CHAT_TYPES = {
 // Game socket events
 export const GAME_TYPES = {
     // Matchmaking
-    INITMATCHMAKING:    'init_matchmaking',
-    CANCELMATCHMAKING:  'cancel_matchmaking',
-    INQUEUE:            'queue_matchmaking',
-    RESTORE_GAME:       'restore_game',
+    INITMATCHMAKING:        'init_matchmaking',
+    CANCELMATCHMAKING:      'cancel_matchmaking',
+    INQUEUE:                'queue_matchmaking',
+    RESTORE_GAME:           'restore_game',
 
     //Ingame
-    PLAYER_READY:       'player_ready',
-    ACTION:             'action',
-    GAME_STATE:         'game_state',
-    GAME_SCORE:         'game_score',
-    GAME_END:           'game_end',
-    WALL_COLLISON:      'wall_collison',
-    PADDLE_COLLISON:    'paddle_collison',
+    PLAYER_READY:           'player_ready',
+    ACTION:                 'action',
+    GAME_STATE:             'game_state',
+    GAME_SCORE:             'game_score',
+    GAME_END:               'game_end',
+    WALL_COLLISON:          'wall_collison',
+    PADDLE_COLLISON:        'paddle_collison',
 
     // Tournament
-    CREATE_TOURNAMENT:  'create_tournament',
-    JOIN_TOURNAMENT:    'join_tournament',
-    LEAVE_TOURNAMENT:   'leave_tournament',
-    LIST_TOURNAMENTS:   'list_tournaments',
+    CREATE_TOURNAMENT:      'create_tournament',
+    JOIN_TOURNAMENT:        'join_tournament',
+    LEAVE_TOURNAMENT:       'leave_tournament',
+    LIST_TOURNAMENTS:       'list_tournaments',
 
     // Game
-    LIST_GAMES:         'list_games',
-    SPECTATE_GAME:      'spectate_game',
+    LIST_GAMES:             'list_games',
+    SPECTATE_GAME:          'spectate_game',
+    LEAVE_SPECTATE_GAME:    'leave_spectate_game',
 };
 
 export const GAMES = {
