@@ -212,7 +212,7 @@ export function removeSingleUser(user) {
 export function addGeneralMsg(data) {
     var userList = document.getElementById("general_msg");
     var newmsg = document.createElement("li");
-    newmsg.textContent = `${data.sender}: ${data.message}`;
+    newmsg.textContent = `${data.sender_name}: ${data.message}`;
     newmsg.classList.add("list-group-item");
     userList.appendChild(newmsg);
 }

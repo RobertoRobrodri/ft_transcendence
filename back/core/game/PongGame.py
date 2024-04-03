@@ -5,7 +5,7 @@ import random
 from core.socket import *
 from .models import Game
 from .models import CustomUser
-from .game_state import games
+from .game_state import games, tournaments
 
 import logging
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ WALL_COLLISON   = 'wall_collison',
 PADDLE_COLLISON = 'paddle_collison',
 
 class PongGame:
-    def __init__(self, game_id, consumer, storeResults):
+    def __init__(self, game_id, consumer, tournament_id = None):
 
         ##############################
         # ADJUST WITH FRONTEND SIZES #
@@ -37,9 +37,8 @@ class PongGame:
         self.max_ball_speed     = 6   # Base ball speed
         self.paddle_speed       = 1   # Speed of paddles
 
-        self.points_to_win      = 6
+        self.points_to_win      = 1
         ######
-        self.storeResults = storeResults
         self.game_id = game_id
         self.players = {}
         self.scores = [0, 0]
@@ -53,6 +52,7 @@ class PongGame:
         self.player1_paddle_y = (self.canvas_y / 2) - (self.paddle_height / 2)
         self.player2_paddle_x = self.canvas_x - self.border_thickness - self.paddle_width - self.paddle_margin
         self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_height / 2)
+        self.tournament_id = tournament_id
         # del games[self.game_id]
 
     async def start_game(self):
@@ -101,11 +101,11 @@ class PongGame:
     async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
             await self.send_game_end()
-            if self.storeResults:
-                await self.save_game_result(players_list, winner)
+            await self.save_game_result(players_list, winner)
             self.running = False
             del games[self.game_id]
             await self.consumer.sendlistGamesToAll("Pong")
+            await self.set_winner_tournament(players_list, winner)
 
             
 
@@ -324,6 +324,15 @@ class PongGame:
         await CustomUser.user_win(winner)
         # Increment loss in 1
         await CustomUser.user_lose(loser)
-
-
+    
+    async def set_winner_tournament(self, players_list, winner):
+        if self.tournament_id is not None:
+            winner_id = players_list[winner]['userid']  # Obtener el ID del ganador
+            for idx, participants in enumerate(tournaments[self.tournament_id]['rounds'][-1]):
+                for idx2, p in enumerate(participants):# for participant in participants:
+                    if p['userid'] == winner_id:
+                        tournaments[self.tournament_id]["rounds"][-1][idx][idx2]['winner'] = True
+                        break
+            logger.warning("start new one")
+            await self.consumer.start_next_round(self.tournament_id)
         

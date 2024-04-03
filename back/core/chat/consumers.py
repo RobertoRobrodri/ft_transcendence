@@ -187,7 +187,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     async def process_global_msg(self, user, data):
         # Receive new message, let's spread it, but including information
-        data["sender"] = user.username
+        data["sender"] = user.id
+        data["sender_name"] = user.username
         del data["type"]
         await send_to_group(self, GENERAL_CHANNEL, GENERAL_MSG, data)
 
