@@ -298,8 +298,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 for r in pairing:
                     await self.channel_layer.group_add(room_name, r['channel_name'])
                 await self.start_game(pairing, room_name, tournament['game_request'], tournament_id)
-                message = {'message': f'Pairing successful! United in the room {room_name}'}
-                await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
             else:
                 participants_index = participants.index(pairing[0])
                 participants[participants_index]['winner'] = True
@@ -347,8 +345,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                         await self.channel_layer.group_add(room_name, userchannel)
                     
                     await self.start_game(pairing, room_name, tournament['game_request'], tournament_id)
-                    message = {'message': f'Pairing successful! United in the room {room_name}'}
-                    await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
                 else:
                     participants_index = participants.index(pairing[0])
                     participants[participants_index]['winner'] = True
@@ -394,8 +390,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 self.enterMarchmaking(user, data)
                 return
     
-        ids = [r['userid'] for r in rival]
-        ids.append(user.id)
         # Generate unique room name
         room_name = f'room_{hashlib.sha256(str(int(time.time())).encode()).hexdigest()}'
         
@@ -408,12 +402,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         rival.append({'channel_name': self.channel_name, 'userid': user.id, 'game': game_request})
         # Start game
         await self.start_game(rival, room_name, game_request)
-            
-        # Send info game start
-        message = {'message': f'Pairing successful! United in the room {room_name}'}
-        await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
-        # await send_to_group(self, GENERAL_GAME, LIST_GAMES, self.getGamesList(game_request))
-        await self.sendlistGamesToAll(game_request)
 
     async def player_ready(self, user):
         game_id = get_game_id(user.id)
@@ -453,6 +441,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         # Iniciar el juego en segundo plano si aún no ha comenzado
         if not game["instance"].running:
             asyncio.create_task(game["instance"].start_game())
+            await asyncio.sleep(1)  # Wait 1 seconds
+            # Send info game start
+            message = {'message': f'Pairing successful! United in the room {game_id}'}
+            await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
+            await self.sendlistGamesToAll(game_request)
 
     async def execute_action(self, action, user):
         game_id = get_game_id(user.id)
