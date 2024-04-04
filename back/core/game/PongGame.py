@@ -13,8 +13,9 @@ logger = logging.getLogger(__name__)
 GAME_STATE      = 'game_state'
 GAME_SCORE      = 'game_score'
 GAME_END        = 'game_end'
-WALL_COLLISON   = 'wall_collison',
-PADDLE_COLLISON = 'paddle_collison',
+WALL_COLLISON   = 'wall_collison'
+PADDLE_COLLISON = 'paddle_collison'
+COUNTDOWN       = 'countdown'
 
 class PongGame:
     def __init__(self, game_id, consumer, tournament_id = None):
@@ -30,7 +31,7 @@ class PongGame:
         self.canvas_y           = 200 # Canvas Height 
         self.ball_radius        = 5   # Ball Radious
         self.border_thickness   = 0   # Canvas frame border thickness (always 1/2 of lineWidth)
-        self.sleep_match        = 3   # Seconds of pause at start of game
+        self.sleep_match        = 5   # Seconds of pause at start of game
         self.sleep              = 1   # Seconds of pause between each point
         self.ball_speed         = 3   # Base ball speed
         self.inc_ball_speed     = 1   # Increment of ball speed
@@ -58,15 +59,15 @@ class PongGame:
     async def start_game(self):
         # Waiting 2 players set ready status
         try:
-            await asyncio.wait_for(self.wait_for_players_ready(), timeout=30)
+            await asyncio.wait_for(self.wait_for_players_ready(), timeout=20)
+            await asyncio.wait_for(self.countdown(), timeout=self.sleep_match + 3)
+
         except asyncio.TimeoutError:
             self.running = False
             del games[self.game_id]
             logger.warning("Players are not ready after 30 seconds. Leaving game.")
             return
             
-        # Sleep time before game
-        await asyncio.sleep(self.sleep_match)
         # Main Game while
         while self.running:
             await self.detect_collisions()
@@ -79,11 +80,20 @@ class PongGame:
             # Wait a short period before the next update
             await asyncio.sleep(1 / 60)
     
+    async def countdown(self):
+        i = 0
+        while True:
+            await send_to_group(self.consumer, self.game_id, COUNTDOWN, {"counter": i})
+            i += 1
+            if i >= self.sleep_match:
+                return
+            await asyncio.sleep(1)
+
+            
     async def wait_for_players_ready(self):
         # Esperar a que los jugadores estén listos
         while not self.running:
             await self.send_game_state()
-            logger.warning(f"game waiting")
             await self.are_players_ready()
             await asyncio.sleep(1)
 
@@ -333,6 +343,5 @@ class PongGame:
                     if p['userid'] == winner_id:
                         tournaments[self.tournament_id]["rounds"][-1][idx][idx2]['winner'] = True
                         break
-            logger.warning("start new one")
             await self.consumer.start_next_round(self.tournament_id)
         

@@ -100,6 +100,10 @@ gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
     fillGames(data);
 });
 
+gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
+    console.log(`game start in: ${data.counter}`)
+});
+
 
 ////////////////
 // GAME LOGIC //

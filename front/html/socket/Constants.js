@@ -37,6 +37,7 @@ export const GAME_TYPES = {
     GAME_END:               'game_end',
     WALL_COLLISON:          'wall_collison',
     PADDLE_COLLISON:        'paddle_collison',
+    COUNTDOWN:              'countdown',
 
     // Tournament
     CREATE_TOURNAMENT:      'create_tournament',
