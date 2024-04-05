@@ -1,7 +1,7 @@
 import { loadUserInfo } from "../profile/profileScript.js"
 import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
-import { connectGame } from "../game/gameScript.js"
+import { connectGame, CancelMatchmaking } from "../game/gameScript.js"
 
 export function loadMainPage() {
     // Renew jwt
@@ -172,10 +172,29 @@ function chatEventHandler(e) {
     // TODO incluir todas las funciones del chat
 }
 
+function gameEventHandler(e) {
+        // Add event listener to cancel matchmaking button
+    if (e.target.matches('#multiplayerButton') === true)
+    {
+        let matchmaking = document.getElementById("matchmaking");
+        let options = document.getElementById("game_options");
+        options.classList.add("mshide");
+        matchmaking.classList.remove("mshide");
+        connectGame();
+    }
+    else if (e.target.matches('#cancelMatchmakingButton') === true)
+    {
+        let matchmaking = document.getElementById("matchmaking");
+        let options = document.getElementById("game_options");
+        matchmaking.classList.add("mshide");
+        options.classList.remove("mshide");
+        CancelMatchmaking();
+    }
+}
+
 function setWindowEvents(uniqueId) {
     if (uniqueId == 'myWindowProfile') {
         loadUserInfo();
-
     }
     else if (uniqueId == 'myWindowChat') {
         connectChat();
@@ -189,7 +208,7 @@ function setWindowEvents(uniqueId) {
 //     document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
     }
     else if (uniqueId == 'myWindowGame') {
-        document.getElementById('root').addEventListener('click', connectGame);
+        document.getElementById('root').addEventListener('click', gameEventHandler);
     }
 }
 
