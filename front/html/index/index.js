@@ -164,6 +164,14 @@ function selectProgram(e) {
 
 }
 
+function chatEventHandler(e) {
+    if (e.target.matches('#red-myWindowChat') === true)
+        disconnect();
+    else if (e.target.matches('#send-button') === true)
+        sendMessage();
+    // TODO incluir todas las funciones del chat
+}
+
 function setWindowEvents(uniqueId) {
     if (uniqueId == 'myWindowProfile') {
         loadUserInfo();
@@ -171,9 +179,9 @@ function setWindowEvents(uniqueId) {
     }
     else if (uniqueId == 'myWindowChat') {
         connectChat();
-        //TODO Include here all chat events
-        document.getElementById('root').addEventListener('click', sendMessage);
-        document.getElementById('root').addEventListener('click', disconnect);
+        document.getElementById('root').addEventListener('click', chatEventHandler);
+//     document.getElementById('root').addEventListener('click', sendMessage);
+//     document.getElementById('root').addEventListener('click', disconnect);
 //     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
 //     document.getElementById("Ignore").addEventListener("click", ignoreUser);
 //     document.getElementById("Unignore").addEventListener("click", unignoreUser);

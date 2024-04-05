@@ -15,9 +15,6 @@ export function connectChat()
 
 export function disconnect(e)
 {
-    if (e.target.matches('#red-myWindowChat') === false)
-        return ;
-    e.preventDefault();
     chatSM.disconnect();
 }
 
@@ -145,10 +142,7 @@ function populateChat(userList) {
 }
 
 // Example to send a global message
-export function sendMessage(e) {
-    if (e.target.matches('#send-button') === false)
-        return ;
-    e.preventDefault();
+export function sendMessage() {
     var input = document.getElementById("newMessage");
     chatSM.send(CHAT_TYPES.GENERAL_MSG, input.value);
     input.value = "";
