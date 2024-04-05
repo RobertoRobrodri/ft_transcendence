@@ -44,6 +44,7 @@ export const GAME_TYPES = {
     JOIN_TOURNAMENT:        'join_tournament',
     LEAVE_TOURNAMENT:       'leave_tournament',
     LIST_TOURNAMENTS:       'list_tournaments',
+    TOURNAMENT_TABLE:       'tournament_table',
 
     // Game
     LIST_GAMES:             'list_games',

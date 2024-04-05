@@ -111,14 +111,15 @@ class PongGame:
     async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
             await self.send_game_end()
-            await self.save_game_result(players_list, winner)
+            if self.tournament_id is None:
+                await self.save_game_result(players_list, winner)
+            else:
+                await self.set_game_tournament_points()
+                await self.set_winner_tournament(players_list, winner)
             self.running = False
             del games[self.game_id]
             await self.consumer.sendlistGamesToAll("Pong")
-            await self.set_winner_tournament(players_list, winner)
-
-            
-
+    
     async def reset_game(self, winner):
         self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2}
         self.ball['speed_y'] = self.get_random_angle()
@@ -293,17 +294,6 @@ class PongGame:
         if userid in self.players:
             self.players[userid]['ready'] = True
 
-    # async def change_player(self, new_player_id, userid):
-    #     player_ids = list(self.players.keys())
-        
-    #     for player_id in player_ids:
-    #         player_data = self.players[player_id]
-    #         if player_data['userid'] == userid:
-    #             self.players[new_player_id] = player_data
-    #             self.players[new_player_id]['id'] = new_player_id
-    #             del self.players[player_id]
-    #     await self.send_game_state()
-    
     def execute_action(self, userid, action):
         if userid in self.players:
             player = self.players[userid]
@@ -334,6 +324,17 @@ class PongGame:
         await CustomUser.user_win(winner)
         # Increment loss in 1
         await CustomUser.user_lose(loser)
+    
+    async def set_game_tournament_points(self):
+        current_round = tournaments[self.tournament_id]['rounds'][-1]
+        for round in current_round:
+            for player_data in round:
+                userid = player_data['userid']
+                player = self.players.get(userid)
+                if player:
+                    player_number = player['nbr']
+                    score_index = player_number - 1
+                    player_data['points'] = self.scores[score_index]
     
     async def set_winner_tournament(self, players_list, winner):
         if self.tournament_id is not None:

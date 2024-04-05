@@ -104,6 +104,10 @@ gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
     console.log(`game start in: ${data.counter}`)
 });
 
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
+    console.log(`tournament data table: ${data}`)
+});
+
 
 ////////////////
 // GAME LOGIC //
