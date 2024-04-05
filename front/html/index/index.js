@@ -167,6 +167,7 @@ function selectProgram(e) {
 function setWindowEvents(uniqueId) {
     if (uniqueId == 'myWindowProfile') {
         loadUserInfo();
+
     }
     else if (uniqueId == 'myWindowChat') {
         connectChat();

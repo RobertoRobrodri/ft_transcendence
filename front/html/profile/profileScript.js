@@ -14,8 +14,8 @@ export async function loadUserInfo() {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        let default_picture = './assets/gigachad.jpg'
         let user_info = document.getElementById("user_info");
+        let default_picture = './assets/gigachad.jpg'
         let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, data.username);
         user_updated = user_updated.replace(/{{WINS}}/g, data.wins);
         user_updated = user_updated.replace(/{{LOSSES}}/g, data.losses);
@@ -23,10 +23,13 @@ export async function loadUserInfo() {
         if (data.profile_picture != null)
             user_updated = user_updated.replace(default_picture, 'data:image/png;base64,' + data.profile_picture);
         user_info.innerHTML = user_updated;
+
+        user_info.classList.remove("mshide");
     }
     catch (error) {
         console.error('Error:', error.message);
         // Token error, try update jwt
         renewJWT();
     }
+    
 }

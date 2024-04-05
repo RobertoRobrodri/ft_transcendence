@@ -230,9 +230,8 @@ main {
 }
 
 /* Estilo del gif de carga */
-
 .loading {
-    height: 40vh;
+    height: 45vh;
     display: flex;
     justify-content: center;
     align-items: center;
