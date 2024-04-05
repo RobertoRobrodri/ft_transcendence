@@ -334,7 +334,7 @@ function makeDraggable(element, elementClick) {
 		// Calcula los límites de la ventana
 		const windowWidth = element.offsetWidth;
 		const windowHeight = element.offsetHeight;
-	
+        
 		// Limita las coordenadas para que al menos 40px queden dentro de la pantalla en todas las direcciones,
 		// y guarda 50px adicionales en la parte inferior
 		newPosX = Math.max(-windowWidth + 40, Math.min(newPosX, maxX - 40)); // Resta windowWidth para considerar el ancho de la ventana
