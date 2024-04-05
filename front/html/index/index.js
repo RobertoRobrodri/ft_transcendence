@@ -190,6 +190,8 @@ function gameEventHandler(e) {
         options.classList.remove("mshide");
         CancelMatchmaking();
     }
+    else if (e.target.matches('#red-myWindowGame') === true)
+        CancelMatchmaking();
 }
 
 function setWindowEvents(uniqueId) {

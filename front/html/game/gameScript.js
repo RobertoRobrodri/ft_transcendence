@@ -15,13 +15,18 @@ function register() {
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 
-export function connectGame()
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export async function connectGame()
 {
     gameSM.connect();
     // register();
+    await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
     InitMatchmaking();
-    // canvas = document.getElementById("pongCanvas");
-    // ctx = canvas.getContext("2d");
+    canvas = document.getElementById("pongCanvas");
+    ctx = canvas.getContext("2d");
 }
 
 // Callback socket connected
