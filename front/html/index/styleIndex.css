@@ -81,21 +81,49 @@ main {
 .profile {
     height: 70px;
     width: 70px;
+    left: 38px;
+    top: 40px;
 }
 
 .chat {
     height: 70px;
     width: 70px;
+    left: 38px;
+    top: 80px;
 }
 
 .terminal {
     height: 70px;
     width: 70px;
+    left: 38px;
+    top: 120px;
 }
 
 .game {
     height: 70px;
     width: 70px;
+    left: 38px;
+    top: 160px;
+}
+
+#profile {
+    left: 38px;
+    top: 50px;
+}
+
+#chat {
+    left: 38px;
+    top: 200px;
+}
+
+#terminal {
+    left: 38px;
+    top: 350px;
+}
+
+#game {
+    left: 38px;
+    top: 500px;
 }
 
 /* Estilo de los programas */
@@ -112,6 +140,8 @@ main {
     position: fixed;
     display: flex;
     justify-content: center;
+    gap: 20px; /* Adjust gap between icons */
+
 }
 
 .icon-content {
