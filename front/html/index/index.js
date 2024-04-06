@@ -2,6 +2,8 @@ import { loadUserInfo } from "../profile/profileScript.js"
 import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame, CancelMatchmaking } from "../game/gameScript.js"
+import { GameSocketManager } from "../socket/GameSocketManager.js"
+import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
 
 export function loadMainPage() {
     // Renew jwt
@@ -170,7 +172,9 @@ function chatEventHandler(e) {
 }
 
 function gameEventHandler(e) {
-        // Add event listener to cancel matchmaking button
+    // Add event listener to cancel matchmaking button
+    let gameSM = new GameSocketManager();
+    gameSM.connect();
     if (e.target.matches('#multiplayerButton') === true)
     {
         let matchmaking = document.getElementById("matchmaking");
@@ -188,7 +192,9 @@ function gameEventHandler(e) {
         CancelMatchmaking();
     }
     else if (e.target.matches('#red-myWindowGame') === true)
-        CancelMatchmaking();
+    {
+        gameSM.disconnect();
+    }
 }
 
 function setWindowEvents(uniqueId) {

@@ -46,6 +46,9 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
     //Game matched! game started
     // send ready request after open game, message to ask about ready etc
+    // Hide matchmaking elements
+    let matchmaking = document.getElementById("matchmaking");
+    matchmaking.classList.add("mshide");
     gameSM.send(GAME_TYPES.PLAYER_READY);
 });
 
@@ -59,8 +62,6 @@ gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
 
 // GAME
 gameSM.registerCallback(GAME_TYPES.GAME_STATE, data => {
-    let matchmaking = document.getElementById("matchmaking");
-    matchmaking.classList.add("mshide");
     updateGame(data);
 });
 
