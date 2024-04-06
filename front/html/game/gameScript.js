@@ -1,5 +1,6 @@
 import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { sleep } from '../components/utils.js'
 
 /////////////////
 // Global vars //
@@ -7,17 +8,13 @@ import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
 let canvas;
 let ctx;
 
-function register() {
-    document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
-    document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
-}
+// function register() {
+//     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
+//     document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
+// }
 
 // Singleton socket instance
 let gameSM = new GameSocketManager();
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 export async function connectGame()
 {
@@ -62,6 +59,8 @@ gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
 
 // GAME
 gameSM.registerCallback(GAME_TYPES.GAME_STATE, data => {
+    let matchmaking = document.getElementById("matchmaking");
+    matchmaking.classList.add("mshide");
     updateGame(data);
 });
 

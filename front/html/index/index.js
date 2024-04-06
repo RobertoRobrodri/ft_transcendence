@@ -29,9 +29,6 @@ export function loadMainPage() {
         document.head.appendChild(style2);
         //clear hash
         history.pushState("", document.title, window.location.pathname + window.location.search);
-        //connectChat();
-        //register game example
-        //connectGame();
         setClickEvents();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
