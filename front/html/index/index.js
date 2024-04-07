@@ -174,7 +174,6 @@ function chatEventHandler(e) {
 function gameEventHandler(e) {
     // Add event listener to cancel matchmaking button
     let gameSM = new GameSocketManager();
-    gameSM.connect();
     if (e.target.matches('#multiplayerButton') === true)
     {
         let matchmaking = document.getElementById("matchmaking");
