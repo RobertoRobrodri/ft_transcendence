@@ -1,12 +1,10 @@
 
-console.log("onegame.js was loaded");
-
-export function registerOneGame() {
-    document.getElementById("initonegame").addEventListener("click", initializeOneGame);
-    document.getElementById("endonegame").addEventListener("click", endOneGame);
+export function registerSingleGame() {
+    document.getElementById("initsinglegame").addEventListener("click", initializeSingleGame);
+    document.getElementById("endsinglegame").addEventListener("click", endSingleGame);
 }
 
-function endOneGame() {
+function endSingleGame() {
     if (intervalId != null) {
         clearInterval(intervalId);
         intervalId = null;
@@ -42,7 +40,7 @@ let leftCollisionX = 22;
 let rightCollisionX = 378;
 let pointsToWin = 6;
 
-function initializeOneGame() {
+function initializeSingleGame() {
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
     window.addEventListener("keydown", handleKeyDown);
@@ -92,7 +90,7 @@ function startGame() {
 function newFrame() {
     
     gameState.players.left.paddle_y = Math.min(Math.max(gameState.players.left.paddle_y + leftPlayerMovement, 0), canvasHeight - paddleLenght);
-    gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + rightPlayerMovement, 0), canvasHeight - paddleLenght);;
+    gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + decideNextMove(gameState.players.right.paddle_y, gameState.ball), 0), canvasHeight - paddleLenght);;
     
     detectCollision();
 
@@ -101,6 +99,17 @@ function newFrame() {
     console.log(gameState.ball);
 
     updateGame(gameState);
+}
+
+function decideNextMove(paddleY, ball) {
+
+    if (ball.y < paddleY) {
+        return -paddleSpeed;
+    } 
+    if (ball.y - paddleY > paddleLenght) {
+        return paddleSpeed;
+    }
+    return 0;
 }
 
 function detectCollision() {
@@ -119,7 +128,7 @@ function detectCollision() {
     if (ball.x <= leftSize) {
         gameState.players.left.score += 1;
         if (gameState.players.left.score == pointsToWin) {
-            endOneGame();
+            endSingleGame();
         } else {
             startGame();
         }
@@ -127,7 +136,7 @@ function detectCollision() {
     if (ball.x >= rightSize) {
         gameState.players.right.score += 1;
         if (gameState.players.right.score == pointsToWin) {
-            endOneGame();
+            endSingleGame();
         } else {
             startGame();
         }
@@ -233,12 +242,6 @@ function handleKeyDown(event) {
             break;
         case 83: // S
             leftPlayerMovement = paddleSpeed;
-            break;
-        case 79: // O
-            rightPlayerMovement = -paddleSpeed;
-            break;
-        case 76: // L
-            rightPlayerMovement = paddleSpeed;
         default:;
     }
 }
@@ -250,12 +253,6 @@ function handleKeyUp(event) {
             break;
         case 83: // S
             leftPlayerMovement = 0;
-            break;
-        case 79: // O
-            rightPlayerMovement = 0;
-            break;
-        case 76: // L
-            rightPlayerMovement = 0;
         default:;
     }
 }

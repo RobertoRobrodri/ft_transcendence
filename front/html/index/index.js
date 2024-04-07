@@ -2,7 +2,7 @@ import { loadUserInfo } from "./menu.js"
 import { connectChat } from "./chat.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame } from "./game.js"
-import { registerOneGame } from "./onegame python.js"
+import { registerSingleGame } from "./singlegame.js"
 
 export function loadMainPage() {
 
@@ -31,7 +31,7 @@ export function loadMainPage() {
         //register game example
         connectGame();
         //register one game
-        registerOneGame();
+        registerSingleGame();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
