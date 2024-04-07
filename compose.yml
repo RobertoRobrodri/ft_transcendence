@@ -105,6 +105,10 @@ services:
       - ./elk-config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
       - transcendence
+    deploy:
+      resources:
+          limits:
+            cpus: '1'
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.12.1
@@ -122,6 +126,10 @@ services:
       - elasticsearch
     networks:
       - transcendence
+    deploy:
+      resources:
+          limits:
+            cpus: '1'
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.12.1
@@ -140,6 +148,10 @@ services:
       - ELASTICSEARCH_PASSWORD=mi_contrasena_kibana_system
     networks:
       - transcendence
+    deploy:
+      resources:
+          limits:
+            cpus: '1'
 # Django    dashboard    17658
 # Postgres  dashboard  9628
 # Nginx     dashboard     12708
