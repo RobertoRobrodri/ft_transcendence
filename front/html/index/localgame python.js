@@ -24,9 +24,9 @@ let gameState;
 let paddleWidth = 10;
 let paddleLenght = 40;
 let paddleMargin = 2;
-let canvasWidth = 400; //TODO: Make this dependant on html element (?)
-let canvasHeight = 200; //TODO: Make this dependant on html element (?)
-let ballRadius = 5; //TODO: How's this going to be defined (?)
+let canvasWidth = 400;
+let canvasHeight = 200;
+let ballRadius = 5;
 let borderThickness = 5;
 let sleepMatch = 3;
 let sleep = 1;
@@ -40,6 +40,7 @@ let leftPlayerMovement;
 let rightPlayerMovement;
 let leftCollisionX = 22;
 let rightCollisionX = 378;
+let pointsToWin = 6;
 
 function initializeOneGame() {
     canvas = document.getElementById("pongCanvas");
@@ -117,13 +118,19 @@ function detectCollision() {
 
     if (ball.x <= leftSize) {
         gameState.players.left.score += 1;
-        startGame();
-        //TODO
+        if (gameState.players.left.score == pointsToWin) {
+            endOneGame();
+        } else {
+            startGame();
+        }
     }
     if (ball.x >= rightSize) {
         gameState.players.right.score += 1;
-        startGame();
-        //TODO
+        if (gameState.players.right.score == pointsToWin) {
+            endOneGame();
+        } else {
+            startGame();
+        }
     }
 
     if (ball.y <= topSize || ball.y >= bottomSize) {
