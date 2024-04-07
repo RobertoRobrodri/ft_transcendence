@@ -3,8 +3,7 @@ import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame, CancelMatchmaking } from "../game/gameScript.js"
 import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
-import { registerSingleGame } from "./singlegame.js"
+import { initializeSingleGame, endSingleGame } from "./singlegame.js"
 import { registerVersusGame } from "./versusgame.js"
 
 export function loadMainPage() {
@@ -174,9 +173,9 @@ function chatEventHandler(e) {
 }
 
 function gameEventHandler(e) {
-    // Add event listener to cancel matchmaking button
     let gameSM = new GameSocketManager();
-    if (e.target.matches('#multiplayerButton') === true)
+    // multiplayer
+    if (e.target.matches('#onlineGameButton') === true)
     {
         let matchmaking = document.getElementById("matchmaking");
         let options = document.getElementById("game_options");
@@ -192,9 +191,34 @@ function gameEventHandler(e) {
         options.classList.remove("mshide");
         CancelMatchmaking();
     }
+    // juego local
+    else if (e.target.matches('#localGameButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        let options = document.getElementById("game_options");
+        options.classList.add("mshide");
+        localgame.classList.remove("mshide");
+    }
+    // 1 jugador
+    else if (e.target.matches('#soloGameButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        localgame.classList.add("mshide");
+        initializeSingleGame();
+    }
+    else if (e.target.matches('#goBackButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        let options = document.getElementById("game_options");
+        options.classList.remove("mshide");
+        localgame.classList.add("mshide");
+    }
     else if (e.target.matches('#red-myWindowGame') === true)
     {
+        // si está conectado el socket, lo desconecta
         gameSM.disconnect();
+        // si está en una partida de un jugador, la termina
+        endSingleGame();
     }
 }
 
