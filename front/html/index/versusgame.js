@@ -4,7 +4,7 @@ export function registerVersusGame() {
     document.getElementById("endversusgame").addEventListener("click", endVersusGame);
 }
 
-function endVersusGame() {
+export function endVersusGame() {
     if (intervalId != null) {
         clearInterval(intervalId);
         intervalId = null;
@@ -40,7 +40,7 @@ let leftCollisionX = 22;
 let rightCollisionX = 378;
 let pointsToWin = 6;
 
-function initializeVersusGame() {
+export function initializeVersusGame() {
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
     window.addEventListener("keydown", handleKeyDown);

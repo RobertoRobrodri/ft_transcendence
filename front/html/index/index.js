@@ -4,7 +4,7 @@ import { renewJWT } from "../components/updatejwt.js"
 import { connectGame, CancelMatchmaking } from "../game/gameScript.js"
 import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { initializeSingleGame, endSingleGame } from "./singlegame.js"
-import { registerVersusGame } from "./versusgame.js"
+import { initializeVersusGame, endVersusGame } from "./versusgame.js"
 
 export function loadMainPage() {
     // Renew jwt
@@ -206,6 +206,13 @@ function gameEventHandler(e) {
         localgame.classList.add("mshide");
         initializeSingleGame();
     }
+    // Multijugador local
+    else if (e.target.matches('#localMultiplayerButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        localgame.classList.add("mshide");
+        initializeVersusGame();
+    }
     else if (e.target.matches('#goBackButton') === true)
     {
         let localgame = document.getElementById("local_game_options");
@@ -219,6 +226,8 @@ function gameEventHandler(e) {
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
         endSingleGame();
+        // si está jugando en una partida multijugador local, la termina
+        endVersusGame();
     }
 }
 
