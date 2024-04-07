@@ -28,12 +28,13 @@ chatSM.registerCallback(SOCKET.CONNECTED, event => {
     chatSM.send(CHAT_TYPES.USER_LIST);
 });
 
+// ! When calling disconnect this is triggered
 // Callback socket disconnected
-chatSM.registerCallback(SOCKET.DISCONNECTED, event => {
-    console.log('Socket connection lost:', event);
-    renewJWT();
-    chatSM.connect();
-});
+// chatSM.registerCallback(SOCKET.DISCONNECTED, event => {
+//     console.log('Socket connection lost:', event);
+//     renewJWT();
+//     chatSM.connect();
+// });
 
 // Callback socket error
 chatSM.registerCallback(SOCKET.ERROR, event => {
@@ -45,11 +46,13 @@ chatSM.registerCallback(SOCKET.ERROR, event => {
 
 // Callback rcv all connected users
 chatSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
+    console.log('All list')
     populateChat(userList);
 });
 
 // Callback rcv connected user
 chatSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
+    console.log('Single user')
     addSingleUser(user);
 });
 
@@ -198,6 +201,7 @@ export function removeSingleUser(user) {
     });
 
     if (listItem) {
+        console.log('Fuerita')
         userListElement.removeChild(listItem);
     }
 }
