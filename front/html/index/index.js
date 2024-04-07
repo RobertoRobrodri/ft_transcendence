@@ -4,6 +4,8 @@ import { renewJWT } from "../components/updatejwt.js"
 import { connectGame, CancelMatchmaking } from "../game/gameScript.js"
 import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { registerSingleGame } from "./singlegame.js"
+import { registerVersusGame } from "./versusgame.js"
 
 export function loadMainPage() {
     // Renew jwt
