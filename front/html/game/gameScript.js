@@ -22,8 +22,9 @@ export async function connectGame()
     // register();
     await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
     InitMatchmaking();
-    canvas = document.getElementById("pongCanvas");
-    ctx = canvas.getContext("2d");
+    // ! We now get the canvas from the update game
+    // canvas = document.getElementById("pongCanvas");
+    // ctx = canvas.getContext("2d");
 }
 
 // Callback socket connected
@@ -101,6 +102,9 @@ export function CancelMatchmaking()
 }
 
 function updateGame(gameState) {
+    // This prevents an error when reloading the page where it cannot find the canvas
+    canvas = document.getElementById("pongCanvas");
+    ctx = canvas.getContext("2d");
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
