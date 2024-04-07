@@ -147,7 +147,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if game_id is not None:
             message = {'message': f'Game restored {game_id}'}
             await self.channel_layer.group_add(game_id, self.channel_name)
-            await send_to_me(self, game_id, INITMATCHMAKING, {'message': message})
+            await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
             # await games[game_id].change_player(self.channel_name, user.id)
     
     ######################
