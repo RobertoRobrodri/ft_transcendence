@@ -1,7 +1,7 @@
 
 export function registerVersusGame() {
-    document.getElementById("initonegame").addEventListener("click", initializeVersusGame);
-    document.getElementById("endonegame").addEventListener("click", endVersusGame);
+    document.getElementById("initversusgame").addEventListener("click", initializeVersusGame);
+    document.getElementById("endversusgame").addEventListener("click", endVersusGame);
 }
 
 function endVersusGame() {
