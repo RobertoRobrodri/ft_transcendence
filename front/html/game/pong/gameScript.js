@@ -7,6 +7,7 @@ import { sleep } from '../../../components/utils.js'
 /////////////////
 let canvas;
 let ctx;
+let score = [0, 0];
 
 // function register() {
 //     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
@@ -83,8 +84,8 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
-    drawScore(data);
-    console.log(data)
+    score = data;
+    console.log(data);
 });
 
 
@@ -112,7 +113,8 @@ function updateGame(gameState) {
     // Black background
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    // Draw Score
+    drawScore(score);
     // Draw paddles
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];

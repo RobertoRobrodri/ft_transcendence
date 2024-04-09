@@ -1,5 +1,3 @@
-import { displayLoginOrMenu } from "../components/loader.js"
-
 export function remove_session()
 {
     
