@@ -1,7 +1,7 @@
 import { loadUserInfo } from "../profile/profileScript.js"
 import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
-import { connectGame, CancelMatchmaking } from "../game/gameScript.js"
+import { connectGame, CancelMatchmaking } from "../game/pong/gameScript.js"
 import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { initializeSingleGame, endSingleGame } from "./singlegame.js"
 import { initializeVersusGame, endVersusGame } from "./versusgame.js"
@@ -263,9 +263,9 @@ function setWindowContent(uniqueId) {
         var scriptUrl = '../chat/chatScript.js';
     }
     else if (uniqueId == 'myWindowGame') {
-        var htmlUrl = '../game/game.html';
-        var cssUrl = '../game/gameStyle.css';
-        var scriptUrl = '../game/gameScript.js';
+        var htmlUrl = '../game/pong/game.html';
+        var cssUrl = '../game/pong/gameStyle.css';
+        var scriptUrl = '../game/pong/gameScript.js';
     }
     // console.log(uniqueId);
     let window = document.getElementById(uniqueId + "-content");

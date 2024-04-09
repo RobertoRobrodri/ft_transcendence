@@ -1,6 +1,6 @@
-import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
-import { sleep } from '../components/utils.js'
+import { GameSocketManager } from "../../../socket/GameSocketManager.js"
+import { GAME_TYPES, SOCKET } from '../../../socket/Constants.js';
+import { sleep } from '../../../components/utils.js'
 
 /////////////////
 // Global vars //
@@ -83,6 +83,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
+    drawScore(data);
     console.log(data)
 });
 
@@ -177,5 +178,22 @@ function getDirectionFromKeyCode(keyCode) {
             return '1';
         default:
             return null;
+    }
+}
+
+function drawScore(scores) {
+    // Set font style
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+
+    // Loop through the scores object
+    for (const playerId in scores) {
+        // Determine position based on player ID or index
+        const xPos = (playerId === "0") ? canvas.width / 4 : canvas.width * 3 / 4;
+        const yPos = 30; // Position at the top
+
+        // Draw the score
+        ctx.fillText(scores[playerId], xPos, yPos);
     }
 }
