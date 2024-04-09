@@ -66,7 +66,7 @@ class CustomUser(AbstractUser):
     @classmethod
     @database_sync_to_async
     def update_user_on_disconnect(cls, user):
-        user.connected = True
+        user.connected = False
         user.save()
     
     @classmethod

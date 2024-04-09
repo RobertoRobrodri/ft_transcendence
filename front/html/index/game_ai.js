@@ -126,8 +126,6 @@ function updateGame(gameState) {
     var rival = document.getElementById("dstUser").value;
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];
-        if (player.userid != rival)
-        {
             if(rival == "1")
             {
                 // RNA
@@ -150,7 +148,6 @@ function updateGame(gameState) {
                 else if (middlePaddle > dst)
                     gameSM.send(GAME_TYPES.DIRECTION, "-1");
             }
-        }
     }
 }
 

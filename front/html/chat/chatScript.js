@@ -201,7 +201,6 @@ export function removeSingleUser(user) {
     });
 
     if (listItem) {
-        console.log('Fuerita')
         userListElement.removeChild(listItem);
     }
 }
