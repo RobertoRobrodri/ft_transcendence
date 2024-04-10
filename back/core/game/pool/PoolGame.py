@@ -1,4 +1,3 @@
-import time
 import asyncio
 import numpy as np
 import math
@@ -76,7 +75,7 @@ class PoolGame:
             all_balls.append(self.balls[i].position.tolist())
             for j in range(i + 1, len(self.balls)):
                 if self.balls[i].colliding(self.balls[j]):
-                    self.balls[i].resolve_collision(self.balls[j])
+                    await self.balls[i].resolve_collision(self.balls[j])
         if self.movingBalls != 0:
             await send_to_group(self.consumer, self.game_id, "move_ball", all_balls)
             

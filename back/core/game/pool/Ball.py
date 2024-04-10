@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import math
 from pythreejs import Raycaster
 from scipy.spatial.transform import Rotation
@@ -86,6 +87,7 @@ class Ball:
                     frequency = min(0.6, frequency)
                     self.speed = self.speed * self.restitution['wall']
                     # send play sound
+                    await send_to_group(self.main.consumer, self.main.game_id, "sound", frequency)
                     
             elif collideType == 1:
                 pass
@@ -100,7 +102,7 @@ class Ball:
         return np.linalg.norm(point1 - point2)
     
     def colliding(self, ball):
-        distance = self.distance_to(self.nextPosition, ball.nextPosition) #self.nextPosition.distance_to(ball.nextPosition)
+        distance = self.distance_to(self.nextPosition, ball.nextPosition)
         return distance < ball.radius + self.radius
     
     def willCollideWall(self):
@@ -146,22 +148,30 @@ class Ball:
     
         return 0
     
-    def resolve_collision(self, ball):
-        # Calcula el vector delta y la distancia entre las posiciones de las bolas
+    async def resolve_collision(self, ball):
+        # Delta vector and distance between ball positions
         delta = self.position - ball.position
         distance = np.linalg.norm(delta)
         distance -= self.radius + ball.radius
 
-        # Si hay solapamiento, ajusta las posiciones de las bolas
+        # If overlap, adjust positions
         if distance < 0:
             self.position -= delta / np.linalg.norm(delta) * distance
+        
+        # Sound
+        hitSpeed = ball.speed - self.speed
+        hitSpeed[0] = abs(hitSpeed[0])
+        hitSpeed[1] = abs(hitSpeed[1])
+        hitSpeed[2] = abs(hitSpeed[2])
+        frequency = 0.3 + (np.linalg.norm(hitSpeed) / 0.3 * (0.75 + random.random() / 2)) / 1.5
+        await send_to_group(self.main.consumer, self.main.game_id, "sound", frequency)
 
-        # Calcula el ángulo de colisión
+        # Collison angle
         dx = self.nextPosition[0] - ball.nextPosition[0]
         dy = self.nextPosition[2] - ball.nextPosition[2]
         collision_angle = math.atan2(dy, dx)
 
-        # Calcula las velocidades finales de las bolas
+        # Final end speed of balls
         speed1 = np.linalg.norm(self.speed)
         speed2 = np.linalg.norm(ball.speed)
         direction1 = math.atan2(self.speed[2], self.speed[0])
@@ -177,16 +187,16 @@ class Ball:
         final_velocityy_1 = velocityy_1
         final_velocityy_2 = velocityy_2
 
-        # Actualiza las velocidades de las bolas
+        # Update ball speed
         self.speed[0] = math.cos(collision_angle) * final_velocityx_1 + math.cos(collision_angle + math.pi / 2) * final_velocityy_1
         self.speed[2] = math.sin(collision_angle) * final_velocityx_1 + math.sin(collision_angle + math.pi / 2) * final_velocityy_1
         ball.speed[0] = math.cos(collision_angle) * final_velocityx_2 + math.cos(collision_angle + math.pi / 2) * final_velocityy_2
         ball.speed[2] = math.sin(collision_angle) * final_velocityx_2 + math.sin(collision_angle + math.pi / 2) * final_velocityy_2
 
-        # Aplica el coeficiente de restitución a las velocidades
+        # Coeficient to speed
         self.speed = self.speed * self.restitution["ball"]
         ball.speed = ball.speed * ball.restitution["ball"]
 
-        # Actualiza las velocidades de las bolas
+        # Update speed and push
         self.setSpeed(self.speed)
         ball.setSpeed(ball.speed)
