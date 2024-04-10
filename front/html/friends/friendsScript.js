@@ -42,12 +42,19 @@ async function getFriendList() {
         const data = await response.json();
         let friend_list = document.getElementById("friend-list");
 		data.friends.forEach(friend => {
-			console.log(friend)
 			const listItem = document.createElement('li');
 			listItem.className = 'list-group-item';
-			listItem.textContent = friend
+			listItem.textContent = friend;
 			friend_list.appendChild(listItem);
 		});
+        // TODO find a way to show pending requests
+		// let pending_requests = document.getElementById("pending-requests");
+		// data.friend_requests.forEach(request => {
+		// 	const listItem = document.createElement('li');
+		// 	listItem.className = 'list-group-item';
+		// 	listItem.textContent = request;
+		// 	pending_requests.appendChild(listItem);
+		// });
         
     }
     catch (error) {
@@ -82,7 +89,7 @@ async function sendFriendRequest(e) {
 		console.log(data);
     }
     catch (error) {
-        displayErrorList(JSON.parse(error.message), 'registrationForm');
+        displayErrorList(JSON.parse(error.message), 'FriendRequestForm');
     }
 }
 
