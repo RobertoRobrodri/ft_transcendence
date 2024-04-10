@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 def GenerateQR(user):
-	# Generate code and return url
+    # Generate code and return url
     topt = pyotp.totp.TOTP(settings.OTP_SECRET_KEY)
     qr_code_url = topt.provisioning_uri(name=user.username.lower(), issuer_name='ft_transcendence_chads')
     # Generate QR Image

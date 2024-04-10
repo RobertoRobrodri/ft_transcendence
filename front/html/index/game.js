@@ -218,14 +218,6 @@ function getDirectionFromKeyCode(keyCode) {
     }
 }
 
-
-function LeaveTournament(tournamentId)
-{
-    gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
-        id: tournamentId
-    });
-}
-
 // Fill Tournament list
 function fillTournaments(data) {
     var tournaments = document.getElementById("tournamentList");

@@ -55,4 +55,5 @@ export const GAME_TYPES = {
 export const GAMES = {
     PONG:       'Pong',
     TOURNAMENT: 'Tournament',
+    POOL:       'Pool',
 };

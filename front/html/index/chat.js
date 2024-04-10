@@ -198,14 +198,14 @@ export function addSingleUser(user) {
 // Remove item from chat
 export function removeSingleUser(user) {
     const userListElement = document.getElementById('userList');
-    const listItem = Array.from(userListElement.children).find(element => {
+    const listItem = Array.from(userListElement.children).filter(element => {
         const link = element.querySelector('.nav-link');
         return link && link.id === String(user.id);
     });
 
-    if (listItem) {
-        userListElement.removeChild(listItem);
-    }
+    listItem.forEach(i => {
+        userListElement.removeChild(i);
+    });
 }
 
 // Add general message test

@@ -2,6 +2,7 @@ import { loadUserInfo } from "./menu.js"
 import { connectChat } from "./chat.js"
 import { renewJWT } from "../components/updatejwt.js"
 import { connectGame } from "./game.js"
+import { connectPoolGame } from "./games/pool/script.js"
 
 export function loadMainPage() {
 
@@ -29,6 +30,7 @@ export function loadMainPage() {
         connectChat();
         //register game example
         connectGame();
+        connectPoolGame();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

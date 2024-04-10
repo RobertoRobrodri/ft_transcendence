@@ -38,7 +38,7 @@ class PongGame:
         self.max_ball_speed     = 6   # Base ball speed
         self.paddle_speed       = 1   # Speed of paddles
 
-        self.points_to_win      = 1
+        self.points_to_win      = 6
         ######
         self.game_id = game_id
         self.players = {}
@@ -294,7 +294,7 @@ class PongGame:
         if userid in self.players:
             self.players[userid]['ready'] = True
 
-    def execute_action(self, userid, action):
+    async def execute_action(self, userid, action):
         if userid in self.players:
             player = self.players[userid]
             paddle_y = player['paddle_y']
@@ -302,6 +302,9 @@ class PongGame:
             if (paddle_y + int(action)) >= 0 + self.border_thickness and (paddle_y + self.paddle_height + int(action)) <= self.canvas_y - self.border_thickness:
                 player['paddle_y'] += int(action) * self.paddle_speed
     
+    async def restore(self): #Not used here
+        return
+            
     def remove_player(self, userid):
         if userid in self.players:
             del self.players[userid]

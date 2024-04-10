@@ -12,6 +12,7 @@ from .models import Game
 from core.socket import *
 from jwt import ExpiredSignatureError
 from .PongGame import PongGame
+from .pool.PoolGame import PoolGame
 from .MatchmakingQueue import MatchmakingQueue
 from .game_state import games, tournaments, available_games
 
@@ -105,7 +106,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     await self.restoreGame(user)
                 # Ingame
                 elif type == ACTION:
-                    await self.execute_action(data["message"], user)
+                    await self.execute_action(data, user)
                 elif type == PLAYER_READY:
                     await self.player_ready(user)
                 # Tournaments
@@ -338,7 +339,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             # Set winner to False to next round
             for winner in winners:
                 winner['winner'] = False
-                # logger.warning(f"winner:  {winner}")
             # Reassign next round players
             participants = winners
 
@@ -442,8 +442,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         game_id = get_game_id(user.id)
         if game_id is not None:
             message = {'message': f'Game restored {game_id}'}
-            await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
+            await send_to_me(self, INITMATCHMAKING, {'message': message})
             await self.channel_layer.group_add(game_id, self.channel_name)
+            await games[game_id]["instance"].restore()
 
     ####################
     ## GAME FUNCTIONS ##
@@ -455,6 +456,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             game = {
                 "game": game_request,
                 "instance": PongGame(game_id, self, tournament_id)
+            }
+        elif game_request == "Pool":
+            game = {
+                "game": game_request,
+                "instance": PoolGame(game_id, self, tournament_id)
             }
         # Add players to game
         player_number = 1
@@ -473,10 +479,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
             await self.sendlistGamesToAll(game_request)
 
-    async def execute_action(self, action, user):
+    async def execute_action(self, data, user):
         game_id = get_game_id(user.id)
+        action = data.get("message")
+        if action is None:
+            return
         if game_id is not None:
-            games[game_id]["instance"].execute_action(user.id, action)
+            await games[game_id]["instance"].execute_action(user.id, action)
 
     def getGamesList(self, game_req):
         game_list = []
@@ -517,6 +526,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if room_req is None:
             return
         await self.channel_layer.group_add(room_req, self.channel_name)
+        await games[room_req]["instance"].restore()
             
 def get_game_id(userid):
     # Find game_id asscociated with player_id
