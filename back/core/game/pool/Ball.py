@@ -1,10 +1,7 @@
 import numpy as np
 import random
 import math
-from pythreejs import Raycaster
-from scipy.spatial.transform import Rotation
 from core.socket import *
-import asyncio
 
 import logging
 logger = logging.getLogger(__name__)
@@ -31,8 +28,6 @@ class Ball:
         # self.stoppedRolling = function() {}
         
     def setSpeed(self, speed):
-        
-        # logger.warning(f'MOVING: {self.number}')
         self.speed = speed
         self.nextPosition = self.position
         self.nextPosition = self.position + self.speed
@@ -45,14 +40,13 @@ class Ball:
     async def moveBall(self):
         self.speed = self.speed * (1 - self.rollFriction / self.main.tps)
         stopThreshold = 0.001
-
+        
         if np.linalg.norm(self.speed) < stopThreshold:
             self.speed = np.array([0.0, 0.0, 0.0])
             self.main.movingBalls -= 1
-            # if self.main.movingBalls == 0:
-            #     self.send_balls_position()
+            if self.main.movingBalls == 0:
+                await self.main.switchPlayer()
             self.ballLoop = self.main.loop.remove(self.ballLoop)
-            # logger.warning(f'self.ballLoop: {self.ballLoop}')
         else:
             circumference = self.radius
             traversedDistance = np.linalg.norm(self.speed)
@@ -79,7 +73,7 @@ class Ball:
                     self.speed[0] = self.speed[0] * -1
                 if (collideType == 4 and directionZ > 0) or (collideType == 5 and directionZ < 0):
                     self.speed[2] = self.speed[2] * -1
-                #Collison restiturtion
+                #Collison restitution
                 speedTowardsTarget = np.multiply(self.speed, normaliced)
                 speedLength = np.linalg.norm(speedTowardsTarget)
                 if speedLength > 0.05:
@@ -90,60 +84,43 @@ class Ball:
                     await send_to_group(self.main.consumer, self.main.game_id, "sound", frequency)
                     
             elif collideType == 1:
-                pass
+                await self.ballInPocket()
+                return
 
             self.position = self.currentPosition
             self.nextPosition = self.currentPosition + self.speed
-            
-    def direction_to(self, ball):
-        return np.linalg.norm(ball.nextPosition - self.nextPosition)
-    
-    def distance_to(self, point1, point2):
-        return np.linalg.norm(point1 - point2)
-    
-    def colliding(self, ball):
-        distance = self.distance_to(self.nextPosition, ball.nextPosition)
-        return distance < ball.radius + self.radius
     
     def willCollideWall(self):
+
         table_half_x = self.main.tableSize["x"] / 2
         table_half_z = self.main.tableSize["z"] / 2
 
         # Top left
         if self.nextPosition[0] <= -table_half_x + self.radius and (self.nextPosition[2] <= table_half_z - self.holeRadious and self.nextPosition[2] >= self.holeRadious):
-            # self.speed[0] = self.speed[0] * -1
             return 2
         # Top right
         if self.nextPosition[0] <= -table_half_x + self.radius and (self.nextPosition[2] <= -self.holeRadious and self.nextPosition[2] >= -table_half_z + self.holeRadious):
-            # self.speed[0] = self.speed[0] * -1
             return 2
         # Bottom left
         if self.nextPosition[0] >= table_half_x - self.radius and (self.nextPosition[2] <= table_half_z - self.holeRadious and self.nextPosition[2] >= self.holeRadious):
-            # self.speed[0] = self.speed[0] * -1
             return 3
         #Bottom right
         if self.nextPosition[0] >= table_half_x - self.radius and (self.nextPosition[2] <= -self.holeRadious and self.nextPosition[2] >= -table_half_z + self.holeRadious):
-            # self.speed[0] = self.speed[0] * -1
             return 3
         #Left
         if self.nextPosition[2] >= table_half_z - self.radius and (self.nextPosition[0] >= -table_half_x + self.holeRadious and self.nextPosition[0] <= table_half_x - self.holeRadious):
-            # self.speed[2] = self.speed[2] * -1
             return 4
         #Right
         if self.nextPosition[2] <= -table_half_z + self.radius and (self.nextPosition[0] >= -table_half_x + self.holeRadious and self.nextPosition[0] <= table_half_x - self.holeRadious):
-            # self.speed[2] = self.speed[2] * -1
             return 5
             
         #########
         # Holes #
         #########
         if self.nextPosition[0] - self.radius <= -table_half_x or self.nextPosition[0] + self.radius >= table_half_x:
-            logger.warning("hole 1")
             return 1
         
-            
         if self.nextPosition[2] - self.radius <= -table_half_z or self.nextPosition[2] + self.radius >= table_half_z:
-            logger.warning("hole 2")
             return 1
     
         return 0
@@ -152,11 +129,23 @@ class Ball:
         # Delta vector and distance between ball positions
         delta = self.position - ball.position
         distance = np.linalg.norm(delta)
-        distance -= self.radius + ball.radius
+        overlap = distance - (self.radius + ball.radius)
 
         # If overlap, adjust positions
-        if distance < 0:
-            self.position -= delta / np.linalg.norm(delta) * distance
+        if overlap < 0:
+            # Normalize delta vector and multiply by overlap distance
+            adjustment = delta / distance * overlap
+            self.position -= adjustment
+            self.position[1] = self.radius
+
+        # # Delta vector and distance between ball positions
+        # delta = self.position - ball.position
+        # distance = np.linalg.norm(delta)
+        # distance -= self.radius + ball.radius
+
+        # # If overlap, adjust positions
+        # if distance < 0:
+        #     self.position -= delta / np.linalg.norm(delta) * distance
         
         # Sound
         hitSpeed = ball.speed - self.speed
@@ -200,3 +189,20 @@ class Ball:
         # Update speed and push
         self.setSpeed(self.speed)
         ball.setSpeed(ball.speed)
+
+    def direction_to(self, ball):
+        return np.linalg.norm(ball.nextPosition - self.nextPosition)
+    
+    def distance_to(self, point1, point2):
+        return np.linalg.norm(point1 - point2)
+    
+    def colliding(self, ball):
+        distance = self.distance_to(self.nextPosition, ball.nextPosition)
+        return distance < ball.radius + self.radius
+    
+    async def ballInPocket(self):
+        self.main.movingBalls -= 1
+        self.speed = np.array([0.0, 0.0, 0.0])
+        self.ballLoop = self.main.loop.remove(self.ballLoop)
+        self.main.balls.remove(self)
+        await send_to_group(self.main.consumer, self.main.game_id, "poket", self.number)

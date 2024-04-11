@@ -6,7 +6,7 @@ let gameSM = new GameSocketManager();
 let POOL = null;
 
 function register() {
-    document.getElementById("initmatchmakingpool").addEventListener("click", InitMatchmaking);
+    document.getElementById("initmatchmakingpool").addEventListener("click", InitMatchmakingPool);
     // document.getElementById("initmatchmakingtournament").addEventListener("click", InitMatchmakingTournament);
     // document.getElementById("createTournament").addEventListener("click", CreateTournament);
     // document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
@@ -19,8 +19,9 @@ export function connectPoolGame()
     register();
 }
 
-function InitMatchmaking()
+function InitMatchmakingPool()
 {
+    console.log("InitMatchmakingPool func")
     POOL = new Main(document.getElementById('renderView'), gameSM);
     gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.POOL);
 }
@@ -43,6 +44,7 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 
 // MATCHMAKING
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
+    console.log("INITMATCHMAKING callback")
     if (POOL == null)
         POOL = new Main(document.getElementById('renderView'), gameSM);
     //Game matched! game started
@@ -71,11 +73,24 @@ gameSM.registerCallback("move_ball", data => {
     POOL.moveBall(data)
 });
 
-function updateGame(gameState) {
-    if (POOL == null)
-        return;
+gameSM.registerCallback("sound", data => {
+    POOL.makeSound(data)
+});
 
-    
-}
+gameSM.registerCallback("poket", data => {
+    POOL.poket(data)
+});
 
-//connectGame()
+gameSM.registerCallback("shoot", data => {
+    POOL.shoot(data)
+});
+
+gameSM.registerCallback("cue_power", data => {
+    //cue power changed
+    console.log(data)
+});
+
+gameSM.registerCallback("switch_player", data => {
+    //cue power changed
+    POOL.switchPlayer(data)
+});

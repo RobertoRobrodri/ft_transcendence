@@ -23,6 +23,4 @@ pyotp==2.9.0
 qrcode==7.4.2
 #Pool Game
 numpy==1.26.4
-scipy==1.13.0
 numpy-quaternion==2023.0.0
-pythreejs==2.4.1
