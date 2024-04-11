@@ -64,7 +64,6 @@ class Main {
             this.gameSM.send("action", {
                 "power": powerSpeed
             });
-            //this.game.cuePower += powerSpeed;
         }.bind(this));
         this.keyHandler.setContinuousKey('ArrowDown', 'Cue power down', function () {
             let powerSpeed = 20 / this.tps;
@@ -73,7 +72,6 @@ class Main {
             this.gameSM.send("action", {
                 "power": -powerSpeed
             });
-            //this.game.cuePower -= powerSpeed;
         }.bind(this));
     }
 

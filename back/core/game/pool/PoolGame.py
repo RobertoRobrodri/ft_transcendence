@@ -47,31 +47,31 @@ class PoolGame:
 
             # -0.3299250064679542, 0.2934688325322231, 3.6324840171337165
             # 0.20024239809600408, 0.3075, 6.761869770776174
-            Ball(self, -0.3299250064679542, 3.6324840171337165),
-            Ball(self, 0.20024239809600408, 6.761869770776174, self.ballRadious, 1, False),
+            # Ball(self, -0.3299250064679542, 3.6324840171337165),
+            # Ball(self, 0.20024239809600408, 6.761869770776174, self.ballRadious, 1, False),
 
 
-            # Ball(self, 0.0, -13.5 / 2),
+            Ball(self, 0.0, -13.5 / 2),
 
-            # Ball(self, 0.0, 4 + 2.75, self.ballRadious, 1, False),
+            Ball(self, 0.0, 4 + 2.75, self.ballRadious, 1, False),
 
-            # Ball(self, -0.32, 4.6 + 2.75, self.ballRadious, 3, True),
-            # Ball(self, 0.32, 4.6 + 2.75, self.ballRadious, 11, True),
+            Ball(self, -0.32, 4.6 + 2.75, self.ballRadious, 3, True),
+            Ball(self, 0.32, 4.6 + 2.75, self.ballRadious, 11, True),
 
-            # Ball(self, 0, 5.2 + 2.75, self.ballRadious, 8, False),
-            # Ball(self, 0.64, 5.2 + 2.75, self.ballRadious, 6, False),
-            # Ball(self, -0.64, 5.2 + 2.75, self.ballRadious, 14, True),
+            Ball(self, 0, 5.2 + 2.75, self.ballRadious, 8, False),
+            Ball(self, 0.64, 5.2 + 2.75, self.ballRadious, 6, False),
+            Ball(self, -0.64, 5.2 + 2.75, self.ballRadious, 14, True),
 
-            # Ball(self, 0.32, 5.8 + 2.75, self.ballRadious, 15, True),
-            # Ball(self, -0.32, 5.8 + 2.75, self.ballRadious, 4, False),
-            # Ball(self, 0.96, 5.8 + 2.75, self.ballRadious, 13, True),
-            # Ball(self, -0.96, 5.8 + 2.75, self.ballRadious, 9, True),
+            Ball(self, 0.32, 5.8 + 2.75, self.ballRadious, 15, True),
+            Ball(self, -0.32, 5.8 + 2.75, self.ballRadious, 4, False),
+            Ball(self, 0.96, 5.8 + 2.75, self.ballRadious, 13, True),
+            Ball(self, -0.96, 5.8 + 2.75, self.ballRadious, 9, True),
 
-            # Ball(self, 0, 6.4 + 2.75, self.ballRadious, 10, True),
-            # Ball(self, 0.64, 6.4 + 2.75, self.ballRadious, 2, False),
-            # Ball(self, -0.64, 6.4 + 2.75, self.ballRadious, 5, False),
-            # Ball(self, 1.28, 6.4 + 2.75, self.ballRadious, 7, False),
-            # Ball(self, -1.28, 6.4 + 2.75, self.ballRadious, 12, True)
+            Ball(self, 0, 6.4 + 2.75, self.ballRadious, 10, True),
+            Ball(self, 0.64, 6.4 + 2.75, self.ballRadious, 2, False),
+            Ball(self, -0.64, 6.4 + 2.75, self.ballRadious, 5, False),
+            Ball(self, 1.28, 6.4 + 2.75, self.ballRadious, 7, False),
+            Ball(self, -1.28, 6.4 + 2.75, self.ballRadious, 12, True)
         ]
 
         self.tableSize = {
