@@ -80,6 +80,7 @@ gameSM.registerCallback(GAME_TYPES.PADDLE_COLLISON, data => {
 
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
     const audio = new Audio("assets/game/sounds/chipi-chapa.mp3");
+    score = [0, 0];
     audio.play();
 });
 

@@ -65,7 +65,6 @@ async function updateProfile(e) {
     const new_profile_data = {
 		username: document.querySelector('#new_username').value,
         // TODO encode to base64
-        profile_picture: encodeBase64(document.querySelector('#new_profilePicture').files[0]),
         TwoFactorAuth: document.querySelector('#twoFactorAuth').checked,
 	}
     console.log(new_profile_data)
@@ -92,16 +91,4 @@ async function updateProfile(e) {
 function editProfileListener() {
 	document.getElementById('root').addEventListener('submit', updateProfile);
 }
-
-function encodeBase64(file) {
-    return new Promise((resolve, reject) => {
-      let reader = new FileReader();
-      reader.onload = () => {
-        let base64String = reader.result
-        resolve(base64String);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
   
