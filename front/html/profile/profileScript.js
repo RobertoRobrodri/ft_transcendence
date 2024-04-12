@@ -58,37 +58,50 @@ export function loadEditProfilePage() {
 }
 
 async function updateProfile(e) {
-    const token = sessionStorage.getItem('token')
-	if (e.target.matches('#editProfileForm') === false)
-        return ;
-    e.preventDefault()
-    const new_profile_data = {
-		username: document.querySelector('#new_username').value,
-        // TODO encode to base64
-        TwoFactorAuth: document.querySelector('#twoFactorAuth').checked,
-	}
-    console.log(new_profile_data)
-	try {
-        const response = await fetch('/api/user_management/user_update/', {
-            method: 'PATCH',
-            headers: {
-            'Content-Type': 'application/json',
-			'Authorization': `Bearer ${token}`,
-            },body: JSON.stringify(new_profile_data),
-        })
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(JSON.stringify(error));
-        }
-        const data = await response.json();
-		console.log(data);
+    const token = sessionStorage.getItem('token');
+    if (e.target.matches('#editProfileForm') === false) {
+        return;
     }
-    catch (error) {
-        displayErrorList(JSON.parse(error.message), 'editProfileForm');
+    e.preventDefault();
+
+    const formData = new FormData();
+    if (document.querySelector('#new_username').value) {
+        formData.append('username', document.querySelector('#new_username').value);
+    }
+    if (document.querySelector('#twoFactorAuth').checked) {
+        formData.append('TwoFactorAuth', document.querySelector('#twoFactorAuth').checked);
+    }
+    if (document.querySelector('#new_profilePicture').files.length > 0) {
+        const file = document.querySelector('#new_profilePicture').files[0];
+        formData.append('profile_picture', file);
+    }
+    try {
+        const response = await fetch('/api/user_management/user_update/', {
+        method: 'PATCH',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error);
+    }
+    const data = await response.json();
+    } catch (error) {
+        // displayErrorList(JSON.parse(error.message), 'editProfileForm');
     }
 }
 
 function editProfileListener() {
 	document.getElementById('root').addEventListener('submit', updateProfile);
 }
-  
+
+function convertImageToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+}
