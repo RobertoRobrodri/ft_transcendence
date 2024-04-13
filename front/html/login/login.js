@@ -1,5 +1,6 @@
 import { displayError } from "../components/loader.js"
 import { loadMainPage } from "../index/index.js"
+import { load2FApage } from "../2FA/twoFactorAuthScript.js"
 
 async function handleSubmitLogin (e) {
     if (e.target.matches('#loginForm') === false)
@@ -21,7 +22,7 @@ async function handleSubmitLogin (e) {
             'Content-Type': 'application/json',
         },body: JSON.stringify(loginData),
     });
-    if (!response.ok) {
+    if (!response.ok && response.status !== 308) {
         throw new Error("Incorrect Username or Password");
         //throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -38,7 +39,10 @@ async function handleSubmitLogin (e) {
     const refresh = data.refresh
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('refresh', refresh);
-    loadMainPage();
+    if (response.status === 308)
+        load2FApage();
+    else
+        loadMainPage();
     } catch (error) {
         console.error('Error:', error.message);
         displayError(error.message, 'small', 'loginForm');

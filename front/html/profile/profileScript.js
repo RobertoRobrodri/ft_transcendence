@@ -23,8 +23,17 @@ export async function loadUserInfo() {
         user_updated = user_updated.replace(/{{STATUS}}/g, data.status);
         if (data.profile_picture != null)
             user_updated = user_updated.replace(default_picture, 'data:image/png;base64,' + data.profile_picture);
+        if (data.qr != null)
+        {  
+            let qr = 'data:image/png;base64,' + data.qr;
+            var htmlDinamico = `
+            <div class="vertical-center">
+                <img class="userPhoto" src='${qr}' alt="Profile picture">
+            </div>
+            `;
+            user_updated +=htmlDinamico;
+        }
         user_info.innerHTML = user_updated;
-
         user_info.classList.remove("mshide");
     }
     catch (error) {
@@ -68,7 +77,7 @@ async function updateProfile(e) {
     if (document.querySelector('#new_username').value) {
         formData.append('username', document.querySelector('#new_username').value);
     }
-    if (document.querySelector('#twoFactorAuth').checked) {
+    if (document.querySelector('#twoFactorAuth').value) {
         formData.append('TwoFactorAuth', document.querySelector('#twoFactorAuth').checked);
     }
     if (document.querySelector('#new_profilePicture').files.length > 0) {
@@ -95,13 +104,4 @@ async function updateProfile(e) {
 
 function editProfileListener() {
 	document.getElementById('root').addEventListener('submit', updateProfile);
-}
-
-function convertImageToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
-    });
 }

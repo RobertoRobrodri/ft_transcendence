@@ -8,6 +8,7 @@ from .serializers import UserUpdateSerializer, UserUpdatePasswordSerializer, Use
 from pong_auth.permissions import IsLoggedInUser
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from pong_auth.utils import GenerateQR
 import base64, os
 
 class UserUpdateView(generics.GenericAPIView):
@@ -61,7 +62,10 @@ class UserListView(generics.GenericAPIView):
 				encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
 			# Add the base64 encoded image to the serializer data
 			user_data['profile_picture'] = encoded_image
-			print(user_data['profile_picture'])
+		if (user_serializer.data['TwoFactorAuth'] == True):
+			# Send qr image as base64
+			encoded_qr = GenerateQR(user)
+			user_data['qr'] = encoded_qr
 		return Response(user_data, status=status.HTTP_200_OK)
 
 class UserDeleteView(generics.GenericAPIView):
