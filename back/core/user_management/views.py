@@ -7,7 +7,8 @@ from pong_auth.models import CustomUser
 from .serializers import UserUpdateSerializer, UserUpdatePasswordSerializer, UserListSerializer
 from pong_auth.permissions import IsLoggedInUser
 from django.core.exceptions import ValidationError
-import base64
+from django.conf import settings
+import base64, os
 
 class UserUpdateView(generics.GenericAPIView):
 	serializer_class = UserUpdateSerializer
@@ -54,12 +55,13 @@ class UserListView(generics.GenericAPIView):
 		# Encode profile picture in base 64
 		profile_picture_path = user_serializer.data['profile_picture']
 		if (profile_picture_path is not None):
-        	# Open the profile picture file, read its content, and encode it in base64
-			with open(profile_picture_path, "rb") as image_file:
+			absolute_profile_picture_path = '/core' +  profile_picture_path
+			# Open the profile picture file, read its content, and encode it in base64
+			with open(absolute_profile_picture_path, "rb") as image_file:
 				encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-
-        	# Add the base64 encoded image to the serializer data
+			# Add the base64 encoded image to the serializer data
 			user_data['profile_picture'] = encoded_image
+			print(user_data['profile_picture'])
 		return Response(user_data, status=status.HTTP_200_OK)
 
 class UserDeleteView(generics.GenericAPIView):

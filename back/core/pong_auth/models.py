@@ -10,7 +10,6 @@ class CustomUser(AbstractUser):
         INGAME = "ingame"
         INQUEU = "inqueu"
 
-    #? Can we make them unsigned?
     wins                = models.IntegerField(default=0)
     losses              = models.IntegerField(default=0)
     status              = models.CharField(max_length=9, choices=Status, default=Status.INMENU)
@@ -19,8 +18,7 @@ class CustomUser(AbstractUser):
     ignored_users       = models.ManyToManyField('self', blank=True, symmetrical=False, related_name='ignored')
     # Used for 42 Auth
     external_id         = models.IntegerField(null=True, blank=True)
-    #TODO add default profile picture
-    profile_picture     = models.ImageField(upload_to='../media/', null=True, blank=True)
+    profile_picture     = models.ImageField(upload_to='', null=True, blank=True)
     friends             = models.ManyToManyField('self', blank=True)
     # 2FA
     TwoFactorAuth       = models.BooleanField(default=False)
