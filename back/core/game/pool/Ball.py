@@ -10,7 +10,8 @@ class Ball:
     def __init__(self, main, x = 0.0, z = 0.0, radius = 0.3075, number = 0, stripe = False):
         self.stripe = stripe
         self.radius = radius
-        self.holeRadious = radius 
+        self.poketCornerRadious = 0.8
+        self.poketMiddleRadious = 0.6 
         self.position = np.array([x, radius, z])
         self.mass = 1
         self.restitution = {
@@ -96,22 +97,22 @@ class Ball:
         table_half_z = self.main.tableSize["z"] / 2
 
         # Top left
-        if self.nextPosition[0] <= -table_half_x + self.radius and (self.nextPosition[2] <= table_half_z - self.holeRadious and self.nextPosition[2] >= self.holeRadious):
+        if self.nextPosition[0] <= -table_half_x + self.radius and (self.nextPosition[2] <= table_half_z - self.poketCornerRadious and self.nextPosition[2] >= self.poketMiddleRadious):
             return 2
         # Top right
-        if self.nextPosition[0] <= -table_half_x + self.radius and (self.nextPosition[2] <= -self.holeRadious and self.nextPosition[2] >= -table_half_z + self.holeRadious):
+        if self.nextPosition[0] <= -table_half_x + self.radius and (self.nextPosition[2] <= -self.poketMiddleRadious and self.nextPosition[2] >= -table_half_z + self.poketCornerRadious):
             return 2
         # Bottom left
-        if self.nextPosition[0] >= table_half_x - self.radius and (self.nextPosition[2] <= table_half_z - self.holeRadious and self.nextPosition[2] >= self.holeRadious):
+        if self.nextPosition[0] >= table_half_x - self.radius and (self.nextPosition[2] <= table_half_z - self.poketCornerRadious and self.nextPosition[2] >= self.poketMiddleRadious):
             return 3
         #Bottom right
-        if self.nextPosition[0] >= table_half_x - self.radius and (self.nextPosition[2] <= -self.holeRadious and self.nextPosition[2] >= -table_half_z + self.holeRadious):
+        if self.nextPosition[0] >= table_half_x - self.radius and (self.nextPosition[2] <= -self.poketMiddleRadious and self.nextPosition[2] >= -table_half_z + self.poketMiddleRadious):
             return 3
         #Left
-        if self.nextPosition[2] >= table_half_z - self.radius and (self.nextPosition[0] >= -table_half_x + self.holeRadious and self.nextPosition[0] <= table_half_x - self.holeRadious):
+        if self.nextPosition[2] >= table_half_z - self.radius and (self.nextPosition[0] >= -table_half_x + self.poketCornerRadious and self.nextPosition[0] <= table_half_x - self.poketCornerRadious):
             return 4
         #Right
-        if self.nextPosition[2] <= -table_half_z + self.radius and (self.nextPosition[0] >= -table_half_x + self.holeRadious and self.nextPosition[0] <= table_half_x - self.holeRadious):
+        if self.nextPosition[2] <= -table_half_z + self.radius and (self.nextPosition[0] >= -table_half_x + self.poketCornerRadious and self.nextPosition[0] <= table_half_x - self.poketCornerRadious):
             return 5
             
         #########
@@ -201,8 +202,21 @@ class Ball:
         return distance < ball.radius + self.radius
     
     async def ballInPocket(self):
-        self.main.movingBalls -= 1
-        self.speed = np.array([0.0, 0.0, 0.0])
-        self.ballLoop = self.main.loop.remove(self.ballLoop)
-        self.main.balls.remove(self)
+        # Simple rules
+
+        # if 8 ball enter in pocket, user lose
+        if self.number == 8:
+            await self.main.setWinner(self.number)
+        # if white ball enter in pocket, rival have ball in hand
+        elif self.number == 0:
+            self.main.placeWhite = True
+            # await self.main.freeBall()
+        else:
+            self.main.balls.remove(self)
+
+        # Check reaming balls to set winner and ball type to check if it's fault
+        # self.main.movingBalls -= 1
         await send_to_group(self.main.consumer, self.main.game_id, "poket", self.number)
+        self.speed = np.array([0.0, 0.0, 0.0])
+        # self.ballLoop = self.main.loop.remove(self.ballLoop)
+        

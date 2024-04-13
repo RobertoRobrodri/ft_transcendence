@@ -1,6 +1,6 @@
 class Main {
     constructor(renderElement, gameSM) {
-        this.balls = [];
+        this.balls = {};
         this.tps = 120;
         this.loop = new GameLoop(this.tps);
         this.keyHandler = new KeyHandler(this.loop);
@@ -8,6 +8,14 @@ class Main {
         this.gameSM = gameSM;
         this.hitSound = new FrequencySound('./index/games/pool/sound/hit.mp3');
         this.pocketSound = new VolumeSound('./index/games/pool/sound/pocket.mp3');
+
+        this.mousePos = new THREE.Vector2();
+        this.raycaster = new THREE.Raycaster();
+        this.mousePlace = null;
+        this.placeLoop = null;
+        
+        this.gameLoop = false
+        this.ballLength = 0;
 
         this.setKeymap();
     }
@@ -37,10 +45,14 @@ class Main {
         this.keyHandler.setSingleKey('8', 'North view', function () {
             main.scene.northView();
         }.bind(this));
-        // this.keyHandler.setSingleKey('c', 'Enable aim line', function() {
-        //     main.scene.children = main.scene.children.filter((child) => child.type !== 'Line');
-        //     main.game.cheatLine = !main.game.cheatLine;
-        // }.bind(this));
+        this.keyHandler.setSingleKey('c', 'Enable aim line', function() {
+            //main.scene.children = main.scene.children.filter((child) => child.type !== 'Line');
+            if (this.gameLoop == false)
+                this.gameLoop = this.loop.add(function() { this.onLoop() });
+            else
+                this.placeLoop = this.loop.remove(this.gameLoop);
+            //main.game.cheatLine = !main.game.cheatLine;
+        }.bind(this));
         this.keyHandler.setContinuousKey('ArrowLeft', 'Rotate cue left', function () {
             let rotateSpeed = 3 / this.tps;
             rotateSpeed /= this.keyHandler.isPressed('Shift') ? 10 : 1;
@@ -76,11 +88,15 @@ class Main {
     }
 
     setBalls(ballDataArray) {
-        if (this.balls.length === 0)
+        let keysArray = Object.keys(this.balls);
+        this.ballLength = keysArray.length;
+        if (this.ballLength === 0)
             ballDataArray.forEach(ballData => {
                 const ball = new Ball(ballData, this);
-                this.balls.push(ball);
+                this.balls[String(ball.number)] = ball;
             });
+        keysArray = Object.keys(this.balls);
+        this.ballLength = keysArray.length;
     }
 
     rotateCue(data) {
@@ -89,12 +105,14 @@ class Main {
     }
 
     moveBall(data) {
-        if (this.balls.length === 0) {
-            console.log("this.balls.length: 0")
+        if (this.ballLength === 0) {
+            console.log("ballLength: 0")
             return;
         }
-        data.forEach((ballPosition, index) => {
-            this.balls[index].moveBall(ballPosition);
+        data.forEach((ballData) => {
+            let ball = this.balls[String(ballData["nbr"])]
+            if (ball)
+                ball.moveBall(ballData["position"]);
         });
         // let ball = this.balls[data.idx];
         // ball.moveBall(data.pos)
@@ -105,12 +123,16 @@ class Main {
     }
 
     poket(ballNumber) {
+        console.log("poket: " + ballNumber)
         let ballWithNumber = null;
         // Get ball
-        for (let i = 0; i < this.balls.length; i++) {
-            if (this.balls[i].number === ballNumber) {
-                ballWithNumber = this.balls[i];
-                break;
+        for (let key in this.balls) {
+            if (this.balls.hasOwnProperty(key)) {
+                let ball = this.balls[key];
+                if (ball.number === ballNumber) {
+                    ballWithNumber = ball;
+                    break;
+                }
             }
         }
         if (ballWithNumber === null)
@@ -127,10 +149,14 @@ class Main {
         setTimeout(() => this.hitSound.play(0.4), 300);
         setTimeout(() => this.hitSound.play(0.3), 500);
         setTimeout(() => this.pocketSound.play(0.05 * (0.5 + Math.random())), 250);
-        setTimeout(() => {
-            this.scene.remove(this.balls.find(b => b.number === ballNumber));
-            this.balls = this.balls.filter(b => b.number !== ballNumber);
-        }, 500);
+        if (ballNumber != 0) {
+            setTimeout(() => {
+                this.scene.remove(ballWithNumber);
+                delete this.balls[ballNumber]
+                let keysArray = Object.keys(this.balls);
+                this.ballLength = keysArray.length;
+            }, 500);
+        }
     }
 
     shoot(power) {
@@ -154,5 +180,85 @@ class Main {
 
     switchPlayer(position) {
         this.scene.animateObject(this.scene.cue, new THREE.Vector3(position[0], position[1], position[2]), 1000);
+    }
+    
+    reqMoveWhite (data) {
+        this.scene.topView();
+        this.scene.animateScale(this.balls["0"], { x: 1, y: 1, z: 1 }, 500);
+        document.addEventListener('mousemove', this.mousemove);
+        document.addEventListener('mousedown', this.mousedown);
+        
+        this.placeLoop = this.loop.add(() => {
+            this.raycaster.setFromCamera(this.mousePos, this.scene.camera);
+            let intersects = this.raycaster.intersectObjects([this.scene.tableFloor.mesh]);
+            if (intersects.length !== 0) {
+                this.mousePlace = intersects[0].point;
+                this.gameSM.send("action", {
+                    "move_white": {
+                        "x": this.mousePlace.x,
+                        "z": this.mousePlace.z,
+                    }
+                });
+            }
+        });
+    }
+
+    placeWhite(data) {
+        this.balls["0"].moveBall(data);
+        this.scene.animateObject(this.scene.cue, this.balls["0"].position, 500);
+        this.placeLoop = this.loop.remove(this.placeLoop);
+    }
+
+    moveWhite(data) {
+        this.balls["0"].moveBall(data);
+    }
+
+    mousemove = (e) => {
+        const canvasBounds = this.scene.renderer.domElement.getBoundingClientRect();
+        this.mousePos.x = ((e.clientX - canvasBounds.left) / canvasBounds.width) * 2 - 1;
+        this.mousePos.y = -((e.clientY - canvasBounds.top) / canvasBounds.height) * 2 + 1;
+    }
+
+    mousedown = (e) => {
+        document.removeEventListener('mousemove', this.mousemove);
+        document.removeEventListener('mousedown', this.mousedown);
+        this.gameSM.send("action", {
+            "place_white": {
+                "x": this.mousePlace.x,
+                "z": this.mousePlace.z,
+            }
+        });
+    }
+
+    onLoop() {
+
+        // if (this.cheatLine) {
+        //     let rotation = MAIN.scene.cue.rotation.y;
+        //     if (MAIN.scene.cue.rotation.x === Math.PI)
+        //         rotation = Math.PI - rotation;
+        //     if (MAIN.scene.cue.rotation.x < -1)
+        //         rotation = Math.PI - rotation;
+        //     else if (MAIN.scene.cue.rotation.y < 0)
+        //         rotation = 2 * Math.PI + rotation;
+        //     let x = Math.cos(rotation),
+        //         z = Math.sin(rotation),
+        //         direction = new THREE.Vector3(z, 0, x).normalize(),
+        //         ray = new THREE.Raycaster(MAIN.scene.cue.position);
+        //     ray.ray.direction = direction;
+        //     let intersectables = this.balls.slice();
+        //     intersectables.push(MAIN.scene.tableBase.mesh);
+        //     let wallHits = ray.intersectObjects(intersectables);
+        //     if (wallHits.length > 0) {
+        //         let lineGeometry = new THREE.Geometry();
+        //         lineGeometry.vertices.push(
+        //             MAIN.scene.cue.position,
+        //             wallHits[0].point
+        //         )
+        //         let line = new THREE.Line(lineGeometry, this.lineMaterial);
+        //         MAIN.scene.children = MAIN.scene.children.filter((child) => child.type !== 'Line');
+        //         MAIN.scene.add(line);
+        //     }
+        // }
+
     }
 }

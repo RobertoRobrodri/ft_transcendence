@@ -91,6 +91,23 @@ gameSM.registerCallback("cue_power", data => {
 });
 
 gameSM.registerCallback("switch_player", data => {
-    //cue power changed
     POOL.switchPlayer(data)
+});
+
+// user fault, request move white ball
+gameSM.registerCallback("req_place_white", data => {
+    POOL.reqMoveWhite(data)
+});
+
+//rcv white ball position
+gameSM.registerCallback("move_white", data => {
+    POOL.moveWhite(data)
+});
+
+gameSM.registerCallback("place_white", data => {
+    POOL.placeWhite(data)
+});
+
+gameSM.registerCallback("rival_leave", data => {
+    console.log("The opponent leaves, the game ends in 10 seconds if he does not reconnect")
 });

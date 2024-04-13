@@ -4,6 +4,7 @@ class GameLoop:
     def __init__(self, main):
         self.tps = main.tps
         self.functions = {}
+        self.running = True
         self.amount = 1
 
     def add(self, fun, *args, **kwargs):
@@ -15,9 +16,12 @@ class GameLoop:
         if funIndex in self.functions:
             del self.functions[funIndex]
         return False
-
+    
+    def stop(self):
+        self.running = False
+        
     async def start(self):
-        while True:
+        while self.running:
             await self.loop()
             await asyncio.sleep(1 / self.tps)
 

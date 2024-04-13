@@ -8,7 +8,9 @@ export class SocketManager {
         if(this.socket === undefined)
         {
             let token = sessionStorage.getItem('token');
-            this.socket = new WebSocket(`wss://localhost:443/${this.path}/?token=${token}`);
+            let host = window.location.hostname;
+            let socketHost = host === 'localhost' ? 'localhost' : window.location.host;
+            this.socket = new WebSocket(`wss://${socketHost}:443/${this.path}/?token=${token}`);
             this.setupSocketEvents();
         }
     }

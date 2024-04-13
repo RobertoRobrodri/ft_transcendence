@@ -85,6 +85,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_discard(GENERAL_GAME, self.channel_name)
                 # If the user leaves and is inside queue, remove it
                 await self.leaveMatchmaking(user)
+                # Notify to game if exist
+                game_id = get_game_id(user.id)
+                if game_id is not None:
+                    await games[game_id]["instance"].userLeave(user.id)
                 
         except Exception as e:
             logger.warning(f'Exception in disconnect: {e}')

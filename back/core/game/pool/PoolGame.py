@@ -36,21 +36,20 @@ class PoolGame:
         self.consumer = consumer
         self.movingBalls = 0
         self.maxPower = self.ballRadious * self.tps * 1.5
+        self.placeWhite = False
+        self.playerCount = 0
         self.cue = {
             "position": {"x": 0.0, "y": self.ballRadious, "z": -6.75},
             "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
             "quaternion": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
         }
+        self.tableSize = {
+            "z": 27,
+            "x": 13.5,
+        }
         self.loop = GameLoop(self)
 
         self.balls = [
-
-            # -0.3299250064679542, 0.2934688325322231, 3.6324840171337165
-            # 0.20024239809600408, 0.3075, 6.761869770776174
-            # Ball(self, -0.3299250064679542, 3.6324840171337165),
-            # Ball(self, 0.20024239809600408, 6.761869770776174, self.ballRadious, 1, False),
-
-
             Ball(self, 0.0, -13.5 / 2),
 
             Ball(self, 0.0, 4 + 2.75, self.ballRadious, 1, False),
@@ -73,16 +72,11 @@ class PoolGame:
             Ball(self, 1.28, 6.4 + 2.75, self.ballRadious, 7, False),
             Ball(self, -1.28, 6.4 + 2.75, self.ballRadious, 12, True)
         ]
-
-        self.tableSize = {
-            "z": 27,
-            "x": 13.5,
-        }
     
     async def gameLoop(self):
         all_balls = []
         for i in range(len(self.balls)):
-            all_balls.append(self.balls[i].position.tolist())
+            all_balls.append({"nbr": self.balls[i].number, "position": self.balls[i].position.tolist()})
             for j in range(i + 1, len(self.balls)):
                 if self.balls[i].colliding(self.balls[j]):
                     await self.balls[i].resolve_collision(self.balls[j])
@@ -141,7 +135,8 @@ class PoolGame:
             self.running = True
 
     def add_player(self, username, userid, player_number):
-        self.players[userid] = {'username': username, 'userid': userid, 'nbr': player_number, 'ready': False, "power": self.maxPower, "nbr": player_number - 1}
+        self.playerCount += 1
+        self.players[userid] = {'username': username, 'userid': userid, 'nbr': player_number, 'ready': False, "power": self.maxPower, "nbr": player_number - 1, "ballType": ""}
     
     async def player_ready(self, userid):
         if userid in self.players:
@@ -150,19 +145,28 @@ class PoolGame:
     async def execute_action(self, userid, action):
         if userid in self.players:
             player = self.players[userid]
-            if len(self.balls) < 1 or self.allowShoot == False:
+            if len(self.balls) < 1:# or self.allowShoot == False:
                 return
             if self.turnPlayer != player["nbr"]:
                 return
-            if action == "shoot":
+            
+            if action == "shoot" and self.allowShoot:
                 await self.shoot(userid)
+                return
+            if isinstance(action, str):
                 return
             cueRotate = action.get("rotateCue")
             cuePower = action.get("power")
-            if cueRotate is not None:
+            moveWhite = action.get("move_white")
+            placeWhite = action.get("place_white")
+            if cueRotate is not None and self.allowShoot:
                 await self.setCueRotation(cueRotate)
-            elif cuePower is not None:
+            elif cuePower is not None and self.allowShoot:
                 await self.setCuePower(cuePower, userid)
+            elif moveWhite is not None and self.placeWhite:
+                await self.moveFreeBall(moveWhite)
+            elif placeWhite is not None and self.placeWhite:
+                await self.placeFreeBall(placeWhite)
     
     async def shoot(self, userid):
         self.allowShoot = False
@@ -211,15 +215,78 @@ class PoolGame:
         
 
     async def switchPlayer(self):
-        await send_to_group(self.consumer, self.game_id, "switch_player", self.balls[0].position.tolist())
-        def enableShoot():
-            self.allowShoot = True
-        t = Timer(1, enableShoot) # await 1 second to sync with front animation
-        t.start()
-        self.turnPlayer = (self.turnPlayer + 1) % 2
+        if self.placeWhite:
+            self.turnPlayer = (self.turnPlayer + 1) % 2
+            # self.balls[0].position = np.array([0.0, self.radius, -13.5 / 2])
+            await send_to_group(self.consumer, self.game_id, "req_place_white", self.balls[0].position.tolist())
+        else:
+            await send_to_group(self.consumer, self.game_id, "switch_player", self.balls[0].position.tolist())
+            def enableShoot():
+                self.allowShoot = True
+            t = Timer(1, enableShoot) # await 1 second to sync with front animation
+            t.start()
+            self.turnPlayer = (self.turnPlayer + 1) % 2
 
     async def restore(self):
+        self.playerCount += 1
         await self.send_balls_position()
+        if self.placeWhite:
+            await send_to_group(self.consumer, self.game_id, "req_place_white", self.balls[0].position.tolist())
+    
+    async def userLeave(self, userId):
+        self.playerCount -= 1
+        await send_to_group(self.consumer, self.game_id, "rival_leave", "Rival leave")
+        def finishGame():
+            if self.playerCount != 2:
+                self.loop.stop()
+                del games[self.game_id]
+        t = Timer(10, finishGame)
+        t.start()
+
+    async def setWinner(self, ballNumber):
+        players_list = list(self.players.values())
+        user1   = await CustomUser.get_user_by_id(players_list[0]['userid'])
+        user2   = await CustomUser.get_user_by_id(players_list[1]['userid'])
+        if ballNumber == 8:
+            winner  = user1 if players_list[0]["nbr"] != self.turnPlayer else user2
+            loser   = user2 if winner == user1 else user1
+        else:
+            winner  = user1 if players_list[0]["nbr"] == 0 else user2
+            loser   = user2 if winner == user1 else user1
+        # Add match to db
+        await Game.store_match(user1, user2, winner, self.scores)
+        # Increment win in 1
+        await CustomUser.user_win(winner)
+        # Increment loss in 1
+        await CustomUser.user_lose(loser)
+    
+    def collidingAny(self, pos, excludedBall):
+        balls = [ball for ball in self.balls if ball != excludedBall]
+        for ball in balls:
+            if np.linalg.norm(pos - ball.position) < ball.radius + excludedBall.radius:
+                return True
+        return False
+    
+    async def placeFreeBall(self, moveWhite):
+        self.placeWhite = False
+        self.allowShoot = True
+        px = moveWhite["x"]
+        pz = moveWhite["z"]
+        self.balls[0].position = np.array([px, self.ballRadious, pz])
+        await send_to_group(self.consumer, self.game_id, "place_white", self.balls[0].position.tolist())
+
+    async def moveFreeBall(self, moveWhite):
+        px = moveWhite["x"]
+        pz = moveWhite["z"]
+        if px <= self.tableSize["x"] / 2 - 0.05 - self.ballRadious and px >= -self.tableSize["x"] / 2 + 0.05 + self.ballRadious:
+            if pz <= self.tableSize["z"] / 2 - 0.05 - self.ballRadious and pz >= -self.tableSize["z"] / 2 + 0.05 + self.ballRadious:
+                if not self.collidingAny(np.array([px, self.ballRadious, pz]), self.balls[0]):
+                    self.balls[0].position = np.array([px, self.ballRadious, pz])
+                    await send_to_group(self.consumer, self.game_id, "move_white", self.balls[0].position.tolist())
+
+    ######################
+    ## HELPER FUNCTIONS ##
+    ######################
 
     def rotate_quaternion(self, rotation_speed, current_quaternion):
         rotation_increment = rotation_speed
@@ -248,18 +315,3 @@ class PoolGame:
         yaw_z = math.atan2(t3, t4)
         return roll_x, pitch_y, yaw_z
     
-    #############################
-    ## FUNCTIONS TO STORE DATA ##
-    #############################
-                
-    async def save_game_result(self, players_list, winner):
-        user1   = await CustomUser.get_user_by_id(players_list[0]['userid'])
-        user2   = await CustomUser.get_user_by_id(players_list[1]['userid'])
-        winner  = user1 if winner == 0 else user2
-        loser   = user2 if winner == user1 else user1
-        # Add match to db
-        await Game.store_match(user1, user2, winner, self.scores)
-        # Increment win in 1
-        await CustomUser.user_win(winner)
-        # Increment loss in 1
-        await CustomUser.user_lose(loser)

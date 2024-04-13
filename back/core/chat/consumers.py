@@ -202,6 +202,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             userChannel = await CustomUser.get_user_by_id(recipient)
             if(userChannel and recipient != user.id):
                 data["sender"] = user.id
+                data["sender_name"] = user.username
                 data["message"] = message
                 # Store message
                 await ChatModel.save_message(user, userChannel, message)

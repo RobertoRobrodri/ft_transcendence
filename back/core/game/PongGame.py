@@ -304,6 +304,9 @@ class PongGame:
     
     async def restore(self): #Not used here
         return
+    
+    async def userLeave(self, userId): #Not used here
+        return
             
     def remove_player(self, userid):
         if userid in self.players:

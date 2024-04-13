@@ -8,4 +8,5 @@ RUN apt-get update --allow-insecure-repositories && \
 
 WORKDIR core
 
+RUN chmod +x script.sh
 CMD ./script.sh
