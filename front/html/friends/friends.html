@@ -1,0 +1,45 @@
+<div class="container">
+    <h1>Friends</h1>
+    <div class="row">
+        <div class="col">
+            <h2>Friend List</h2>
+            <ul class="list-group" id="friend-list">
+                <!-- Get friend list from the API -->
+            </ul>
+        </div>
+
+        <div class="col">
+            <h2>Pending Friend Requests</h2>
+            <ul class="list-group" id="pending-requests">
+                <!-- TODO get friend request from the API -->
+            </ul>
+        </div>
+    </div>
+    <form id="FriendRequestForm">
+		<div class="form-group">
+			<input type="text" id="new_friend" class="form-control" required="required" placeholder="New friend ID">
+		</div>">
+			<button type="submit" class="btn btn-primary">Send!</button>
+		</div>
+	</form>
+</div>
+</div>
+<div class="system-bar fixed-bottom">
+	<div class="current-time" id="current-time"></div>
+	<div class="menu-icon" id="menu-icon">
+		<div class="menuContainer" id="menuContainer">
+			<img id="menuLogo" class="menuLogo" src="../assets/personBlue.svg" alt="Menu">
+		</div>
+	</div>
+</div>
+
+<div class="menu" id="menu">
+	<!-- Aquí puedes poner los elementos de tu menú -->
+	<ul>
+		<li><a href="#">Main menu</a></li>
+		<li><a href="#/friends">Friend list</a></li>
+		<li><a href="#/edit-profile">Edit profile</a></li>
+		<li><a href="#">Opción 4</a></li>
+		<li><a href="#">Esta opción ahora si se muestra</a></li>
+	</ul>
+</div>

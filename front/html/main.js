@@ -8,4 +8,4 @@ loginModule.login();
 signUpModule.register();
 callbackModule.sendUpdatedData();
 callbackModule.callback42();
-window.addEventListener("hashchange", routing.router)
+window.addEventListener("hashchange", routing.router);

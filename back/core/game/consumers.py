@@ -125,13 +125,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(room_name, rival['channel_name'])
         await self.channel_layer.group_add(room_name, self.channel_name)
         
-		# Start game
+        # Start game
         rivalUser = await CustomUser.get_user_by_id(rival['userid'])
         await self.start_game(user.id, user.username, rival['userid'], rivalUser.username, room_name)
         
-		# Send info game start
+        # Send info game start
         message = {'message': f'Pairing successful! United in the room {room_name}'}
-        await send_to_group(self, room_name, INITMATCHMAKING, {'message': message})
+        await send_to_group(self, room_name, INITMATCHMAKING, message)
 
     async def player_ready(self, user):
         game_id = get_game_id(user.id)
@@ -146,8 +146,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         game_id = get_game_id(user.id)
         if game_id is not None:
             message = {'message': f'Game restored {game_id}'}
-            await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
             await self.channel_layer.group_add(game_id, self.channel_name)
+            await send_to_group(self, game_id, INITMATCHMAKING, message)
             # await games[game_id].change_player(self.channel_name, user.id)
     
     ######################

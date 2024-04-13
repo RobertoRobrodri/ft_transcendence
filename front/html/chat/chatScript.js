@@ -4,16 +4,6 @@ import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { CHAT_TYPES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
 import { renewJWT } from "../components/updatejwt.js"
 
-function register() {
-    document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
-    document.getElementById("Ignore").addEventListener("click", ignoreUser);
-    document.getElementById("Unignore").addEventListener("click", unignoreUser);
-    document.getElementById("disconnect").addEventListener("click", disconnect);
-    document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
-    document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
-    document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
-}
-
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
 let gameSM = new GameSocketManager();
@@ -21,10 +11,9 @@ let gameSM = new GameSocketManager();
 export function connectChat()
 {
     chatSM.connect();
-    register();
 }
 
-function disconnect()
+export function disconnect(e)
 {
     chatSM.disconnect();
 }
@@ -39,12 +28,13 @@ chatSM.registerCallback(SOCKET.CONNECTED, event => {
     chatSM.send(CHAT_TYPES.USER_LIST);
 });
 
+// ! When calling disconnect this is triggered
 // Callback socket disconnected
-chatSM.registerCallback(SOCKET.DISCONNECTED, event => {
-    console.log('Socket connection lost:', event);
-    renewJWT();
-    chatSM.connect();
-});
+// chatSM.registerCallback(SOCKET.DISCONNECTED, event => {
+//     console.log('Socket connection lost:', event);
+//     renewJWT();
+//     chatSM.connect();
+// });
 
 // Callback socket error
 chatSM.registerCallback(SOCKET.ERROR, event => {
@@ -56,11 +46,13 @@ chatSM.registerCallback(SOCKET.ERROR, event => {
 
 // Callback rcv all connected users
 chatSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
+    console.log('All list')
     populateChat(userList);
 });
 
 // Callback rcv connected user
 chatSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
+    console.log('Single user')
     addSingleUser(user);
 });
 
@@ -153,7 +145,7 @@ function populateChat(userList) {
 }
 
 // Example to send a global message
-function sendMessage() {
+export function sendMessage() {
     var input = document.getElementById("newMessage");
     chatSM.send(CHAT_TYPES.GENERAL_MSG, input.value);
     input.value = "";
