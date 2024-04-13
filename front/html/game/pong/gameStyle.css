@@ -22,13 +22,12 @@
 }
 
 /* Layout Styles */
-.row {
+.row-game {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
     margin: 0 auto;
-    max-width: 800px; /* Adjust to your container width */
+    max-width: 800px; /*Adjust to your container width*/
 }
 
 .col-md-12 {
