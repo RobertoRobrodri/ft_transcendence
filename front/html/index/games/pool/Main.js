@@ -13,9 +13,13 @@ class Main {
         this.raycaster = new THREE.Raycaster();
         this.mousePlace = null;
         this.placeLoop = null;
-        
+
         this.gameLoop = false
         this.ballLength = 0;
+
+        this.lineMaterial = new THREE.LineBasicMaterial({
+            color: 0x0000ff
+        });
 
         this.setKeymap();
     }
@@ -45,10 +49,10 @@ class Main {
         this.keyHandler.setSingleKey('8', 'North view', function () {
             main.scene.northView();
         }.bind(this));
-        this.keyHandler.setSingleKey('c', 'Enable aim line', function() {
+        this.keyHandler.setSingleKey('c', 'Enable aim line', function () {
             //main.scene.children = main.scene.children.filter((child) => child.type !== 'Line');
             if (this.gameLoop == false)
-                this.gameLoop = this.loop.add(function() { this.onLoop() });
+                this.gameLoop = this.loop.add(() => { this.onLoop() });
             else
                 this.placeLoop = this.loop.remove(this.gameLoop);
             //main.game.cheatLine = !main.game.cheatLine;
@@ -97,6 +101,7 @@ class Main {
             });
         keysArray = Object.keys(this.balls);
         this.ballLength = keysArray.length;
+        this.scene.animateObject(this.scene.cue, this.balls["0"].position, 500);
     }
 
     rotateCue(data) {
@@ -181,13 +186,13 @@ class Main {
     switchPlayer(position) {
         this.scene.animateObject(this.scene.cue, new THREE.Vector3(position[0], position[1], position[2]), 1000);
     }
-    
-    reqMoveWhite (data) {
+
+    reqMoveWhite(data) {
         this.scene.topView();
         this.scene.animateScale(this.balls["0"], { x: 1, y: 1, z: 1 }, 500);
         document.addEventListener('mousemove', this.mousemove);
         document.addEventListener('mousedown', this.mousedown);
-        
+
         this.placeLoop = this.loop.add(() => {
             this.raycaster.setFromCamera(this.mousePos, this.scene.camera);
             let intersects = this.raycaster.intersectObjects([this.scene.tableFloor.mesh]);
@@ -232,33 +237,31 @@ class Main {
 
     onLoop() {
 
-        // if (this.cheatLine) {
-        //     let rotation = MAIN.scene.cue.rotation.y;
-        //     if (MAIN.scene.cue.rotation.x === Math.PI)
-        //         rotation = Math.PI - rotation;
-        //     if (MAIN.scene.cue.rotation.x < -1)
-        //         rotation = Math.PI - rotation;
-        //     else if (MAIN.scene.cue.rotation.y < 0)
-        //         rotation = 2 * Math.PI + rotation;
-        //     let x = Math.cos(rotation),
-        //         z = Math.sin(rotation),
-        //         direction = new THREE.Vector3(z, 0, x).normalize(),
-        //         ray = new THREE.Raycaster(MAIN.scene.cue.position);
-        //     ray.ray.direction = direction;
-        //     let intersectables = this.balls.slice();
-        //     intersectables.push(MAIN.scene.tableBase.mesh);
-        //     let wallHits = ray.intersectObjects(intersectables);
-        //     if (wallHits.length > 0) {
-        //         let lineGeometry = new THREE.Geometry();
-        //         lineGeometry.vertices.push(
-        //             MAIN.scene.cue.position,
-        //             wallHits[0].point
-        //         )
-        //         let line = new THREE.Line(lineGeometry, this.lineMaterial);
-        //         MAIN.scene.children = MAIN.scene.children.filter((child) => child.type !== 'Line');
-        //         MAIN.scene.add(line);
-        //     }
-        // }
-
+        let rotation = this.scene.cue.rotation.y;
+        if (this.scene.cue.rotation.x === Math.PI)
+            rotation = Math.PI - rotation;
+        if (this.scene.cue.rotation.x < -1)
+            rotation = Math.PI - rotation;
+        else if (this.scene.cue.rotation.y < 0)
+            rotation = 2 * Math.PI + rotation;
+        let x = Math.cos(rotation),
+            z = Math.sin(rotation),
+            direction = new THREE.Vector3(z, 0, x).normalize(),
+            ray = new THREE.Raycaster(this.scene.cue.position);
+        ray.ray.direction = direction;
+        let ballValues = Object.values(this.balls);
+        let intersectables = [...ballValues, this.scene.tableBase.mesh];
+        let wallHits = ray.intersectObjects(intersectables);
+        
+        if (wallHits.length > 0) {
+            let lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(
+                this.scene.cue.position,
+                wallHits[0].point
+            )
+            let line = new THREE.Line(lineGeometry, this.lineMaterial);
+            this.scene.children = this.scene.children.filter((child) => child.type !== 'Line');
+            this.scene.add(line);
+        }
     }
 }

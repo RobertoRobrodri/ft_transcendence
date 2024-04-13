@@ -198,7 +198,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         recipient = message_data.get("recipient")
         message = message_data.get("message")
 
-        if recipient and message and recipient.strip() and message.strip():
+        if recipient and message and recipient.isdigit() and message.strip():
             userChannel = await CustomUser.get_user_by_id(recipient)
             if(userChannel and recipient != user.id):
                 data["sender"] = user.id
