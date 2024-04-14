@@ -28,7 +28,7 @@ export async function loadUserInfo() {
             let qr = 'data:image/png;base64,' + data.qr;
             var htmlDinamico = `
             <div class="vertical-center">
-                <img class="userPhoto" src='${qr}' alt="Profile picture">
+                <img class="qrcode" src='${qr}' alt="QR code">
             </div>
             `;
             user_updated +=htmlDinamico;
