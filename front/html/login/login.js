@@ -35,14 +35,20 @@ async function handleSubmitLogin (e) {
 
     const data = await response.json();
     // access token
-    const token = data.token;
-    const refresh = data.refresh
-    sessionStorage.setItem('token', token);
-    sessionStorage.setItem('refresh', refresh);
     if (response.status === 308)
+    {
+        const verification_token = data.verification_token;
+        sessionStorage.setItem('verification_token', verification_token)
         load2FApage();
+    }
     else
+    {  
+        const token = data.token;
+        const refresh = data.refresh
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('refresh', refresh);
         loadMainPage();
+    }
     } catch (error) {
         console.error('Error:', error.message);
         displayError(error.message, 'small', 'loginForm');

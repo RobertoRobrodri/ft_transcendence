@@ -81,7 +81,11 @@ export async function callback42(e) {
         if (response.status === 307)
             load42UserWelcomePage();
         else if (response.status === 308)
+        {
+            const verification_token = data.verification_token;
+            sessionStorage.setItem('verification_token', verification_token)
             load2FApage();
+        }
         else
             loadMainPage();
     } else {
