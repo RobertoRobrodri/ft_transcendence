@@ -68,6 +68,11 @@ export async function callback42(e) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
+        var currentUrl = window.location.href;
+        // Remove the query parameters
+        var updatedUrl = currentUrl.split('?')[0];
+        // Replace the current URL with the updated URL
+        window.history.replaceState({}, document.title, updatedUrl);
         // 2FA activated
         if (response.status === 308)
         {
@@ -81,11 +86,6 @@ export async function callback42(e) {
             const refresh = data.refresh;
             sessionStorage.setItem('token', token);
             sessionStorage.setItem('refresh', refresh);
-            var currentUrl = window.location.href;
-            // Remove the query parameters
-            var updatedUrl = currentUrl.split('?')[0];
-            // Replace the current URL with the updated URL
-            window.history.replaceState({}, document.title, updatedUrl);
             // custom status code for new user
             if (response.status === 307)
                 load42UserWelcomePage();
