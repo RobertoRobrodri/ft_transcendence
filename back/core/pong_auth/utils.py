@@ -1,11 +1,10 @@
 import pyotp, qrcode, base64, string, random
 from io import BytesIO
-from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 def GenerateQR(user):
     # Generate code and return url
-    totp = pyotp.totp.TOTP(settings.OTP_SECRET_KEY)
+    totp = pyotp.totp.TOTP(user.OTP_SECRET_KEY)
     qr_code_url = totp.provisioning_uri(name=user.username.lower(), issuer_name='ft_transcendence_chads')
     
     # Generate QR Image with custom colors

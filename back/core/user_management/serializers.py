@@ -4,6 +4,7 @@ from rest_framework.validators import UniqueValidator
 from pong_auth.models import CustomUser
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+import pyotp
 
 class UserUpdateSerializer(serializers.ModelSerializer):
 
@@ -18,6 +19,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.username        = validated_data.get('username', instance.username)
         instance.status          = validated_data.get('status', instance.status)
+        if (validated_data.get('TwoFactorAuth', instance.TwoFactorAuth) == True):
+            instance.OTP_SECRET_KEY = pyotp.random_base32()
+        else:
+            instance.OTP_SECRET_KEY = 0            
         instance.TwoFactorAuth   = validated_data.get('TwoFactorAuth', instance.TwoFactorAuth)
         instance.save()
         return instance

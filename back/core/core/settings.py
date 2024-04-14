@@ -12,15 +12,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-import os, pyotp
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOCKERIZED = os.environ.get('DOCKERIZED', "")
-
-#TODO Crear una única clave y guardarla, podemos pasarla en el .env
-# OTP_SECRET_KEY = pyotp.random_base32()
-OTP_SECRET_KEY = 'JBSWY3DPEHPK3PXP'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

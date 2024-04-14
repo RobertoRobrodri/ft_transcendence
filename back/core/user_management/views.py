@@ -9,7 +9,7 @@ from pong_auth.permissions import IsLoggedInUser
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from pong_auth.utils import GenerateQR
-import base64, os
+import base64
 
 class UserUpdateView(generics.GenericAPIView):
 	serializer_class = UserUpdateSerializer
