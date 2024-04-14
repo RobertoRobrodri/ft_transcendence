@@ -87,7 +87,13 @@ async function updateProfile() {
     }
     if (document.querySelector('#new_profilePicture').files.length > 0) {
         const file = document.querySelector('#new_profilePicture').files[0];
-        formData.append('profile_picture', file);
+        try {
+            if (file.size > 1024 * 1024)
+                throw new Error('Image too large!');
+            formData.append('profile_picture', file);
+        } catch(error) {
+            displayError(error.message, 'small', 'editProfileForm')
+        }
     }
     try {
         const response = await fetch('/api/user_management/user_update/', {
