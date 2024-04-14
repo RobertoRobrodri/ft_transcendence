@@ -68,26 +68,30 @@ export async function callback42(e) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        const token = data.token;
-		const refresh = data.refresh;
-        sessionStorage.setItem('token', token);
-		sessionStorage.setItem('refresh', refresh);
-        var currentUrl = window.location.href;
-        // Remove the query parameters
-        var updatedUrl = currentUrl.split('?')[0];
-        // Replace the current URL with the updated URL
-        window.history.replaceState({}, document.title, updatedUrl);
-        // custom status code for new user
-        if (response.status === 307)
-            load42UserWelcomePage();
-        else if (response.status === 308)
+        // 2FA activated
+        if (response.status === 308)
         {
             const verification_token = data.verification_token;
             sessionStorage.setItem('verification_token', verification_token)
             load2FApage();
         }
         else
-            loadMainPage();
+        {
+            const token = data.token;
+            const refresh = data.refresh;
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('refresh', refresh);
+            var currentUrl = window.location.href;
+            // Remove the query parameters
+            var updatedUrl = currentUrl.split('?')[0];
+            // Replace the current URL with the updated URL
+            window.history.replaceState({}, document.title, updatedUrl);
+            // custom status code for new user
+            if (response.status === 307)
+                load42UserWelcomePage();
+            else
+                loadMainPage();
+        }
     } else {
         console.error('Authorization code not found in the URL.');
     }
