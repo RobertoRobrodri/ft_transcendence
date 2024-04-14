@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from pong_auth.models import CustomUser
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 import pyotp
 
@@ -27,16 +28,23 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-class UserUpdatePasswordSerializer(serializers.ModelSerializer):
+class UserUpdatePasswordSerializer(serializers.Serializer):
 
-    class Meta:
-        model = CustomUser
-        fields = ('password', )
-        extra_kwargs = {
-            'password': {
-                'write_only': True,
-            },
-        }
+    old_password  = serializers.CharField(required=True)
+    new_password  = serializers.CharField(required=True)
+    new_password2 = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        user = self.context.get('user')
+        if attrs['new_password'] != attrs['new_password2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        if not check_password(attrs['old_password'], user.password):
+            raise serializers.ValidationError({"password": "Old password didn't match"})
+        try:
+            validate_password(attrs['new_password'], user=user)
+        except ValidationError as e:
+            raise serializers.ValidationError({'new_password': e.messages})
+        return attrs
 
     def validate_password(self, value):
         try:
@@ -46,7 +54,7 @@ class UserUpdatePasswordSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
-        instance.set_password(validated_data.get('password'))
+        instance.set_password(validated_data.get('new_password'))
         instance.save()
         return instance
 

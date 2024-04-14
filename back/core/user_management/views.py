@@ -25,17 +25,17 @@ class UserUpdateView(generics.GenericAPIView):
 		return Response({'error': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserUpdatePasswordView(generics.GenericAPIView):
-	serializer_class = UserUpdateSerializer
+	serializer_class = UserUpdatePasswordSerializer
 	queryset = CustomUser.objects.all()
 	# Use this method only for local users. 42 Users will log through 42 account
 	def patch(self, request):
 		user = request.user
 		if user.external_id is None:
-			user_serializer = UserUpdatePasswordSerializer(user, data=request.data)
+			user_serializer = self.serializer_class(user, data=request.data, context={'user': user})
 			if user_serializer.is_valid():
 				try:
 					user_serializer.save()
-					return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
+					return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
 				except ValidationError as e:
 					return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 			return Response({'message': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
