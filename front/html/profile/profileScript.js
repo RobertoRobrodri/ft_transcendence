@@ -66,13 +66,16 @@ export function loadEditProfilePage() {
     });
 }
 
-async function updateProfile(e) {
-    const token = sessionStorage.getItem('token');
-    if (e.target.matches('#editProfileForm') === false) {
-        return;
-    }
-    e.preventDefault();
+function updateUser(e)
+{
+    if (e.target.matches('#editProfileForm') === true)
+        updateProfile();
+    else if (e.target.matches('#changePasswordForm') === true)
+        updatePassword();
+}
 
+async function updateProfile() {
+    const token = sessionStorage.getItem('token');
     const formData = new FormData();
     if (document.querySelector('#new_username').value) {
         formData.append('username', document.querySelector('#new_username').value);
@@ -94,7 +97,7 @@ async function updateProfile(e) {
     });
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error);
+        throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
     } catch (error) {
@@ -102,6 +105,36 @@ async function updateProfile(e) {
     }
 }
 
+async function updatePassword() {
+    const token = sessionStorage.getItem('token');
+    const old_password = document.querySelector('#old_password').value;
+    const new_password = document.querySelector('#new_password').value;
+    const new_password2 = document.querySelector('#confirm_password').value;
+
+    const passwordData = {
+        old_password: old_password,
+        new_password: new_password,
+        new_password2: new_password2,
+    };
+    try {
+        const response = await fetch('/api/user_management/user_update_password/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(passwordData),
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+    }
+    const data = await response.json();
+    } catch (error) {
+        displayErrorList(JSON.parse(error.message), 'changePasswordForm');
+    }
+}
+
 function editProfileListener() {
-	document.getElementById('root').addEventListener('submit', updateProfile);
+	document.getElementById('root').addEventListener('submit', updateUser);
 }

@@ -40,13 +40,9 @@ class UserUpdatePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"password": "Password fields didn't match."})
         if not check_password(attrs['old_password'], user.password):
             raise serializers.ValidationError({"password": "Old password didn't match"})
-        try:
-            validate_password(attrs['new_password'], user=user)
-        except ValidationError as e:
-            raise serializers.ValidationError({'new_password': e.messages})
         return attrs
 
-    def validate_password(self, value):
+    def validate_new_password(self, value):
         try:
             validate_password(value)
         except ValidationError as e:
