@@ -77,8 +77,8 @@ async function updateProfile(e) {
     if (document.querySelector('#new_username').value) {
         formData.append('username', document.querySelector('#new_username').value);
     }
-    if (document.querySelector('#twoFactorAuth').value) {
-        formData.append('TwoFactorAuth', document.querySelector('#twoFactorAuth').checked);
+    if (document.querySelector('input[name="twoFactorAuth"]:checked')) {
+        formData.append('TwoFactorAuth', document.querySelector('input[name="twoFactorAuth"]:checked').value);
     }
     if (document.querySelector('#new_profilePicture').files.length > 0) {
         const file = document.querySelector('#new_profilePicture').files[0];
@@ -98,7 +98,7 @@ async function updateProfile(e) {
     }
     const data = await response.json();
     } catch (error) {
-        // displayErrorList(JSON.parse(error.message), 'editProfileForm');
+        displayErrorList(JSON.parse(error.message), 'editProfileForm');
     }
 }
 
