@@ -229,6 +229,22 @@ function gameEventHandler(e) {
         // si está jugando en una partida multijugador local, la termina
         endVersusGame();
     }
+    // Tournament mode
+    else if (e.target.matches('#tournamentButton') === true)
+    {
+        console.log("Tournament mode")
+        let tournament = document.getElementById("tournament_game");
+        let options = document.getElementById("game_options");
+        options.classList.add("mshide");
+        tournament.classList.remove("mshide");
+    }
+    else if (e.target.matches('#goBackButtonTournament') === true)
+    {
+        let tournament = document.getElementById("tournament_game");
+        let options = document.getElementById("game_options");
+        options.classList.remove("mshide");
+        localgame.classList.add("mshide");
+    }
 }
 
 function setWindowEvents(uniqueId) {
