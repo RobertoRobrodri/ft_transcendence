@@ -1,5 +1,5 @@
 import { renewJWT } from "../components/updatejwt.js"
-import { displayErrorList } from "../components/loader.js"
+import { displayErrorList, displayError } from "../components/loader.js"
 
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
@@ -68,6 +68,8 @@ export function loadEditProfilePage() {
 
 function updateUser(e)
 {
+    // This prevents refresh page
+    e.preventDefault();
     if (e.target.matches('#editProfileForm') === true)
         updateProfile();
     else if (e.target.matches('#changePasswordForm') === true)
@@ -97,10 +99,13 @@ async function updateProfile() {
     });
     if (!response.ok) {
         const error = await response.json();
+        console.log(error)
         throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
+    console.log(data)
     } catch (error) {
+        console.log(error)
         displayErrorList(JSON.parse(error.message), 'editProfileForm');
     }
 }
@@ -130,6 +135,7 @@ async function updatePassword() {
         throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
+    console.log(data)
     } catch (error) {
         displayErrorList(JSON.parse(error.message), 'changePasswordForm');
     }
