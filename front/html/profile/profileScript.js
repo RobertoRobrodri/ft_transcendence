@@ -1,6 +1,14 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList } from "../components/loader.js"
 
+export function init() {
+    loadUserInfo();
+}
+
+// window.addEventListener('beforeunload', function(event) {
+//     console.log('La página está a punto de descargarse.');
+// });
+
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
     try {

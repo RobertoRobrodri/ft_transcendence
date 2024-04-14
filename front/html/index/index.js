@@ -1,12 +1,12 @@
-import { loadUserInfo } from "../profile/profileScript.js"
-import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
+//import { loadUserInfo } from "../profile/profileScript.js"
+//import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
-import { connectGame } from "./game.js"
-import { connectPoolGame } from "./games/pool/script.js"
-import { connectGame, CancelMatchmaking } from "../game/pong/gameScript.js"
+// import { connectGame } from "./game.js"
+import { connectPoolGame } from "../games/pool/script.js"
+import { connectGame, CancelMatchmaking } from "../games/pong/pongScript.js"
 import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { initializeSingleGame, endSingleGame } from "./singlegame.js"
-import { initializeVersusGame, endVersusGame } from "./versusgame.js"
+import { initializeSingleGame, endSingleGame } from "../games/pong/singlegame.js"
+import { initializeVersusGame, endVersusGame } from "../games/pong/versusgame.js"
 
 export function loadMainPage() {
     // Renew jwt
@@ -34,11 +34,6 @@ export function loadMainPage() {
         document.head.appendChild(style2);
         //clear hash
         history.pushState("", document.title, window.location.pathname + window.location.search);
-        loadUserInfo();
-        connectChat();
-        //register game example
-        connectGame();
-        connectPoolGame();
         setClickEvents();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
@@ -97,8 +92,6 @@ export function setClickEvents() {
     document.getElementById('root').addEventListener('click', configureMenu);
     // Program selection
     document.getElementById('root').addEventListener('click', selectProgram);
-    // Move programs
-    // document.getElementById('root').addEventListener('click', movePrograms);
     // Open window
     document.getElementById('root').addEventListener('dblclick', openWindow);
     // Close window
@@ -143,6 +136,8 @@ function openWindow(e) {
         createWindow('Terminal');
     } else if (parentIcon.id === 'game') {
         createWindow('Game');
+    } else if (parentIcon.id === 'pool') {
+        createWindow('Game');
     }
     
 }
@@ -171,93 +166,6 @@ function selectProgram(e) {
 
 }
 
-function chatEventHandler(e) {
-    if (e.target.matches('#red-myWindowChat') === true)
-        disconnect();
-    else if (e.target.matches('#send-button') === true)
-        sendMessage();
-    // TODO incluir todas las funciones del chat
-}
-
-function gameEventHandler(e) {
-    let gameSM = new GameSocketManager();
-    // multiplayer
-    if (e.target.matches('#onlineGameButton') === true)
-    {
-        let matchmaking = document.getElementById("matchmaking");
-        let options = document.getElementById("game_options");
-        options.classList.add("mshide");
-        matchmaking.classList.remove("mshide");
-        connectGame();
-    }
-    else if (e.target.matches('#cancelMatchmakingButton') === true)
-    {
-        let matchmaking = document.getElementById("matchmaking");
-        let options = document.getElementById("game_options");
-        matchmaking.classList.add("mshide");
-        options.classList.remove("mshide");
-        CancelMatchmaking();
-    }
-    // juego local
-    else if (e.target.matches('#localGameButton') === true)
-    {
-        let localgame = document.getElementById("local_game_options");
-        let options = document.getElementById("game_options");
-        options.classList.add("mshide");
-        localgame.classList.remove("mshide");
-    }
-    // 1 jugador
-    else if (e.target.matches('#soloGameButton') === true)
-    {
-        let localgame = document.getElementById("local_game_options");
-        localgame.classList.add("mshide");
-        initializeSingleGame();
-    }
-    // Multijugador local
-    else if (e.target.matches('#localMultiplayerButton') === true)
-    {
-        let localgame = document.getElementById("local_game_options");
-        localgame.classList.add("mshide");
-        initializeVersusGame();
-    }
-    else if (e.target.matches('#goBackButton') === true)
-    {
-        let localgame = document.getElementById("local_game_options");
-        let options = document.getElementById("game_options");
-        options.classList.remove("mshide");
-        localgame.classList.add("mshide");
-    }
-    else if (e.target.matches('#red-myWindowGame') === true)
-    {
-        // si está conectado el socket, lo desconecta
-        gameSM.disconnect();
-        // si está en una partida de un jugador, la termina
-        endSingleGame();
-        // si está jugando en una partida multijugador local, la termina
-        endVersusGame();
-    }
-}
-
-function setWindowEvents(uniqueId) {
-    if (uniqueId == 'myWindowProfile') {
-        loadUserInfo();
-    }
-    else if (uniqueId == 'myWindowChat') {
-        connectChat();
-        document.getElementById('root').addEventListener('click', chatEventHandler);
-//     document.getElementById('root').addEventListener('click', sendMessage);
-//     document.getElementById('root').addEventListener('click', disconnect);
-//     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
-//     document.getElementById("Ignore").addEventListener("click", ignoreUser);
-//     document.getElementById("Unignore").addEventListener("click", unignoreUser);
-//     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
-//     document.getElementById("insiteToGame").addEventListener("click", inviteToTame);
-    }
-    else if (uniqueId == 'myWindowGame') {
-        document.getElementById('root').addEventListener('click', gameEventHandler);
-    }
-}
-
 function setWindowContent(uniqueId) {
     if (uniqueId == 'myWindowProfile') {
         var htmlUrl = '../profile/profile.html';
@@ -270,26 +178,29 @@ function setWindowContent(uniqueId) {
         var scriptUrl = '../chat/chatScript.js';
     }
     else if (uniqueId == 'myWindowGame') {
-        var htmlUrl = '../game/pong/game.html';
-        var cssUrl = '../game/pong/gameStyle.css';
-        var scriptUrl = '../game/pong/gameScript.js';
+        var htmlUrl = '../games/pong/pong.html';
+        var cssUrl = '../games/pong/pongStyle.css';
+        var scriptUrl = '../games/pong/pongScript.js';
     }
     // console.log(uniqueId);
     let window = document.getElementById(uniqueId + "-content");
     Promise.all([
         fetch(htmlUrl).then(response => response.text()),
         fetch(cssUrl).then(response => response.text()),
-        fetch(scriptUrl).then(response => response.text())
+        import(scriptUrl).then(module => module)
     ]).then(([html, css, javascript]) => {
-        // window.location.hash = '#/' + uniqueId;
+        // Load html
         window.innerHTML = html;
+        // Load css
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
+        // Load js
+        javascript.init();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
-    setWindowEvents(uniqueId)
+    //setWindowEvents(uniqueId)
 }
 
 function createWindow(appName) {

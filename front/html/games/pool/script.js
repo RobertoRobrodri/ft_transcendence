@@ -1,5 +1,5 @@
-import { GameSocketManager } from "../../../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET, GAMES } from '../../../socket/Constants.js';
+import { GameSocketManager } from "../../socket/GameSocketManager.js"
+import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
 
 // Singleton socket instance
 let gameSM = new GameSocketManager();

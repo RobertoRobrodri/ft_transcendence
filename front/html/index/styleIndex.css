@@ -106,6 +106,13 @@ main {
     top: 160px;
 }
 
+.pool {
+    height: 70px;
+    width: 70px;
+    left: 38px;
+    top: 200px;
+}
+
 #profile {
     left: 38px;
     top: 50px;
@@ -124,6 +131,11 @@ main {
 #game {
     left: 38px;
     top: 500px;
+}
+
+#pool {
+    left: 38px;
+    top: 650px;
 }
 
 /* Estilo de los programas */

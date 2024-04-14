@@ -18,12 +18,25 @@ import { renewJWT } from "../components/updatejwt.js"
 let chatSM = new ChatSocketManager();
 let gameSM = new GameSocketManager();
 
-export function connectChat()
+export function init() {
+    document.getElementById('root').addEventListener('click', chatEventHandler);
+    connectChat();
+}
+
+function chatEventHandler(e) {
+    if (e.target.matches('#red-myWindowChat') === true)
+        disconnect();
+    else if (e.target.matches('#send-button') === true)
+        sendMessage();
+    // TODO incluir todas las funciones del chat
+}
+
+function connectChat()
 {
     chatSM.connect();
 }
 
-export function disconnect(e)
+function disconnect()
 {
     chatSM.disconnect();
 }

@@ -1,5 +1,5 @@
-import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { GameSocketManager } from "../../socket/GameSocketManager.js"
+import { GAME_TYPES, SOCKET } from '../../socket/Constants.js';
 import { PongAI } from './PongAI.js';
 
 /////////////////

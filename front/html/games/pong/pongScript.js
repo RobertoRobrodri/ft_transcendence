@@ -1,7 +1,7 @@
-import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET, GAMES } from '../socket/Constants.js';
+// import { GameSocketManager } from "../socket/GameSocketManager.js"
+// import { GAME_TYPES, SOCKET, GAMES } from '../socket/Constants.js';
 import { GameSocketManager } from "../../../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET } from '../../../socket/Constants.js';
+import { GAME_TYPES, SOCKET, GAMES } from '../../../socket/Constants.js';
 import { sleep } from '../../../components/utils.js'
 
 /////////////////
@@ -24,6 +24,69 @@ let score = [0, 0];
 
 // Singleton socket instance
 let gameSM = new GameSocketManager();
+
+export function init() {
+    document.getElementById('root').addEventListener('click', gameEventHandler);
+}
+
+function gameEventHandler(e) {
+    let gameSM = new GameSocketManager();
+    // multiplayer
+    if (e.target.matches('#onlineGameButton') === true)
+    {
+        let matchmaking = document.getElementById("matchmaking");
+        let options = document.getElementById("game_options");
+        options.classList.add("mshide");
+        matchmaking.classList.remove("mshide");
+        connectGame();
+    }
+    else if (e.target.matches('#cancelMatchmakingButton') === true)
+    {
+        let matchmaking = document.getElementById("matchmaking");
+        let options = document.getElementById("game_options");
+        matchmaking.classList.add("mshide");
+        options.classList.remove("mshide");
+        CancelMatchmaking();
+    }
+    // juego local
+    else if (e.target.matches('#localGameButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        let options = document.getElementById("game_options");
+        options.classList.add("mshide");
+        localgame.classList.remove("mshide");
+    }
+    // 1 jugador
+    else if (e.target.matches('#soloGameButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        localgame.classList.add("mshide");
+        initializeSingleGame();
+    }
+    // Multijugador local
+    else if (e.target.matches('#localMultiplayerButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        localgame.classList.add("mshide");
+        initializeVersusGame();
+    }
+    else if (e.target.matches('#goBackButton') === true)
+    {
+        let localgame = document.getElementById("local_game_options");
+        let options = document.getElementById("game_options");
+        options.classList.remove("mshide");
+        localgame.classList.add("mshide");
+    }
+    else if (e.target.matches('#red-myWindowGame') === true)
+    {
+        // si está conectado el socket, lo desconecta
+        gameSM.disconnect();
+        // si está en una partida de un jugador, la termina
+        endSingleGame();
+        // si está jugando en una partida multijugador local, la termina
+        endVersusGame();
+    }
+}
 
 export async function connectGame()
 {
