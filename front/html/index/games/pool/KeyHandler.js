@@ -57,6 +57,9 @@ class KeyHandler {
                 event: e
             });
         }
+        // if (handler.singleKeyFunctions[key]) {
+        //     e.preventDefault();
+        // }
         for (let checkKey in handler.singleKeyFunctions)
             if (key === checkKey)
                 handler.singleKeyFunctions[checkKey].action(e);
