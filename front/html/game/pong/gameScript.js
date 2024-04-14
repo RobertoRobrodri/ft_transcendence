@@ -1,31 +1,39 @@
 import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { GAME_TYPES, SOCKET, GAMES } from '../socket/Constants.js';
+import { GameSocketManager } from "../../../socket/GameSocketManager.js"
+import { GAME_TYPES, SOCKET } from '../../../socket/Constants.js';
+import { sleep } from '../../../components/utils.js'
 
 /////////////////
 // Global vars //
 /////////////////
 let canvas;
 let ctx;
+let score = [0, 0];
 
-function register() {
-    document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
-    document.getElementById("initmatchmakingtournament").addEventListener("click", InitMatchmakingTournament);
-    document.getElementById("createTournament").addEventListener("click", CreateTournament);
-    document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
-}
+// function register() {
+//     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
+//     document.getElementById("initmatchmakingtournament").addEventListener("click", InitMatchmakingTournament);
+//     document.getElementById("createTournament").addEventListener("click", CreateTournament);
+//     document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
+// }
+// function register() {
+//     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
+//     document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
+// }
 
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 
-export function connectGame()
+export async function connectGame()
 {
     gameSM.connect();
-    register();
-
-    canvas = document.getElementById("pongCanvas");
-    ctx = canvas.getContext("2d");
-
-    
+    // register();
+    await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
+    InitMatchmaking();
+    // ! We now get the canvas from the update game
+    // canvas = document.getElementById("pongCanvas");
+    // ctx = canvas.getContext("2d");
 }
 
 // Callback socket connected
@@ -56,6 +64,9 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
     //Game matched! game started
     // send ready request after open game, message to ask about ready etc
+    // Hide matchmaking elements
+    let matchmaking = document.getElementById("matchmaking");
+    matchmaking.classList.add("mshide");
     gameSM.send(GAME_TYPES.PLAYER_READY);
 });
 
@@ -85,11 +96,13 @@ gameSM.registerCallback(GAME_TYPES.PADDLE_COLLISON, data => {
 
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
     const audio = new Audio("assets/game/sounds/chipi-chapa.mp3");
+    score = [0, 0];
     audio.play();
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
-    console.log(data)
+    score = data;
+    console.log(data);
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
@@ -137,19 +150,23 @@ function CreateTournament()
 
 }
 
-function CancelMatchmaking()
+export function CancelMatchmaking()
 {
     gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
 }
 
 function updateGame(gameState) {
+    // This prevents an error when reloading the page where it cannot find the canvas
+    canvas = document.getElementById("pongCanvas");
+    ctx = canvas.getContext("2d");
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Black background
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    // Draw Score
+    drawScore(score);
     // Draw paddles
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];
@@ -292,4 +309,21 @@ function fillGames(data) {
         curli.appendChild(leaveButton);
         games.appendChild(curli);
     });
+}
+
+function drawScore(scores) {
+    // Set font style
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+
+    // Loop through the scores object
+    for (const playerId in scores) {
+        // Determine position based on player ID or index
+        const xPos = (playerId === "0") ? canvas.width / 4 : canvas.width * 3 / 4;
+        const yPos = 30; // Position at the top
+
+        // Draw the score
+        ctx.fillText(scores[playerId], xPos, yPos);
+    }
 }

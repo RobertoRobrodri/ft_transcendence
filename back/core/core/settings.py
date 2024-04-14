@@ -19,8 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DOCKERIZED = os.environ.get('DOCKERIZED', "")
 
 #TODO Crear una única clave y guardarla, podemos pasarla en el .env
-OTP_SECRET_KEY = pyotp.random_base32()
-
+# OTP_SECRET_KEY = pyotp.random_base32()
+OTP_SECRET_KEY = 'JBSWY3DPEHPK3PXP'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -36,8 +36,9 @@ DEBUG = True
 #ALLOWED_HOSTS = ['*']
 # Production all containers that should be able to call django endpoints
 ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db']
-# TODO review if all these hosts are necesary to be allowed
 
+MEDIA_ROOT = '/core/media/'
+MEDIA_URL = '/media/'
 
 # Application definition
 

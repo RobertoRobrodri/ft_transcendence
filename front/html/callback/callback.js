@@ -1,3 +1,4 @@
+import { load2FApage } from "../2FA/twoFactorAuthScript.js"
 import { loadMainPage } from "../index/index.js"
 
 async function handleSubmitUpdatedData(e) {
@@ -63,7 +64,7 @@ export async function callback42(e) {
                 code: authorizationCode,
             }),
         });
-        if (!response.ok && response.status !== 307) {
+        if (!response.ok && response.status !== 307 && response.status !== 308) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
@@ -79,6 +80,8 @@ export async function callback42(e) {
         // custom status code for new user
         if (response.status === 307)
             load42UserWelcomePage();
+        else if (response.status === 308)
+            load2FApage();
         else
             loadMainPage();
     } else {

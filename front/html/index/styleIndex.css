@@ -1,0 +1,254 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #28292d;
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Altura del 100% de la ventana */
+    cursor: url('../assets/cursor3.svg'), auto !important;
+    background-image: url('../assets/fondo.png');
+    user-select: none;
+}
+
+main {
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Altura del 100% de la ventana */
+}
+
+/* Barra de abajo de la página */
+.system-bar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Estilo para la hora dentro de la barra del sistema */
+.current-time {
+    float: right;
+    color: #45f3ff;
+}
+
+/* Estilo para el icono del menu de la pagina */
+.menuLogo {
+    /* float: left; */
+    width: 25px;
+    height: 25px;
+}
+
+/* Estilo para el contenedor del menu */
+.menuContainer {
+    width: 100px; /* Ancho deseado */
+    height: 30px; /* Alto deseado */
+    padding-left: 5px; /* Espaciado interno para el contenido dentro del contenedor */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra para efecto de elevación */
+}
+
+/* Estilo para el desplegable */
+.menu {
+    display: none;
+    flex-direction: column;
+    justify-content: flex-end; /* Alinea los elementos al final del eje principal (abajo) */
+    position: fixed;
+    bottom: 50px; /* Pegado al borde superior de la barra de inicio */
+    left: 0;
+    background-color: #333;
+    color: #fff;
+    max-height: 80vh; /* Ajusta la altura máxima según necesites */
+    overflow-y: auto;
+	z-index: 9999; /* Se superpone por encima de todo */
+}
+
+.menu ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.menu ul li {
+    padding: 10px;
+}
+
+.menu ul li a {
+    color: #45f3ff;
+    text-decoration: none;
+}
+
+
+
+/* Iconos del escritorio */
+.profile {
+    height: 70px;
+    width: 70px;
+    left: 38px;
+    top: 40px;
+}
+
+.chat {
+    height: 70px;
+    width: 70px;
+    left: 38px;
+    top: 80px;
+}
+
+.terminal {
+    height: 70px;
+    width: 70px;
+    left: 38px;
+    top: 120px;
+}
+
+.game {
+    height: 70px;
+    width: 70px;
+    left: 38px;
+    top: 160px;
+}
+
+#profile {
+    left: 38px;
+    top: 50px;
+}
+
+#chat {
+    left: 38px;
+    top: 200px;
+}
+
+#terminal {
+    left: 38px;
+    top: 350px;
+}
+
+#game {
+    left: 38px;
+    top: 500px;
+}
+
+/* Estilo de los programas */
+.program_name {
+    color: #45f3ff;
+}
+
+.selected_program {
+    background-color: #45f3ff33 !important;
+}
+
+/* Estilo para los iconos */
+.icon {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Adjust gap between icons */
+
+}
+
+.icon-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Estilo para objeto seleccionado */
+.icon:hover {
+    background-color: #45f3ff33;
+}
+
+/* Estilo del modal de carga */
+.modal-content {
+    background-color: #45f3ff33;
+    border-color: #45f3ff;
+}
+
+/* Estilo de las ventanas */
+.window {
+	position: fixed;
+	width: 800px;
+	height: 450px;
+	border-radius: 10px;
+	border: none;
+	box-shadow: 1px 1px 4px rgba(0,0,0,0,0.9), -1px 1px 4px rgba(0,0,0,0,0.9);
+	background: #45f3ff;
+    /* Centra la ventana del programa en el centro de la página web */
+    top: calc(50% - 225px); /* Calcula la posición top height/2 */
+    left: calc(50% - 400px); /* Calcula la posición left width/2 */
+}
+
+.window-content {
+	background: #28292d;
+	color: #45f3ff;
+	height: 100%;
+	font-family: monospace;
+	padding: 5px;
+}
+
+.window-top, .window-top-no-bind {
+	cursor: move;
+	text-align: right;
+	height: 40px;
+	border-bottom: 1px solid rgba(0,0,0,0.5);
+	border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
+	padding: 5px;
+	background-color: #45f3ff33;
+}
+
+.window-top-no-bind {
+	cursor: inherit;
+}
+
+.round {
+	height: 16px;
+	width: 16px;
+	border-radius: 50%;
+	border: none;
+	margin-right: 6px;
+	box-shadow: 1px 1px 2px #000;
+}
+
+/* Colores de los botones gestor de ventanas */
+
+.green {
+	background-color: limegreen;
+}
+
+.yellow {
+	background-color: yellow;
+}
+
+.red {
+	cursor: pointer;
+	background-color: red;
+}
+
+/* Estilo de las letras dentro de las ventanas */
+
+.window-content {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Estilo del gif de carga */
+.loading {
+    height: 45vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Ajusta el ancho según sea necesario */
+}
+
+.LoadingImg {
+    max-width: 100%; /* Ajusta el ancho máximo según sea necesario */
+    max-height: 100%; /* Ajusta la altura máxima según sea necesario */
+    animation: rotate 4s linear infinite; /* La animación dura 2 segundos, es lineal y se repite infinitamente */
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

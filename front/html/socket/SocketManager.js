@@ -19,7 +19,7 @@ export class SocketManager {
     {
         const code = 3008;
         const reasson = 'Unexpected';
-        if(this.socket.readyState === WebSocket.OPEN) {
+        if(this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.close(code, reasson);
             this.socket = undefined;
         }

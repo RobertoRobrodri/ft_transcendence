@@ -36,7 +36,7 @@ class PongGame:
         self.ball_speed         = 3   # Base ball speed
         self.inc_ball_speed     = 1   # Increment of ball speed
         self.max_ball_speed     = 6   # Base ball speed
-        self.paddle_speed       = 1   # Speed of paddles
+        self.paddle_speed       = 2   # Speed of paddles
 
         self.points_to_win      = 6
         ######

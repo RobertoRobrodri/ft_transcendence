@@ -2,7 +2,8 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f2f2f2;
+    /* background-color: #f2f2f2; */
+    background-color: #28292d;
 }
 
 header {
@@ -28,3 +29,30 @@ main {
     padding: 20px;
 }
 
+/* Estilo de los formularios dentro de la pagina */
+.form-control {
+    background-color: #28292d;
+    border: none;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important; 
+    border-bottom: 1px solid #ffffff;
+    color: #ffffff !important;
+}
+
+.form-control:focus {
+    background-color: #28292d;
+    color: #9ff9ff !important;
+}
+
+.form-control:hover {
+    border-color: #45f3ff;
+    /* border-color: transparent; */
+    /* border: none; */
+}
+
+/* Clase para eliminar objetos */
+
+.mshide {
+    display: none;
+}
