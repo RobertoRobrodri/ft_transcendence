@@ -244,6 +244,9 @@ function addSingleUser(user) {
     const listItem = document.createElement('li');
     listItem.id = user.id;
     listItem.className = 'clearfix';
+    console.log(user.image)
+    if(user.image == "")
+        user.image = "./assets/gigachad.jpg";
     listItem.innerHTML = `
         <img src="${user.image}">
             <div class="about">

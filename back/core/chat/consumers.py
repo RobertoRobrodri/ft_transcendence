@@ -10,6 +10,7 @@ from jwt import ExpiredSignatureError
 from game.consumers import games, get_game_id
 from game.PongGame import PongGame
 import asyncio
+import base64
 
 import logging
 logger = logging.getLogger(__name__)
@@ -59,8 +60,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await CustomUser.update_user_on_connect(user, self.channel_name)
                 # Add user to `{general_chat}` room
                 await self.channel_layer.group_add(GENERAL_CHANNEL, self.channel_name)
-                # Send a user_connected message to the group (excluding the connected user)
-                await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username})
+                profile_picture_url = ''
+                if user.profile_picture:
+                    # Open the profile picture file, read its content, and encode it in base64
+                    with open(user.profile_picture.path, "rb") as image_file:
+                        profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
+                        profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
+                await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username, 'image': profile_picture_url})
                 await send_to_me(self, MY_DATA, {'id': user.id, 'username': user.username})
                 
         except ExpiredSignatureError as e:
