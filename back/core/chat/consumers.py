@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 GENERAL_CHANNEL     = 'general'
 
 # SOCKET CALLBACKS
+MY_DATA             = 'my_data'
 USER_CONNECTED      = 'user_connected'
 USER_DISCONNECTED   = 'user_disconnected'
 USER_LIST           = 'user_list'
@@ -60,6 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_add(GENERAL_CHANNEL, self.channel_name)
                 # Send a user_connected message to the group (excluding the connected user)
                 await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username})
+                await send_to_me(self, MY_DATA, {'id': user.id, 'username': user.username})
                 
         except ExpiredSignatureError as e:
             logger.warning(f'ExpiredSignatureError: {e}')
@@ -201,6 +203,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if recipient and message and recipient.isdigit() and message.strip():
             userChannel = await CustomUser.get_user_by_id(recipient)
             if(userChannel and recipient != user.id):
+                data["recipient"] = recipient
                 data["sender"] = user.id
                 data["sender_name"] = user.username
                 data["message"] = message

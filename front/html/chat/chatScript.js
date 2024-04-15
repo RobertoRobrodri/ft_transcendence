@@ -4,40 +4,54 @@ import { GameSocketManager } from "../socket/GameSocketManager.js"
 import { CHAT_TYPES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
 import { renewJWT } from "../components/updatejwt.js"
 
-// function register() {
-//     document.getElementById("ignorelist").addEventListener("click", getIgnoreList);
-//     document.getElementById("Ignore").addEventListener("click", ignoreUser);
-//     document.getElementById("Unignore").addEventListener("click", unignoreUser);
-//     document.getElementById("disconnect").addEventListener("click", disconnect);
-//     document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
-//     document.getElementById("sendPrivMessageBtn").addEventListener("click", sendPrivMessage);
-//     document.getElementById("insiteToGame").addEventListener("click", inviteToGame);
-// }
-
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
 let gameSM = new GameSocketManager();
+let selectedChat = "general";
+let myUserId = null;
+let myUsername = null;
 
 export function init() {
-    document.getElementById('root').addEventListener('click', chatEventHandler);
     connectChat();
+    document.getElementById('root').addEventListener('click', chatEventHandler);
+    // Message send
+    const input = document.querySelector('.chat-message input');
+    input.addEventListener('keydown', function(event) {
+        // Verificar si la tecla presionada es Enter (código 13)
+        if (event.keyCode === 13) {
+            sendMessage(input);
+        }
+    });
 }
 
 function chatEventHandler(e) {
     if (e.target.matches('#red-myWindowChat') === true)
         disconnect();
-    else if (e.target.matches('#send-button') === true)
-        sendMessage();
-    // TODO incluir todas las funciones del chat
+    else if (e.target.closest('#chatList')) {
+        const clickedListItem = e.target.closest('li');
+        if (clickedListItem) {
+            const id = clickedListItem.id;
+            selectedChat = id;
+            clearConversation();
+            //If clicked item is user
+            if(id != "general") {
+                requestHistory(id);
+            }
+            //change active
+            const listItems = document.querySelectorAll('#chatList li');
+            listItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            clickedListItem.classList.add('active');
+        }
+    }
 }
 
-function connectChat()
-{
+function connectChat() {
     chatSM.connect();
 }
 
-function disconnect()
-{
+function disconnect() {
     chatSM.disconnect();
 }
 
@@ -69,13 +83,11 @@ chatSM.registerCallback(SOCKET.ERROR, event => {
 
 // Callback rcv all connected users
 chatSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
-    console.log('All list')
     populateChat(userList);
 });
 
 // Callback rcv connected user
 chatSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
-    console.log('Single user')
     addSingleUser(user);
 });
 
@@ -92,7 +104,7 @@ chatSM.registerCallback(CHAT_TYPES.GENERAL_MSG, data => {
 // Callback rcv private message
 chatSM.registerCallback(CHAT_TYPES.PRIV_MSG, data => {
     addPrivateMsg(data);
-    
+
     // When message are received, send request to backend to mark as seen
     chatSM.send(CHAT_TYPES.SEEN_MSG, data.sender);
 });
@@ -120,10 +132,15 @@ chatSM.registerCallback(CHAT_TYPES.GAME_REQUEST, data => {
 chatSM.registerCallback(CHAT_TYPES.ACCEPT_GAME, data => {
     // Now the users are connected to room in game, open game window if are closed, send RESTORE_GAME to join to the created room, and then, send PLAYER_READY (remember do in game socket)
     //i do all automatically for test propusses
-	console.log("ACCEPT_GAME")
-	gameSM.send(GAME_TYPES.RESTORE_GAME);
-	gameSM.send(GAME_TYPES.PLAYER_READY);
+    console.log("ACCEPT_GAME")
+    gameSM.send(GAME_TYPES.RESTORE_GAME);
+    gameSM.send(GAME_TYPES.PLAYER_READY);
 
+});
+
+chatSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
+    myUserId = data.id;
+    myUsername = data.username;
 });
 
 
@@ -131,28 +148,24 @@ chatSM.registerCallback(CHAT_TYPES.ACCEPT_GAME, data => {
 // Manage chat //
 /////////////////
 
-function inviteToGame()
-{
+function inviteToGame() {
     var rival = document.getElementById("dstUser");
     chatSM.send(CHAT_TYPES.GAME_REQUEST, {
-		rival: rival.value,
-		game: "Pong"
-	});
+        rival: rival.value,
+        game: "Pong"
+    });
 }
 
-function getIgnoreList()
-{
+function getIgnoreList() {
     chatSM.send(CHAT_TYPES.IGNORE_LIST);
 }
 
-function ignoreUser()
-{
+function ignoreUser() {
     var userToIgnore = document.getElementById("dstUser");
     chatSM.send(CHAT_TYPES.IGNORE_USER, userToIgnore.value);
 }
 
-function unignoreUser()
-{
+function unignoreUser() {
     var userToUnignore = document.getElementById("dstUser");
     chatSM.send(CHAT_TYPES.UNIGNORE_USER, userToUnignore.value);
 }
@@ -164,10 +177,19 @@ function populateChat(userList) {
     });
 }
 
-// Example to send a global message
-export function sendMessage() {
-    var input = document.getElementById("newMessage");
-    chatSM.send(CHAT_TYPES.GENERAL_MSG, input.value);
+function sendMessage(input) {
+    const mensaje = input.value.trim();
+    if (mensaje === '')
+        return;
+    // Send global msg
+    if (selectedChat == "general") {
+        chatSM.send(CHAT_TYPES.GENERAL_MSG, mensaje);
+    } else {
+        chatSM.send(CHAT_TYPES.PRIV_MSG, {
+            recipient: selectedChat,
+            message: mensaje
+        });
+    }
     input.value = "";
 }
 
@@ -182,12 +204,8 @@ function sendPrivMessage() {
     input.value = "";
 }
 
-// Example to request chat history from this user
-export function requestHistory(user) {
-    var dstUser = document.getElementById("dstUser");
-    dstUser.value = user.id;
-    
-    chatSM.send(CHAT_TYPES.LIST_MSG, dstUser.value);
+function requestHistory(id) {
+    chatSM.send(CHAT_TYPES.LIST_MSG, id);
 }
 
 //////////////////
@@ -195,67 +213,93 @@ export function requestHistory(user) {
 //////////////////
 
 // Add new item to chat
-export function addSingleUser(user) {
-    const userListElement = document.getElementById('userList');
+function addSingleUser(user) {
+    const chatList = document.getElementById('chatList');
     const listItem = document.createElement('li');
-    listItem.classList.add('nav-item');  // Cambiado para que coincida con la estructura del menú
-    const link = document.createElement('a');
-    link.classList.add('nav-link');
-    link.textContent = user.username;
-	link.id = user.id;
-    link.addEventListener('click', () => {
-        requestHistory(user);
-    });
-    listItem.appendChild(link);
-    userListElement.appendChild(listItem);
+    listItem.id = user.id;
+    listItem.className = 'clearfix';
+    listItem.innerHTML = `
+        <img src="${user.image}">
+            <div class="about">
+                <div class="name">${user.username}</div>
+            </div>
+    `;
+    chatList.appendChild(listItem);
 }
 
 // Remove item from chat
-export function removeSingleUser(user) {
-    const userListElement = document.getElementById('userList');
-    const listItem = Array.from(userListElement.children).filter(element => {
-        const link = element.querySelector('.nav-link');
-        return link && link.id === String(user.id);
-    });
-
-    listItem.forEach(i => {
-        userListElement.removeChild(i);
-    });
+function removeSingleUser(user) {
+    const userListElement = document.getElementById('chatList');
+    const listItem = document.getElementById(user.id);
+    if (listItem)
+        userListElement.removeChild(listItem);
 }
 
 // Add general message test
-export function addGeneralMsg(data) {
-    var userList = document.getElementById("general_msg");
-    var newmsg = document.createElement("li");
-    newmsg.textContent = `${data.sender_name}: ${data.message}`;
-    newmsg.classList.add("list-group-item");
-    userList.appendChild(newmsg);
+function addGeneralMsg(data) {
+    if (selectedChat === "general") {
+        addSingleMessage(`${data.sender_name}: ${data.message}`, data.sender != myUserId)
+    }
+    // var userList = document.getElementById("general_msg");
+    // var newmsg = document.createElement("li");
+    // newmsg.textContent = `${data.sender_name}: ${data.message}`;
+    // newmsg.classList.add("list-group-item");
+    // userList.appendChild(newmsg);
+}
+
+function addSingleMessage(messageText, outgoing = false) {
+    const chatHistoryList = document.querySelector('.chat-history ul');
+    const newMessageItem = document.createElement('li');
+    newMessageItem.className = 'clearfix';
+    const messageDiv = document.createElement('div');
+    if(outgoing)
+        messageDiv.className = 'message my-message';
+    else
+        messageDiv.className = 'message other-message float-right';
+    messageDiv.textContent = messageText;
+    newMessageItem.appendChild(messageDiv);
+    chatHistoryList.appendChild(newMessageItem);
+}
+
+function clearConversation() {
+    const chatHistoryList = document.querySelector('.chat-history ul');
+    chatHistoryList.innerHTML = '';
 }
 
 // Add private message
-export function addPrivateMsg(data) {
-    var userList = document.getElementById("private_msg");
-    var newmsg = document.createElement("li");
-    newmsg.textContent = `${data.sender}: ${data.message}`;
-    newmsg.classList.add("list-group-item");
-    userList.appendChild(newmsg);
+function addPrivateMsg(data) {
+    if (selectedChat == data.sender || selectedChat == data.recipient)
+    {
+        addSingleMessage(`${data.sender_name}: ${data.message}`, selectedChat != data.recipient);
+    }
+    // var userList = document.getElementById("private_msg");
+    // var newmsg = document.createElement("li");
+    // newmsg.textContent = `${data.sender}: ${data.message}`;
+    // newmsg.classList.add("list-group-item");
+    // userList.appendChild(newmsg);
 }
 
 // Add history message
-export function fillHistoryMsg(data) {
-    var messageHistory = document.getElementById("private_msg_history");
-
-    // Remove previous li elements
-    while (messageHistory.firstChild)
-        messageHistory.removeChild(messageHistory.firstChild);
+function fillHistoryMsg(data) {
     
+    clearConversation();
     data.forEach((message) => {
-        var newmsg = document.createElement("li");
-        newmsg.textContent = `${message.sender}: ${message.message}`;
-        newmsg.classList.add("list-group-item");
-        messageHistory.appendChild(newmsg);
-        // Get message time example
-        var date = new Date(message.timestamp);
-        var formattedDate = date.toLocaleString();
+        addSingleMessage(`${message.sender}: ${message.message}`, message.sender != myUserId)
     });
+    
+
+    // var messageHistory = document.getElementById("private_msg_history");
+    // // Remove previous li elements
+    // while (messageHistory.firstChild)
+    //     messageHistory.removeChild(messageHistory.firstChild);
+
+    // data.forEach((message) => {
+    //     var newmsg = document.createElement("li");
+    //     newmsg.textContent = `${message.sender}: ${message.message}`;
+    //     newmsg.classList.add("list-group-item");
+    //     messageHistory.appendChild(newmsg);
+    //     // Get message time example
+    //     var date = new Date(message.timestamp);
+    //     var formattedDate = date.toLocaleString();
+    // });
 }

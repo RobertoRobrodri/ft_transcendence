@@ -194,6 +194,7 @@ function setWindowContent(uniqueId) {
         // Load css
         let style = document.createElement('style');
         style.textContent = css;
+        //style.textContent = css.replace(/(\.)([^{]+)/g, '#content $1$2');
         document.head.appendChild(style);
         // Load js
         javascript.init();

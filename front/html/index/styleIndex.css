@@ -75,38 +75,36 @@ main {
     text-decoration: none;
 }
 
-
-
 /* Iconos del escritorio */
-.profile {
+.profile-ico {
     height: 70px;
     width: 70px;
     left: 38px;
     top: 40px;
 }
 
-.chat {
+.chat-ico {
     height: 70px;
     width: 70px;
     left: 38px;
     top: 80px;
 }
 
-.terminal {
+.terminal-ico {
     height: 70px;
     width: 70px;
     left: 38px;
     top: 120px;
 }
 
-.game {
+.game-ico {
     height: 70px;
     width: 70px;
     left: 38px;
     top: 160px;
 }
 
-.pool {
+.pool-ico {
     height: 70px;
     width: 70px;
     left: 38px;

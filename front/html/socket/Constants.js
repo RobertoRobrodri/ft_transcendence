@@ -7,6 +7,7 @@ export const SOCKET = {
 
 // Chat socket events
 export const CHAT_TYPES = {
+    MY_DATA:           'my_data',               // Callback: Own user data
     USER_CONNECTED:    'user_connected',        // Callback: User connected
     USER_DISCONNECTED: 'user_disconnected',     // Callback: User disconnected
     USER_LIST:         'user_list',             // Callback and sender: All online users
