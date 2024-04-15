@@ -82,8 +82,10 @@ input {
 }
 
 .file-select::before {
-    background-color: #5678EF;
-    color: white;
+    /* background-color: #5678EF; */
+    background-color: transparent;
+    border: #45f3ff 1px solid;
+    color: #45f3ff;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -121,5 +123,13 @@ input {
 
 /* Estilo del boton final */
 .btn-save {
-    background-color: #5678EF;
+    background-color: transparent;
+    border: #45f3ff 1px solid;
+    color: #45f3ff;
+    /* background-color: #5678EF; */
+}
+
+.btn-save:hover {
+    background-color: #45f3ff;
+    color: #28292d;
 }
