@@ -79,6 +79,7 @@ async function loadUsersTable() {
 
     const token = sessionStorage.getItem('token')
     try {
+        // TODO: Cambiar la api por la que obtiene los usuarios
         const response = await fetch('https://localhost:443/api/user_management/user_list/', {
             method: 'GET',
             headers: {
