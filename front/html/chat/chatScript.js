@@ -7,6 +7,7 @@ import { renewJWT } from "../components/updatejwt.js"
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
 let gameSM = new GameSocketManager();
+let generalMessages = [];
 let selectedChat = "general";
 let myUserId = null;
 let myUsername = null;
@@ -33,9 +34,13 @@ function chatEventHandler(e) {
             const id = clickedListItem.id;
             selectedChat = id;
             clearConversation();
-            //If clicked item is user
-            if(id != "general") {
-                requestHistory(id);
+            //If clicked item is general chat
+            if(id == "general") {
+                loadChatMessages();
+                clearUnreadCount("general");
+            } else {               //If clicked item is user
+                loadPrivateChat(id);
+                clearUnreadCount(id);
             }
             //change active
             const listItems = document.querySelectorAll('#chatList li');
@@ -43,6 +48,13 @@ function chatEventHandler(e) {
                 item.classList.remove('active');
             });
             clickedListItem.classList.add('active');
+            // Set "head" name and image
+            const imgUrl = clickedListItem.querySelector('img').src;
+            const name = clickedListItem.querySelector('.name').textContent;
+            const chatTopImage = document.getElementById('chatTopImage');
+            const chatTopName = document.getElementById('chatTopName');
+            chatTopImage.src = imgUrl;
+            chatTopName.textContent = name;
         }
     }
 }
@@ -193,24 +205,38 @@ function sendMessage(input) {
     input.value = "";
 }
 
-// Example to send a message to a specific user
-function sendPrivMessage() {
-    var dstUser = document.getElementById("dstUser");
-    var input = document.getElementById("newPrivMessage");
-    chatSM.send(CHAT_TYPES.PRIV_MSG, {
-        recipient: dstUser.value,
-        message: input.value
-    });
-    input.value = "";
+function loadPrivateChat(id) {
+    chatSM.send(CHAT_TYPES.LIST_MSG, id);
+
 }
 
-function requestHistory(id) {
-    chatSM.send(CHAT_TYPES.LIST_MSG, id);
+function loadChatMessages() {
+    generalMessages.forEach(function(data) {
+        addSingleMessage(`${data.sender_name}: ${data.message}`, data.sender != myUserId)
+    });
 }
 
 //////////////////
 // UI FUNCTIONS //
 //////////////////
+
+function incrementUnreadCount(itemId) {
+    const listItem = document.getElementById(itemId);
+    if (listItem) {
+        const unreadElement = listItem.querySelector('.unread');
+        let unreadCount = parseInt(unreadElement.textContent.replace(/[()]/g, '')) || 0;
+        unreadCount++;
+        unreadElement.textContent = `(${unreadCount})`;
+    }
+}
+
+function clearUnreadCount(itemId) {
+    const listItem = document.getElementById(itemId);
+    if (listItem) {
+        const unreadElement = listItem.querySelector('.unread');
+        unreadElement.textContent = '';
+    }
+}
 
 // Add new item to chat
 function addSingleUser(user) {
@@ -222,6 +248,7 @@ function addSingleUser(user) {
         <img src="${user.image}">
             <div class="about">
                 <div class="name">${user.username}</div>
+                <div class="unread"></div>
             </div>
     `;
     chatList.appendChild(listItem);
@@ -239,12 +266,13 @@ function removeSingleUser(user) {
 function addGeneralMsg(data) {
     if (selectedChat === "general") {
         addSingleMessage(`${data.sender_name}: ${data.message}`, data.sender != myUserId)
+    } else {
+        
+        incrementUnreadCount("general");
     }
-    // var userList = document.getElementById("general_msg");
-    // var newmsg = document.createElement("li");
-    // newmsg.textContent = `${data.sender_name}: ${data.message}`;
-    // newmsg.classList.add("list-group-item");
-    // userList.appendChild(newmsg);
+    generalMessages.push(data);
+    if (generalMessages.length > 50)
+        generalMessages.shift();
 }
 
 function addSingleMessage(messageText, outgoing = false) {
@@ -259,6 +287,7 @@ function addSingleMessage(messageText, outgoing = false) {
     messageDiv.textContent = messageText;
     newMessageItem.appendChild(messageDiv);
     chatHistoryList.appendChild(newMessageItem);
+    scrollToBottomIfNeeded();
 }
 
 function clearConversation() {
@@ -270,36 +299,30 @@ function clearConversation() {
 function addPrivateMsg(data) {
     if (selectedChat == data.sender || selectedChat == data.recipient)
     {
-        addSingleMessage(`${data.sender_name}: ${data.message}`, selectedChat != data.recipient);
+        addSingleMessage(`${data.message}`, selectedChat != data.recipient);
+    } else {
+        // set/increase unread messages
+        incrementUnreadCount(data.sender);
     }
-    // var userList = document.getElementById("private_msg");
-    // var newmsg = document.createElement("li");
-    // newmsg.textContent = `${data.sender}: ${data.message}`;
-    // newmsg.classList.add("list-group-item");
-    // userList.appendChild(newmsg);
 }
+
 
 // Add history message
 function fillHistoryMsg(data) {
-    
     clearConversation();
+    data.reverse();
     data.forEach((message) => {
-        addSingleMessage(`${message.sender}: ${message.message}`, message.sender != myUserId)
+        addSingleMessage(`${message.message}`, message.sender != myUserId)
     });
-    
+}
 
-    // var messageHistory = document.getElementById("private_msg_history");
-    // // Remove previous li elements
-    // while (messageHistory.firstChild)
-    //     messageHistory.removeChild(messageHistory.firstChild);
+function scrollToBottomIfNeeded() {
+    const chatHistory = document.querySelector('.chat-history');
+    const scrollDifference = chatHistory.scrollHeight - (chatHistory.scrollTop + chatHistory.clientHeight);
+    const threshold = 100;
+    console.log(scrollDifference)
 
-    // data.forEach((message) => {
-    //     var newmsg = document.createElement("li");
-    //     newmsg.textContent = `${message.sender}: ${message.message}`;
-    //     newmsg.classList.add("list-group-item");
-    //     messageHistory.appendChild(newmsg);
-    //     // Get message time example
-    //     var date = new Date(message.timestamp);
-    //     var formattedDate = date.toLocaleString();
-    // });
+    if (scrollDifference <= threshold) {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
 }

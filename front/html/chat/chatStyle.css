@@ -114,7 +114,7 @@ body{
 
 .chat .chat-history ul li {
     list-style: none;
-    margin-bottom: 30px
+    margin-bottom: 15px
 }
 
 .chat .chat-history ul li:last-child {
@@ -137,7 +137,7 @@ body{
 
 .chat .chat-history .message {
     color: #444;
-    padding: 18px 20px;
+    padding: 5px 10px;
     line-height: 26px;
     font-size: 16px;
     border-radius: 7px;
@@ -145,36 +145,8 @@ body{
     position: relative
 }
 
-.chat .chat-history .message:after {
-    bottom: 100%;
-    left: 7%;
-    border: solid transparent;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
-    border-bottom-color: #fff;
-    border-width: 10px;
-    margin-left: -10px
-}
-
 .chat .chat-history .my-message {
     background: #efefef
-}
-
-.chat .chat-history .my-message:after {
-    bottom: 100%;
-    left: 30px;
-    border: solid transparent;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
-    border-bottom-color: #efefef;
-    border-width: 10px;
-    margin-left: -10px
 }
 
 .chat .chat-history .other-message {
@@ -268,4 +240,17 @@ body{
         height: calc(100vh - 350px);
         overflow-x: auto
     }
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px; 
+}
+
+::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.1);
 }
