@@ -34,6 +34,7 @@ body{
 }
 
 .chat-app .chat {
+    height: 100%;
     margin-left: 210px;
     border-left: 1px solid #eaeaea
 }
