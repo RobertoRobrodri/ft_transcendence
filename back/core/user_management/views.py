@@ -4,12 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from pong_auth.models import CustomUser
-from .serializers import UserUpdateSerializer, UserUpdatePasswordSerializer, UserListSerializer
+from .serializers import UserUpdateSerializer, UserUpdatePasswordSerializer, UserListSerializer, UserUpdateTwoFactorAuthSerializer
 from pong_auth.permissions import IsLoggedInUser
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from pong_auth.utils import GenerateQR
-import base64
+import base64, pyotp
 
 class UserUpdateView(generics.GenericAPIView):
 	serializer_class = UserUpdateSerializer
@@ -39,6 +39,43 @@ class UserUpdatePasswordView(generics.GenericAPIView):
 				except ValidationError as e:
 					return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 			return Response({'message': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+		
+class UserUpdateActivate2FA(generics.GenericAPIView):
+	serializer_class = UserUpdateTwoFactorAuthSerializer
+	queryset = CustomUser.objects.all()
+
+	def patch(self, request):
+		user = request.user
+		user_serializer = self.serializer_class(user, data=request.data)
+		if user_serializer.is_valid():
+			user_serializer.save()
+			if user_serializer.data['TwoFactorAuth'] is not None:
+				encoded_qr = GenerateQR(user)
+				return Response({'message': 'Please confirm the following code',
+					'qr' : encoded_qr,
+					}, status=status.HTTP_307_TEMPORARY_REDIRECT)
+			else:
+				return Response({'message':'Two Factor Authentication deactivated'}, status=status.HTTP_200_OK)
+		return Response({'message': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserUpdateValidateOTPView(generics.GenericAPIView):
+	queryset = CustomUser.objects.all()
+
+	def post(self, request):
+		user = request.user
+		if (user.TwoFactorAuth == False):
+			otp = request.data.get('otp', None)
+			if (user.OTP_SECRET_KEY is None):
+				return Response({'error': 'Please try to activate 2FA first'}, status=status.HTTP_401_UNAUTHORIZED)
+			# Verify
+			totp = pyotp.TOTP(user.OTP_SECRET_KEY)
+			if totp.verify(otp):
+				user.TwoFactorAuth = True
+				user.save()
+				return Response({'message': '2FA confirmed',},status=status.HTTP_200_OK)
+			else:
+				user.OTP_SECRET_KEY = None
+		return Response({'error': 'Not valid code, please try again'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserListAllView(generics.ListAPIView):
 	serializer_class = UserUpdateSerializer
@@ -78,49 +115,3 @@ class UserDeleteView(generics.GenericAPIView):
 		if user_destroy == 1:
 			return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
 		return Response({'message': 'User doesn´t exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-# Cant user userviewset because of the requirement for a pk
-
-# class UserViewset(viewsets.GenericViewSet):
-# 	serializer_class = UserUpdateSerializer
-# 	queryset = CustomUser.objects.all()
-# 	permission_classes = [IsLoggedInUser, IsAuthenticated]
-	
-# 	def list(self, request):
-# 		user = request.user
-# 		user_serializer = self.serializer_class(user)
-# 		return Response(user_serializer.data, status=status.HTTP_200_OK)
-	
-# 	def retrieve(self, request):
-# 		#user = get_object_or_404(self.serializer_class.Meta.model, pk=pk)
-# 		user = request.user
-# 		user_serializer = self.serializer_class(user)
-# 		return Response(user_serializer.data, status=status.HTTP_200_OK)
-
-# 	# Use this method only for local users. 42 Users will log through 42 account
-# 	@action(detail=True, methods=['patch'])
-# 	def set_password(self, request):
-# 		user = request.user
-# 		if user.external_id is None:
-# 			user_serializer = UserUpdatePasswordSerializer(user, data=request.data)
-# 			if user_serializer.is_valid():
-# 				user_serializer.save()
-# 				return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
-# 		return Response({'message': 'Cannot update user'}, status=status.HTTP_400_BAD_REQUEST)
-
-# 	def partial_update(self, request):
-# 		user = request.user
-# 		self.check_object_permissions(request, user)
-# 		user_serializer = self.serializer_class(user, data=request.data, partial=True)
-# 		if user_serializer.is_valid():
-# 			user_serializer.save()
-# 			return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
-# 		return Response({'message': 'Cannot update user'}, status=status.HTTP_400_BAD_REQUEST)
-	
-# 	def destroy(self, request):
-# 		user = request.user
-# 		self.check_object_permissions(request, user)
-# 		user_destroy = user.update(is_active=False)
-# 		if user_destroy == 1:
-# 			return Response({'message': 'User deleted successfully'}, status=status.HTTP_200_OK)
-# 		return Response({'message': 'User doesn´t exists'}, status=status.HTTP_400_BAD_REQUEST)

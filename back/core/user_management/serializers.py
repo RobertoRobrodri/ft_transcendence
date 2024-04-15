@@ -11,7 +11,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth')
+        fields = ('username', 'profile_picture',)
 
     def update(self, instance, validated_data):
         previous_profile_picture = instance.profile_picture
@@ -19,15 +19,25 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             previous_profile_picture.delete()
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.username        = validated_data.get('username', instance.username)
-        instance.status          = validated_data.get('status', instance.status)
-        if (validated_data.get('TwoFactorAuth', instance.TwoFactorAuth) == True):
-            instance.OTP_SECRET_KEY = pyotp.random_base32()
-        else:
-            instance.OTP_SECRET_KEY = 0            
-        instance.TwoFactorAuth   = validated_data.get('TwoFactorAuth', instance.TwoFactorAuth)
         instance.save()
         return instance
+
+class UserUpdateTwoFactorAuthSerializer(serializers.ModelSerializer):
+    TwoFactorAuth = serializers.BooleanField(required=True)
     
+    class Meta:
+        model = CustomUser
+        fields = ('TwoFactorAuth',)
+
+    def update(self, instance, validated_data):
+        if validated_data.get('TwoFactorAuth') == True:
+            instance.OTP_SECRET_KEY = pyotp.random_base32()
+        else:
+            instance.OTP_SECRET_KEY = None
+            instance.TwoFactorAuth   = validated_data.get('TwoFactorAuth', instance.TwoFactorAuth)
+        instance.save()
+        return instance
+
 class UserUpdatePasswordSerializer(serializers.Serializer):
 
     old_password  = serializers.CharField(required=True)
