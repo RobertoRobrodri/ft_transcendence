@@ -1,20 +1,30 @@
 import pyotp, qrcode, base64, string, random
 from io import BytesIO
-from django.conf import settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 def GenerateQR(user):
     # Generate code and return url
-    topt = pyotp.totp.TOTP(settings.OTP_SECRET_KEY)
-    qr_code_url = topt.provisioning_uri(name=user.username.lower(), issuer_name='ft_transcendence_chads')
-    # Generate QR Image
-    img = qrcode.make(qr_code_url)
+    totp = pyotp.totp.TOTP(user.OTP_SECRET_KEY)
+    qr_code_url = totp.provisioning_uri(name=user.username.lower(), issuer_name='ft_transcendence_chads')
+    
+    # Generate QR Image with custom colors
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_code_url)
+    qr.make(fit=True)
+    img = qr.make_image(back_color=(40, 41, 45), fill_color=(69, 243, 255))
+
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     # Reset BytesIO position to the beginning
     buffered.seek(0)
     img_str = base64.b64encode(buffered.getvalue())
     return img_str
+
 
 def generate_random_string(length=10):
         characters = string.ascii_letters + string.digits

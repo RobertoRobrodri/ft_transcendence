@@ -1,5 +1,5 @@
 import { renewJWT } from "../components/updatejwt.js"
-import { displayErrorList } from "../components/loader.js"
+import { displayErrorList, displayError } from "../components/loader.js"
 
 export function init() {
     loadUserInfo();
@@ -36,7 +36,7 @@ export async function loadUserInfo() {
             let qr = 'data:image/png;base64,' + data.qr;
             var htmlDinamico = `
             <div class="vertical-center">
-                <img class="userPhoto" src='${qr}' alt="Profile picture">
+                <img class="qrcode" src='${qr}' alt="QR code">
             </div>
             `;
             user_updated +=htmlDinamico;
@@ -74,23 +74,34 @@ export function loadEditProfilePage() {
     });
 }
 
-async function updateProfile(e) {
-    const token = sessionStorage.getItem('token');
-    if (e.target.matches('#editProfileForm') === false) {
-        return;
-    }
+function updateUser(e)
+{
+    // This prevents refresh page
     e.preventDefault();
+    if (e.target.matches('#editProfileForm') === true)
+        updateProfile();
+    else if (e.target.matches('#changePasswordForm') === true)
+        updatePassword();
+}
 
+async function updateProfile() {
+    const token = sessionStorage.getItem('token');
     const formData = new FormData();
     if (document.querySelector('#new_username').value) {
         formData.append('username', document.querySelector('#new_username').value);
     }
-    if (document.querySelector('#twoFactorAuth').value) {
-        formData.append('TwoFactorAuth', document.querySelector('#twoFactorAuth').checked);
+    if (document.querySelector('input[name="twoFactorAuth"]:checked')) {
+        formData.append('TwoFactorAuth', document.querySelector('input[name="twoFactorAuth"]:checked').value);
     }
     if (document.querySelector('#new_profilePicture').files.length > 0) {
         const file = document.querySelector('#new_profilePicture').files[0];
-        formData.append('profile_picture', file);
+        try {
+            if (file.size > 1024 * 1024)
+                throw new Error('Image too large!');
+            formData.append('profile_picture', file);
+        } catch(error) {
+            displayError(error.message, 'small', 'editProfileForm')
+        }
     }
     try {
         const response = await fetch('/api/user_management/user_update/', {
@@ -102,14 +113,48 @@ async function updateProfile(e) {
     });
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error);
+        console.log(error)
+        throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
+    console.log(data)
     } catch (error) {
-        // displayErrorList(JSON.parse(error.message), 'editProfileForm');
+        console.log(error)
+        displayErrorList(JSON.parse(error.message), 'editProfileForm');
+    }
+}
+
+async function updatePassword() {
+    const token = sessionStorage.getItem('token');
+    const old_password = document.querySelector('#old_password').value;
+    const new_password = document.querySelector('#new_password').value;
+    const new_password2 = document.querySelector('#confirm_password').value;
+
+    const passwordData = {
+        old_password: old_password,
+        new_password: new_password,
+        new_password2: new_password2,
+    };
+    try {
+        const response = await fetch('/api/user_management/user_update_password/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(passwordData),
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+    }
+    const data = await response.json();
+    console.log(data)
+    } catch (error) {
+        displayErrorList(JSON.parse(error.message), 'changePasswordForm');
     }
 }
 
 function editProfileListener() {
-	document.getElementById('root').addEventListener('submit', updateProfile);
+	document.getElementById('root').addEventListener('submit', updateUser);
 }
