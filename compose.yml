@@ -32,6 +32,8 @@ services:
   db:
     build: ./db/
     container_name: db
+    depends_on:
+      - setup
     volumes:
       - ddbb:/var/lib/postgresql/data
       - ./.logs/db:/log
@@ -80,6 +82,8 @@ services:
   setup:
     build: ./setup/
     container_name: setup
+    volumes:
+      - ./.logs:/var
     networks:
       - transcendence
     depends_on:

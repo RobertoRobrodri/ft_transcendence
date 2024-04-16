@@ -1,5 +1,8 @@
 #!/bin/bash
 # wait to service elasticsearch is ready
+chmod 777 /var/nginx
+chmod 777 /var/db
+
 max_attempts=$((5 * 60))
 attempt=1
 
