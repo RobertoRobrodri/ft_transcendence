@@ -103,7 +103,7 @@ async function update2FA()
     const data = await response.json();
     if (response.status === 307)
     {
-        let qr_code = document.getElementById('activateTwoFactorAuthForm');
+        let qr_code = document.getElementById('update_forms');
         // Use template literals and remove the '+ ' before data.qr
         console.log(qr_code)
         let qr = 'data:image/png;base64,' + data.qr;
