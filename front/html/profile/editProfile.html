@@ -2,22 +2,36 @@
     <h1>Edit Profile</h1>
     <form id="editProfileForm">
         <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
+            <label for="new_username" class="form-label">Username</label>
             <input type="text" class="form-control" id="new_username" placeholder="Enter your username">
         </div>
-        <!-- <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Enter your password">
-        </div> -->
         <div class="mb-3">
-            <label for="profilePicture" class="form-label">Profile Picture</label>
+            <label for="new_profilePicture" class="form-label">Profile Picture</label>
             <input type="file" class="form-control" id="new_profilePicture">
         </div>
         <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
             <label class="form-check-label" for="twoFactorAuth">Activate Two-Factor Authentication</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="twoFactorAuth" id="twoFactorAuthTrue" value="true">
+                <label class="form-check-label" for="twoFactorAuthTrue">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="twoFactorAuth" id="twoFactorAuthFalse" value="false">
+                <label class="form-check-label" for="twoFactorAuthFalse">No</label>
+            </div>
         </div>
         <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+    <form id="changePasswordForm">
+        <div class="mb-3">
+            <label for="old_password" class="form-label">Old password</label>
+            <input type="text" class="form-control" id="old_password" required="required" placeholder="Enter your old password">
+            <label for="new_password" class="form-label">New password</label>
+            <input type="text" class="form-control" id="new_password" required="required" placeholder="Enter your new password">
+            <label for="confirm_password" class="form-label">Confirm password</label>
+            <input type="text" class="form-control" id="confirm_password" required="required" placeholder="Confirm password">
+        </div>
+        <button type="submit" class="btn btn-primary">Update your password</button>
     </form>
 </div>
 <div class="system-bar fixed-bottom">

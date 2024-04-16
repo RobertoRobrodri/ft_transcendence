@@ -80,7 +80,7 @@ class UserValidateOTPView(generics.GenericAPIView):
         if (user.TwoFactorAuth == True):
             otp = request.data.get('otp', None)
             # Verify
-            totp = pyotp.TOTP(settings.OTP_SECRET_KEY)
+            totp = pyotp.TOTP(user.OTP_SECRET_KEY)
             if totp.verify(otp):
                 user.status = CustomUser.Status.INMENU
                 user.save()
