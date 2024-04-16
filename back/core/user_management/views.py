@@ -49,7 +49,7 @@ class UserUpdateActivate2FA(generics.GenericAPIView):
 		user_serializer = self.serializer_class(user, data=request.data)
 		if user_serializer.is_valid():
 			user_serializer.save()
-			if user_serializer.data['TwoFactorAuth'] is not None:
+			if user_serializer.validated_data.get('TwoFactorAuth') == True:
 				encoded_qr = GenerateQR(user)
 				return Response({'message': 'Please confirm the following code',
 					'qr' : encoded_qr,

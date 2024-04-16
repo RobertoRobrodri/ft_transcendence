@@ -1,5 +1,6 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayError } from "../components/loader.js"
+import { load2FApage } from "../2FA/twoFactorAuthScript.js"
 
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
@@ -74,6 +75,59 @@ function updateUser(e)
         updateProfile();
     else if (e.target.matches('#changePasswordForm') === true)
         updatePassword();
+    else if (e.target.matches('#activateTwoFactorAuthForm') == true)
+        update2FA();
+    else if (e.target.matches('#confirmSendOTPForm') == true)
+        TwoFactorAuthConfirmOTPUpdate();
+}
+
+async function update2FA()
+{
+    const token = sessionStorage.getItem('token');
+    const formData = {
+        TwoFactorAuth: document.querySelector('input[name="twoFactorAuth"]:checked').value
+    };
+    try {
+        const response = await fetch('/api/user_management/user_update_2FA/', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+    if (!response.ok && response.status !== 307) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+    }
+    const data = await response.json();
+    if (response.status === 307)
+    {
+        let qr_code = document.getElementById('activateTwoFactorAuthForm');
+        // Use template literals and remove the '+ ' before data.qr
+        console.log(qr_code)
+        let qr = 'data:image/png;base64,' + data.qr;
+        var htmlDinamico = `
+        <div class="form">
+            <h2><b>Enter QR code</b></h2>
+            <form id="confirmSendOTPForm">
+                <div class="form-group">
+                    <input type="text" id="OTP" autocomplete="off" class="form-control OTPInput" required="required" placeholder="OTP">
+                </div>
+                <div class="submit-buttons">
+                    <button type="submit" class="btn btn-primary">Confirm OTP</button>
+                </div>
+            </form>
+        </div>
+        <div class="vertical-center">
+            <img class="qrcode" src='${qr}' alt="QR code">
+        </div>
+        `;
+        qr_code.innerHTML += htmlDinamico;
+    }
+    } catch (error) {
+        displayError(error.message, 'small', 'activateTwoFactorAuthForm');
+    }
 }
 
 async function updateProfile() {
@@ -81,9 +135,6 @@ async function updateProfile() {
     const formData = new FormData();
     if (document.querySelector('#new_username').value) {
         formData.append('username', document.querySelector('#new_username').value);
-    }
-    if (document.querySelector('input[name="twoFactorAuth"]:checked')) {
-        formData.append('TwoFactorAuth', document.querySelector('input[name="twoFactorAuth"]:checked').value);
     }
     if (document.querySelector('#new_profilePicture').files.length > 0) {
         const file = document.querySelector('#new_profilePicture').files[0];
@@ -145,6 +196,33 @@ async function updatePassword() {
     } catch (error) {
         displayErrorList(JSON.parse(error.message), 'changePasswordForm');
     }
+}
+
+async function TwoFactorAuthConfirmOTPUpdate() {
+    // Get the input values
+    const token = sessionStorage.getItem('token')
+    const userOTP = document.querySelector('#OTP').value;
+    const UserData = {
+        otp: userOTP,
+      };
+      try {
+            const response = await fetch('https://localhost:443/api/user_management/user_update_validate_2FA/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(UserData),
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(response)
+        } catch (error) {
+            console.error('Error:', error.message);
+            displayError(error.message, 'small', 'confirmSendOTPForm');
+        }
 }
 
 function editProfileListener() {
