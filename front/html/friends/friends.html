@@ -19,7 +19,7 @@
 	</div>
 	<form id="FriendRequestForm">
 		<div class="form-group">
-			<input type="text" id="new_friend" class="form-control" required="required" placeholder="New friend ID">
+			<input type="text" id="new_friend" class="form-control" required="required" autocomplete="off" placeholder="New friend ID">
 		</div>
 		<button type="submit" class="btn btn-primary btn-save">Send!</button>
 		<!-- </div> -->
@@ -27,13 +27,14 @@
 	<!-- Aquí es donde debes agregar el nuevo div -->
 	<div class="row justify-content-end">
 		<div class="col-md-3 text-right">
-			<h2 class="commonText">Users Online</h2>
+			<h2 class="commonText">Friends</h2>
 			<div class="user-table-container">
 				<table class="table table-dark">
 					<thead>
 						<tr>
+							<!-- <th scope="col">ID</th> -->
 							<th scope="col">Username</th>
-							<th scope="col">ID</th>
+							<th scope="col">Status</th>
 						</tr>
 					</thead>
 					<tbody id="user-table-body">

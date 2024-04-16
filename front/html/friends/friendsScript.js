@@ -69,12 +69,6 @@ async function getFriendList() {
     }
 }
 
-const users = [
-    { username: "user1", id: "001" },
-    { username: "user2", id: "002" },
-    { username: "user3", id: "003" },
-];
-
 async function loadUsersTable() {
 
     const token = sessionStorage.getItem('token')
@@ -91,16 +85,17 @@ async function loadUsersTable() {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        const data = await response.json();
+        const userInfo = await response.json();
+        let friends = userInfo.friends;
         let userTableBody = document.getElementById("user-table-body");
         userTableBody.innerHTML = "";
-    
-        users.forEach(user => {
+
+        friends.forEach(friend => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                    <td>${user.username}</td>
-                    <td>${user.id}</td>
-                `;
+                    <td>${friend.username}</td>
+                    <td>${friend.status}</td>
+            `;
             userTableBody.appendChild(row);
         });
 
