@@ -1,0 +1,4 @@
+#!/bin/sh
+chmod 766 -R ./.logs
+chmod 766 -R ./.logs/db
+chmod 766 -R ./.logs/nginx
