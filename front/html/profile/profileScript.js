@@ -12,7 +12,7 @@ export function init() {
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
     try {
-        const response = await fetch('https://localhost:443/api/user_management/user_list/', {
+        const response = await fetch('api/user_management/user_list/', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -195,7 +195,7 @@ async function TwoFactorAuthConfirmOTPUpdate() {
         otp: userOTP,
       };
       try {
-            const response = await fetch('https://localhost:443/api/user_management/user_update_validate_2FA/', {
+            const response = await fetch('api/user_management/user_update_validate_2FA/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
