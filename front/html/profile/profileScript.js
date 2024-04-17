@@ -82,6 +82,41 @@ function updateUser(e)
         updateProfile();
     else if (e.target.matches('#changePasswordForm') === true)
         updatePassword();
+    else if (e.target.matches('#activateTwoFactorAuthForm') == true)
+        update2FA();
+    else if (e.target.matches('#confirmOTP') == true)
+        TwoFactorAuthConfirmOTPUpdate();
+}
+
+async function update2FA()
+{
+    const token = sessionStorage.getItem('token');
+    const formData = {
+        TwoFactorAuth: document.querySelector('input[name="twoFactorAuth"]:checked').value
+    };
+    try {
+        const response = await fetch('/api/user_management/user_update_2FA/', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+    if (!response.ok && response.status !== 307) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+    }
+    const data = await response.json();
+    if (response.status === 307)
+    {
+        document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qr;
+        // Show modal
+        $('#twoFactorAuthModal').modal('show');
+    }
+    } catch (error) {
+        displayError(error.message, 'small', 'activateTwoFactorAuthForm');
+    }
 }
 
 async function updateProfile() {
@@ -89,9 +124,6 @@ async function updateProfile() {
     const formData = new FormData();
     if (document.querySelector('#new_username').value) {
         formData.append('username', document.querySelector('#new_username').value);
-    }
-    if (document.querySelector('input[name="twoFactorAuth"]:checked')) {
-        formData.append('TwoFactorAuth', document.querySelector('input[name="twoFactorAuth"]:checked').value);
     }
     if (document.querySelector('#new_profilePicture').files.length > 0) {
         const file = document.querySelector('#new_profilePicture').files[0];
@@ -153,6 +185,33 @@ async function updatePassword() {
     } catch (error) {
         displayErrorList(JSON.parse(error.message), 'changePasswordForm');
     }
+}
+
+async function TwoFactorAuthConfirmOTPUpdate() {
+    // Get the input values
+    const token = sessionStorage.getItem('token')
+    const userOTP = document.querySelector('#OTP').value;
+    const UserData = {
+        otp: userOTP,
+      };
+      try {
+            const response = await fetch('https://localhost:443/api/user_management/user_update_validate_2FA/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(UserData),
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(response)
+        } catch (error) {
+            console.error('Error:', error.message);
+            displayError(error.message, 'small', 'confirmOTP');
+        }
 }
 
 function editProfileListener() {
