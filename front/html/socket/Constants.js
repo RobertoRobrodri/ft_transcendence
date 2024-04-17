@@ -20,6 +20,7 @@ export const CHAT_TYPES = {
     SEEN_MSG:          'seen_msg',              // Sender: mark message as seen
     GAME_REQUEST:      'game_request',          // Sender: Invite user to private game
     ACCEPT_GAME:       'accept_game',           // Sender: Accept game
+    REJECT_GAME:       'reject_game',           // Sender: Reject game
 };
 
 // Game socket events
@@ -27,6 +28,7 @@ export const GAME_TYPES = {
     // Matchmaking
     INITMATCHMAKING:        'init_matchmaking',
     CANCELMATCHMAKING:      'cancel_matchmaking',
+    GAME_RESTORED:          'game_restored',
     INQUEUE:                'queue_matchmaking',
     RESTORE_GAME:           'restore_game',
 

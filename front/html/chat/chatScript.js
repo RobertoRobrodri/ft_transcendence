@@ -1,14 +1,16 @@
 
 import { ChatSocketManager } from "../socket/ChatSocketManager.js"
 import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { CHAT_TYPES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { CHAT_TYPES, GAMES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
 import { renewJWT } from "../components/updatejwt.js"
+import { createWindow } from "../index/index.js"
 
 // Singleton socket instance
 let chatSM = new ChatSocketManager();
 let gameSM = new GameSocketManager();
 let generalMessages = [];
 let selectedChat = "general";
+let selectedList = "users";
 let myUserId = null;
 let myUsername = null;
 
@@ -18,27 +20,66 @@ export function init() {
     // Message send
     const input = document.querySelector('.chat-message input');
     input.addEventListener('keydown', function(event) {
-        // Verificar si la tecla presionada es Enter (código 13)
+        // Press enter key
         if (event.keyCode === 13) {
             sendMessage(input);
         }
+    });
+    setupNav();
+    let options = document.getElementById("chatoptions");
+    options.classList.add('d-none');
+}
+
+function setupNav() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const userList = document.getElementById('chatList');
+    const blockedList = document.getElementById('blockedList');
+    const game_req = document.getElementById('game_request_a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            userList.classList.add('d-none');
+            blockedList.classList.add('d-none');
+
+            const listToShow = this.getAttribute('data-list');
+            if (listToShow === 'users') {
+                userList.classList.remove('d-none');
+                navLinks.forEach(navLink => {
+                    navLink.classList.remove('active');
+                });
+                selectedList = "users";
+                this.classList.add('active');
+                game_req.classList.remove('d-none');
+            } else if (listToShow === 'blocked') {
+                blockedList.classList.remove('d-none');
+                navLinks.forEach(navLink => {
+                    navLink.classList.remove('active');
+                });
+                this.classList.add('active');
+                selectedList = "blocked";
+                game_req.classList.add('d-none');
+
+            }
+        });
     });
 }
 
 function chatEventHandler(e) {
     if (e.target.matches('#red-myWindowChat') === true)
         disconnect();
-    else if (e.target.closest('#chatList')) {
+    else if (e.target.closest('#chatList') || e.target.closest('#blockedList')) {
         const clickedListItem = e.target.closest('li');
+        let options = document.getElementById("chatoptions");
         if (clickedListItem) {
-            const id = clickedListItem.id;
+            const id = clickedListItem.id.replace("blockedList_", "").replace("chatList_", "");
             selectedChat = id;
             clearConversation();
             //If clicked item is general chat
             if(id == "general") {
+                options.classList.add('d-none');
                 loadChatMessages();
                 clearUnreadCount("general");
-            } else {               //If clicked item is user
+            } else { //If clicked item is user block
+                options.classList.remove('d-none');
                 loadPrivateChat(id);
                 clearUnreadCount(id);
             }
@@ -57,10 +98,64 @@ function chatEventHandler(e) {
             chatTopName.textContent = name;
         }
     }
+    else if (e.target.matches('#game_request') || e.target.matches('#game_request_a')) {
+        chatSM.send(CHAT_TYPES.GAME_REQUEST, {
+            "rival": selectedChat,
+            "game": GAMES.PONG
+        });
+    }
+    else if (e.target.matches('#ban_unban') || e.target.matches('#ban_unban_a')) {
+        if (selectedChat == "general")
+            return;
+        if(selectedList == "users"){
+            chatSM.send(CHAT_TYPES.IGNORE_USER, selectedChat);
+            const chatTopImage = document.getElementById('chatTopImage');
+            const chatTopName = document.getElementById('chatTopName');
+            let user = {
+                id: selectedChat,
+                image: chatTopImage.src,
+                username: chatTopName.textContent
+            }
+            addSingleUser(user, "blockedList")
+        }
+        else if(selectedList == "blocked") {
+            chatSM.send(CHAT_TYPES.UNIGNORE_USER, selectedChat);
+            removeSingleUser({id: selectedChat}, 'blockedList')
+        }
+    }
+}
+
+function showGameRequest(data) {
+    var modalBody = document.getElementById('modal-body');
+    modalBody.innerHTML = `${data.sender_name} want to play pong with you!`;
+
+    // Obtener referencias a los botones de aceptar y cancelar
+    var acceptButton = document.getElementById('acceptButton');
+    var cancelButton = document.getElementById('cancelButton');
+
+    // Escuchar el clic en el botón de aceptar
+    acceptButton.addEventListener('click', function() {
+        chatSM.send(CHAT_TYPES.ACCEPT_GAME, data.sender);
+        myModal.hide();
+    });
+
+    // Escuchar el clic en el botón de cancelar
+    cancelButton.addEventListener('click', function() {
+        chatSM.send(CHAT_TYPES.REJECT_GAME, data.sender);
+        myModal.hide();
+    });
+
+    // Mostrar el modal
+    var myModal = new bootstrap.Modal(document.getElementById('gameRequestModal'), {
+        backdrop: false
+    });
+    myModal.show();
 }
 
 function connectChat() {
-    chatSM.connect();
+    if(chatSM.connect() == chatSM.SOCKETSTATUS.ALREADY_CONNECTED) {
+        chatSM.send(CHAT_TYPES.USER_LIST);
+    }
 }
 
 function disconnect() {
@@ -75,6 +170,7 @@ function disconnect() {
 chatSM.registerCallback(SOCKET.CONNECTED, event => {
     // Request all connected users
     chatSM.send(CHAT_TYPES.USER_LIST);
+    chatSM.send(CHAT_TYPES.IGNORE_LIST);
 });
 
 // ! When calling disconnect this is triggered
@@ -95,7 +191,9 @@ chatSM.registerCallback(SOCKET.ERROR, event => {
 
 // Callback rcv all connected users
 chatSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
-    populateChat(userList);
+    userList.forEach((user) => {
+        addSingleUser(user)
+    });
 });
 
 // Callback rcv connected user
@@ -127,27 +225,25 @@ chatSM.registerCallback(CHAT_TYPES.LIST_MSG, data => {
 });
 
 // Callback get list of ignored users
-chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, data => {
-    data.forEach((username) => {
-        console.log(`Ignored username: ${username}`);
+chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, blockedList => {
+
+    blockedList.forEach((user) => {
+        addSingleUser(user, "blockedList")
     });
 });
 
 // Callback someone request play a game
 chatSM.registerCallback(CHAT_TYPES.GAME_REQUEST, data => {
+    
+    showGameRequest(data);
     console.log(data);
     //show message to acept or something... then
-    chatSM.send(CHAT_TYPES.ACCEPT_GAME, data.sender);
+    //chatSM.send(CHAT_TYPES.ACCEPT_GAME, data.sender);
 });
 
 // Callback someone request play a game
 chatSM.registerCallback(CHAT_TYPES.ACCEPT_GAME, data => {
-    // Now the users are connected to room in game, open game window if are closed, send RESTORE_GAME to join to the created room, and then, send PLAYER_READY (remember do in game socket)
-    //i do all automatically for test propusses
-    console.log("ACCEPT_GAME")
-    gameSM.send(GAME_TYPES.RESTORE_GAME);
-    gameSM.send(GAME_TYPES.PLAYER_READY);
-
+    createWindow('Game');
 });
 
 chatSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
@@ -180,13 +276,6 @@ function ignoreUser() {
 function unignoreUser() {
     var userToUnignore = document.getElementById("dstUser");
     chatSM.send(CHAT_TYPES.UNIGNORE_USER, userToUnignore.value);
-}
-
-// Load all chat users
-function populateChat(userList) {
-    userList.forEach((user) => {
-        addSingleUser(user)
-    });
 }
 
 function sendMessage(input) {
@@ -239,12 +328,15 @@ function clearUnreadCount(itemId) {
 }
 
 // Add new item to chat
-function addSingleUser(user) {
-    const chatList = document.getElementById('chatList');
+function addSingleUser(user, list = "chatList") {
+    const id = list + "_" + user.id;
+    const exist = document.getElementById(id);
+    if(exist)
+        return;
+    const chatList = document.getElementById(list);
     const listItem = document.createElement('li');
-    listItem.id = user.id;
+    listItem.id = id;
     listItem.className = 'clearfix';
-    console.log(user.image)
     if(user.image == "")
         user.image = "./assets/gigachad.jpg";
     listItem.innerHTML = `
@@ -257,10 +349,18 @@ function addSingleUser(user) {
     chatList.appendChild(listItem);
 }
 
+function removeAllUsers(list = "chatList") {
+    const chatList = document.getElementById(list);
+    // Remover todos los elementos hijos de la lista
+    while (chatList.firstChild) {
+        chatList.removeChild(chatList.firstChild);
+    }
+}
+
 // Remove item from chat
-function removeSingleUser(user) {
-    const userListElement = document.getElementById('chatList');
-    const listItem = document.getElementById(user.id);
+function removeSingleUser(user, list = 'chatList') {
+    const userListElement = document.getElementById(list);
+    const listItem = document.getElementById(list + "_" + user.id);
     if (listItem)
         userListElement.removeChild(listItem);
 }
@@ -323,7 +423,6 @@ function scrollToBottomIfNeeded() {
     const chatHistory = document.querySelector('.chat-history');
     const scrollDifference = chatHistory.scrollHeight - (chatHistory.scrollTop + chatHistory.clientHeight);
     const threshold = 100;
-    console.log(scrollDifference)
 
     if (scrollDifference <= threshold) {
         chatHistory.scrollTop = chatHistory.scrollHeight;

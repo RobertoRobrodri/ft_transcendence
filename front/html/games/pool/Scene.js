@@ -21,9 +21,9 @@ class Scene extends THREE.Scene {
         this.renderer.setSize(this.renderElement.offsetWidth, this.renderElement.offsetHeight);
         this.renderElement.appendChild(this.renderer.domElement);
 
-        window.addEventListener('resize', function() {
-            scene.onWindowResize();
-        }, false);
+        // window.addEventListener('resize', function() {
+        //     scene.onWindowResize();
+        // }, false);
 
         this.controls = new THREE.OrbitControls(this.camera, renderElement);
         this.controls.maxPolarAngle = Math.PI / 2 - 0.01;
@@ -49,7 +49,7 @@ class Scene extends THREE.Scene {
             ambient: new AmbientLight(this, 0xffffdd, 0.1)
         };
 
-        let clothMap = this.textureLoader.load('./index/games/pool/img/textures/cloth.jpg'),
+        let clothMap = this.textureLoader.load('./games/pool/img/textures/cloth.jpg'),
             clothMaterial = new THREE.MeshStandardMaterial(
                 {
                     map: clothMap,
@@ -105,9 +105,9 @@ class Scene extends THREE.Scene {
         this.tableWallMesh.position.y = .5;
         this.add(this.tableWallMesh);
 
-        this.tableFloor = new ObjMesh(this, './index/games/pool/obj/table/floor.obj', './index/games/pool/img/textures/cloth.jpg', 2, false, true, true);
-        this.tableBase = new ObjMesh(this, './index/games/pool/obj/table/woodwalls.obj', './index/games/pool/img/textures/wood.jpg', 30, true, this.laptopGraphics, true);
-        this.tableLegs = new ObjMesh(this, './index/games/pool/obj/table/legs.obj', './index/games/pool/img/textures/wood.jpg', 10, true, true, true);
+        this.tableFloor = new ObjMesh(this, './games/pool/obj/table/floor.obj', './games/pool/img/textures/cloth.jpg', 2, false, true, true);
+        this.tableBase = new ObjMesh(this, './games/pool/obj/table/woodwalls.obj', './games/pool/img/textures/wood.jpg', 30, true, this.laptopGraphics, true);
+        this.tableLegs = new ObjMesh(this, './games/pool/obj/table/legs.obj', './games/pool/img/textures/wood.jpg', 10, true, true, true);
 
 
         let keuGeometry = new THREE.CylinderGeometry(0.06, 0.1, 15, 32, 32),
@@ -130,7 +130,7 @@ class Scene extends THREE.Scene {
         this.add(this.cue);
 
         let floorGeometry = new THREE.BoxGeometry(90, 150, 100, 0),
-            floorMap = new THREE.TextureLoader().load('./index/games/pool/img/textures/floorwood.jpg'),
+            floorMap = new THREE.TextureLoader().load('./games/pool/img/textures/floorwood.jpg'),
             floorMaterial = new THREE.MeshPhongMaterial(this.laptopGraphics ? {
                 map: floorMap
             } : {

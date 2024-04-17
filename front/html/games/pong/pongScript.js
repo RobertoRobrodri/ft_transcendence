@@ -1,8 +1,5 @@
-// import { GameSocketManager } from "../socket/GameSocketManager.js"
-// import { GAME_TYPES, SOCKET, GAMES } from '../socket/Constants.js';
-import { GameSocketManager } from "../../../socket/GameSocketManager.js"
-import { GAME_TYPES, SOCKET, GAMES } from '../../../socket/Constants.js';
-import { sleep } from '../../../components/utils.js'
+import { GameSocketManager } from "../../socket/GameSocketManager.js"
+import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
 
 /////////////////
 // Global vars //
@@ -11,71 +8,64 @@ let canvas;
 let ctx;
 let score = [0, 0];
 
-// function register() {
-//     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
-//     document.getElementById("initmatchmakingtournament").addEventListener("click", InitMatchmakingTournament);
-//     document.getElementById("createTournament").addEventListener("click", CreateTournament);
-//     document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
-// }
-// function register() {
-//     document.getElementById("initmatchmaking").addEventListener("click", InitMatchmaking);
-//     document.getElementById("cancelmatchmaking").addEventListener("click", CancelMatchmaking);
-// }
-
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 
+let optionsView, matchmakingView, localgameView, onlineMenuView;
+
 export function init() {
     document.getElementById('root').addEventListener('click', gameEventHandler);
+
+    optionsView = document.getElementById("game_options_pong");
+    matchmakingView = document.getElementById("matchmaking_pong");
+    localgameView = document.getElementById("local_game_options_pong");
+    onlineMenuView = document.getElementById("online_menu_pong");
+    canvas = document.getElementById("pongCanvas");
+    ctx = canvas.getContext("2d");
+
+    gameSM.connect();
 }
 
 function gameEventHandler(e) {
-    let gameSM = new GameSocketManager();
     // multiplayer
-    if (e.target.matches('#onlineGameButton') === true)
+    if (e.target.matches('#onlineGameMenu_pong') === true)
     {
-        let matchmaking = document.getElementById("matchmaking");
-        let options = document.getElementById("game_options");
-        options.classList.add("mshide");
-        matchmaking.classList.remove("mshide");
-        connectGame();
+        gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG);
+        toggleView(optionsView, false);
+        toggleView(onlineMenuView, true);
     }
-    else if (e.target.matches('#cancelMatchmakingButton') === true)
+    else if (e.target.matches('#onlineGameButton_pong') === true)
     {
-        let matchmaking = document.getElementById("matchmaking");
-        let options = document.getElementById("game_options");
-        matchmaking.classList.add("mshide");
-        options.classList.remove("mshide");
+        InitMatchmaking();
+    }
+    else if (e.target.matches('#cancelMatchmakingButton_pong') === true)
+    {
+        toggleView(matchmakingView, false);
+        toggleView(optionsView, true);
         CancelMatchmaking();
     }
     // juego local
-    else if (e.target.matches('#localGameButton') === true)
+    else if (e.target.matches('#localGameButton_pong') === true)
     {
-        let localgame = document.getElementById("local_game_options");
-        let options = document.getElementById("game_options");
-        options.classList.add("mshide");
-        localgame.classList.remove("mshide");
+        toggleView(optionsView, false);
+        toggleView(localgameView, true);
     }
     // 1 jugador
-    else if (e.target.matches('#soloGameButton') === true)
+    else if (e.target.matches('#soloGameButton_pong') === true)
     {
-        let localgame = document.getElementById("local_game_options");
-        localgame.classList.add("mshide");
+        toggleView(localgameView, false);
         initializeSingleGame();
     }
     // Multijugador local
-    else if (e.target.matches('#localMultiplayerButton') === true)
+    else if (e.target.matches('#localMultiplayerButton_pong') === true)
     {
-        let localgame = document.getElementById("local_game_options");
-        localgame.classList.add("mshide");
+        toggleView(localgameView, false);
         initializeVersusGame();
     }
-    else if (e.target.matches('#goBackButton') === true)
+    else if (e.target.matches('#goBackButton_pong') === true)
     {
-        let localgame = document.getElementById("local_game_options");
-        let options = document.getElementById("game_options");
-        options.classList.remove("mshide");
-        localgame.classList.add("mshide");
+        toggleView(optionsView, true);
+        toggleView(localgameView, false);
     }
     else if (e.target.matches('#red-myWindowGame') === true)
     {
@@ -88,29 +78,36 @@ function gameEventHandler(e) {
     }
 }
 
-export async function connectGame()
-{
-    gameSM.connect();
-    // register();
-    await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
-    InitMatchmaking();
-    // ! We now get the canvas from the update game
-    // canvas = document.getElementById("pongCanvas");
-    // ctx = canvas.getContext("2d");
+function toggleView(view, visible = true) {
+    if (visible)
+        view.classList.remove("mshide");
+    else
+        view.classList.add("mshide");
 }
+
+// export async function connectGame()
+// {
+//     //gameSM.connect();
+//     // register();
+//     //await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
+//     InitMatchmaking();
+//     // ! We now get the canvas from the update game
+//     // canvas = document.getElementById("pongCanvas");
+//     // ctx = canvas.getContext("2d");
+// }
 
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
     //when game open, try restore any running game, i put here for test
-    gameSM.send(GAME_TYPES.RESTORE_GAME);
+    gameSM.send(GAME_TYPES.RESTORE_GAME, GAMES.PONG);
     // When need get list of current tournaments
-    gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, {
-        "game": GAMES.PONG //replace with specific game
-    });
+    // gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, {
+    //     "game": GAMES.PONG //replace with specific game
+    // });
     // When need get list of current tournaments
-    gameSM.send(GAME_TYPES.LIST_GAMES, {
-        "game": GAMES.PONG //replace with specific game
-    }); 
+    // gameSM.send(GAME_TYPES.LIST_GAMES, {
+    //     "game": GAMES.PONG //replace with specific game
+    // }); 
 });
 
 // Callback socket disconnected
@@ -123,14 +120,22 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
     
 });
 
+gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
+    if(data.game == GAMES.PONG) {
+        gameSM.send(GAME_TYPES.PLAYER_READY);
+        toggleView(optionsView, false);
+    }
+});
+
 // MATCHMAKING
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
     //Game matched! game started
     // send ready request after open game, message to ask about ready etc
     // Hide matchmaking elements
-    let matchmaking = document.getElementById("matchmaking");
-    matchmaking.classList.add("mshide");
-    gameSM.send(GAME_TYPES.PLAYER_READY);
+    if(data.game == GAMES.PONG) {
+        toggleView(matchmakingView, false);
+        gameSM.send(GAME_TYPES.PLAYER_READY);
+    }
 });
 
 gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
@@ -138,7 +143,10 @@ gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
-    console.log(data);
+    if(data.game == GAMES.PONG) {
+        toggleView(matchmakingView, true);
+        toggleView(optionsView, false);
+    }
 });
 
 // GAME
@@ -169,11 +177,15 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
-    fillTournaments(data);
+    if(data.game == GAMES.PONG) {
+        fillTournaments(data);
+    }
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
-    fillGames(data);
+    if(data.game == GAMES.PONG) {
+        fillGames(data);
+    }
 });
 
 gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
@@ -213,15 +225,14 @@ function CreateTournament()
 
 }
 
-export function CancelMatchmaking()
+function CancelMatchmaking()
 {
     gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
 }
 
 function updateGame(gameState) {
     // This prevents an error when reloading the page where it cannot find the canvas
-    canvas = document.getElementById("pongCanvas");
-    ctx = canvas.getContext("2d");
+    
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -343,12 +354,13 @@ function fillTournaments(data) {
 
 function fillGames(data) {
     var games = document.getElementById("gameList");
-
+    if(!games)
+        return;
     // Remove previous li elements
     while (games.firstChild)
         games.removeChild(games.firstChild);
     
-    data.forEach((element) => {
+    data.data.forEach((element) => {
         var curli = document.createElement("li");
         curli.textContent = `${element.id}`;
         curli.classList.add("list-group-item");

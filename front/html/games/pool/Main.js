@@ -6,8 +6,8 @@ class Main {
         this.keyHandler = new KeyHandler(this.loop);
         this.scene = new Scene(renderElement, this);
         this.gameSM = gameSM;
-        this.hitSound = new FrequencySound('./index/games/pool/sound/hit.mp3');
-        this.pocketSound = new VolumeSound('./index/games/pool/sound/pocket.mp3');
+        this.hitSound = new FrequencySound('./games/pool/sound/hit.mp3');
+        this.pocketSound = new VolumeSound('./games/pool/sound/pocket.mp3');
 
         this.mousePos = new THREE.Vector2();
         this.raycaster = new THREE.Raycaster();

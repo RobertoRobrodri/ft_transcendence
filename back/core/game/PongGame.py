@@ -93,7 +93,8 @@ class PongGame:
     async def wait_for_players_ready(self):
         # Esperar a que los jugadores estén listos
         while not self.running:
-            await self.send_game_state()
+            if self.consumer is not None:
+                await self.send_game_state()
             await self.are_players_ready()
             await asyncio.sleep(1)
 

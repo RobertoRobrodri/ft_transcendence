@@ -14,7 +14,7 @@ from jwt import ExpiredSignatureError
 from .PongGame import PongGame
 from .pool.PoolGame import PoolGame
 from .MatchmakingQueue import MatchmakingQueue
-from .game_state import games, tournaments, available_games
+from .game_state import games, tournaments, available_games, matchmaking_queue
 
 import logging
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # available_games = ["Pong", "Tournament"]
 matchmaking_lock = asyncio.Lock()
 join_tournament_lock = asyncio.Lock()
-matchmaking_queue = MatchmakingQueue()
+# matchmaking_queue = MatchmakingQueue()
 
 # CHANNEL
 MATCHMAKING_C = 'matchmaking_group'
@@ -34,6 +34,7 @@ GENERAL_GAME  = 'general_game'
 # matchmaking
 INQUEUE             = 'queue_matchmaking'
 INITMATCHMAKING     = 'init_matchmaking'
+GAME_RESTORED       = 'game_restored'
 CANCELMATCHMAKING   = 'cancel_matchmaking'
 RESTORE_GAME        = 'restore_game'
 # ingame
@@ -107,7 +108,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     await self.leaveMatchmaking(user)
                 elif type == RESTORE_GAME:
                     await self.restoreTournament(user)
-                    await self.restoreGame(user)
+                    await self.restoreGame(user, data)
                 # Ingame
                 elif type == ACTION:
                     await self.execute_action(data, user)
@@ -156,10 +157,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     participant['channel_name'] = self.channel_name
 
     def getTournamentList(self, data):
-        alldata = data.get("message")
-        if alldata is None:
-            return
-        game_req = alldata.get("game")
+        game_req = alldata.get("message")
         if game_req is None:
             return
         tournament_list = []
@@ -410,7 +408,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         async with matchmaking_lock: # Block this section to prevent 2 or more users add self to queue
             if matchmaking_queue.get_queue_size(game_request) < room_size:
                 matchmaking_queue.add_user(self.channel_name, user.id, game_request)
-                await send_to_me(self, INQUEUE, {'message': 'Waiting for another player...'})
+                await send_to_me(self, INQUEUE, {'game': game_request, 'message': 'Waiting for another player...'})
                 return
             
         # Get oponent
@@ -419,7 +417,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             if rival is None: # Anyway, let's check to prevent fails
                 self.enterMarchmaking(user, data)
                 return
-    
+            
+        await send_to_me(self, INQUEUE, {'game': game_request, 'message': 'Waiting for another player...'})
         # Generate unique room name
         room_name = f'room_{hashlib.sha256(str(int(time.time())).encode()).hexdigest()}'
         
@@ -441,14 +440,20 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     async def leaveMatchmaking(self, user):
         matchmaking_queue.remove_user(user.id)
 
-    async def restoreGame(self, user):
+    async def restoreGame(self, user, data):
         # Restore game
         game_id = get_game_id(user.id)
         if game_id is not None:
-            message = {'message': f'Game restored {game_id}'}
-            await send_to_me(self, INITMATCHMAKING, {'message': message})
-            await self.channel_layer.group_add(game_id, self.channel_name)
-            await games[game_id]["instance"].restore()
+            game_req = data.get("message")
+            if game_req is None:
+                return
+            if games[game_id]["game"] == game_req:
+                if games[game_id]["instance"].consumer == None:
+                    games[game_id]["instance"].consumer = self
+                message = {'message': f'Game restored {game_id}'}
+                await send_to_me(self, GAME_RESTORED, {'game': game_req, 'message': message})
+                await self.channel_layer.group_add(game_id, self.channel_name)
+                await games[game_id]["instance"].restore()
 
     ####################
     ## GAME FUNCTIONS ##
@@ -480,7 +485,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             await asyncio.sleep(1)  # Wait 1 seconds
             # Send info game start
             message = {'message': f'Pairing successful! United in the room {game_id}'}
-            await send_to_group(self, game_id, INITMATCHMAKING, {'message': message})
+            await send_to_group(self, game_id, INITMATCHMAKING, {'game': game_request, 'message': message})
             await self.sendlistGamesToAll(game_request)
 
     async def execute_action(self, data, user):
@@ -499,13 +504,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     'id': game_id
                 }
                 game_list.append(game_summary)
-        return game_list
+        return {'game': game_req, 'data': game_list}
 
     async def listGames(self, data):
-        alldata = data.get("message")
-        if alldata is None:
-            return
-        game_req = alldata.get("game")
+        game_req = data.get("message")
         if game_req is None:
             return
         await send_to_me(self, LIST_GAMES, self.getGamesList(game_req))

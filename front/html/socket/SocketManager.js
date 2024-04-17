@@ -1,8 +1,11 @@
 export class SocketManager {
     constructor(path) {
         this.path = path;
+        this.SOCKETSTATUS = {
+            CONNECTED:           'Connected',
+            ALREADY_CONNECTED:   'Already_Connected'
+        };
     }
-
     connect() {
         // Prevent reconnection on navigation
         if(this.socket === undefined)
@@ -12,6 +15,9 @@ export class SocketManager {
             let socketHost = host === 'localhost' ? 'localhost' : window.location.host;
             this.socket = new WebSocket(`wss://${socketHost}:443/${this.path}/?token=${token}`);
             this.setupSocketEvents();
+            return this.SOCKETSTATUS.CONNECTED
+        }else {
+            return this.SOCKETSTATUS.ALREADY_CONNECTED
         }
     }
 

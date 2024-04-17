@@ -103,7 +103,33 @@ class CustomUser(AbstractUser):
         user_to_unignore = CustomUser.objects.get(id=user_id)
         user.ignored_users.remove(user_to_unignore)
         user.save()
-
+        
+    @classmethod
+    @database_sync_to_async
+    def get_ignored_users_data(cls, user_id):
+        user = CustomUser.objects.get(id=user_id)
+        ignored_users = user.ignored_users.all()
+        
+        # Lista para almacenar los datos de los usuarios ignorados
+        users_data = []
+        
+        for ignored_user in ignored_users:
+            # Obtiene la URL de la imagen del perfil si está disponible
+            profile_picture_url = ''
+            if ignored_user.profile_picture:
+                with open(ignored_user.profile_picture.path, "rb") as image_file:
+                    profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
+                    profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
+            
+            # Agrega los datos del usuario ignorado a la lista
+            users_data.append({
+                'id': ignored_user.id,
+                'username': ignored_user.username,
+                'image': profile_picture_url,
+            })
+        
+        return users_data
+    
     @classmethod
     @database_sync_to_async
     def get_ignored_users(cls, user_id):

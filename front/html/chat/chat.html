@@ -1,6 +1,15 @@
 <div class="card chat-app">
     <div id="plist" class="people-list">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-list="users">Users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-list="blocked">Blocked</a>
+            </li>
+        </ul>
         <ul class="list-unstyled chat-list mt-2 mb-0" id="chatList">
+            <!-- Lista de usuarios -->
             <li class="clearfix active" id="general">
                 <img
                     src="https://us-tuna-sounds-images.voicemod.net/e408fcc6-3b70-4c67-b07c-350a934b262e-1705171644711.png">
@@ -9,6 +18,8 @@
                     <div class="unread"></div>
                 </div>
             </li>
+        </ul>
+        <ul class="list-unstyled chat-list mt-2 mb-0 d-none" id="blockedList">
         </ul>
     </div>
     <div class="chat">
@@ -21,11 +32,15 @@
                         <h6 class="m-0" id="chatTopName">General</h6>
                     </div>
                 </div>
+                <div class="col-lg-6 hidden-sm text-right" id="chatoptions">
+                    <a class="btn btn-outline-info" id="game_request_a"><i id="game_request"
+                            class="bi bi-controller"></i></a>
+                    <a class="btn btn-outline-info" id="ban_unban_a"><i id="ban_unban" class="bi bi-ban"></i></a>
+                </div>
             </div>
         </div>
         <div class="chat-history">
-            <ul class="m-b-0">
-            </ul>
+            <ul class="m-b-0"></ul>
         </div>
         <div class="chat-message clearfix">
             <div class="input-group mb-0">
@@ -33,6 +48,25 @@
                     <span class="input-group-text"><i class="fa fa-send"></i></span>
                 </div>
                 <input type="text" class="form-control" placeholder="Enter text here...">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="gameRequestModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Pong Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelButton"
+                    data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="acceptButton">Aceptar</button>
             </div>
         </div>
     </div>

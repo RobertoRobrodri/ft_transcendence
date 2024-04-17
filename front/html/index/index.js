@@ -2,11 +2,11 @@
 //import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
 // import { connectGame } from "./game.js"
-import { connectPoolGame } from "../games/pool/script.js"
-import { connectGame, CancelMatchmaking } from "../games/pong/pongScript.js"
-import { GameSocketManager } from "../socket/GameSocketManager.js"
-import { initializeSingleGame, endSingleGame } from "../games/pong/singlegame.js"
-import { initializeVersusGame, endVersusGame } from "../games/pong/versusgame.js"
+// import { connectPoolGame } from "../games/pool/script.js"
+// import { connectGame, CancelMatchmaking } from "../games/pong/pongScript.js"
+// import { GameSocketManager } from "../socket/GameSocketManager.js"
+// import { initializeSingleGame, endSingleGame } from "../games/pong/singlegame.js"
+// import { initializeVersusGame, endVersusGame } from "../games/pong/versusgame.js"
 
 export function loadMainPage() {
     // Renew jwt
@@ -40,29 +40,7 @@ export function loadMainPage() {
     });
 
     // Actualiza la hora cada segundo
-    setInterval(updateTime, 1000);
-}
-
-function updateTime() {
-    var now = new Date();
-    var hours = now.getHours();
-    var minutes = now.getMinutes();
-    var seconds = now.getSeconds();
-
-    // Formatea la hora como HH:MM:SS
-    var formattedTime = hours + ':' + (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
-
-    // Formatea la fecha como DD/MM/AAAA
-    var day = now.getDate();
-    var month = now.getMonth() + 1; // Se suma 1 porque los meses comienzan desde 0
-    var year = now.getFullYear();
-    var formattedDate = (day < 10 ? '0' : '') + day + '/' + (month < 10 ? '0' : '') + month + '/' + year;
-
-    // Concatena la fecha y la hora
-    var dateTimeString = formattedDate + '  |  ' + formattedTime;
-
-    // Actualiza el contenido del elemento con el ID "current-date-time"
-    document.getElementById('current-time').innerHTML = dateTimeString;
+    //setInterval(updateTime, 1000);
 }
 
 // Esta funcion elimina una clase de todos los objetos que tengan esa clase
@@ -73,23 +51,7 @@ function removeClassFromClass(classNameToRemove, classNameToFind) {
     });
 }
 
-function configureMenu(e) {
-    if (e.target.matches('#menuContainer') === false &&
-        e.target.matches('#menuLogo') === false) {
-        return;
-    }
-    var menu = document.getElementById('menu');
-    if (getComputedStyle(menu).display === 'none') {
-        menu.style.display = 'flex';
-    } else {
-        menu.style.display = 'none';
-    }
-    e.preventDefault()
-}
-
 export function setClickEvents() {
-    // Menu click
-    document.getElementById('root').addEventListener('click', configureMenu);
     // Program selection
     document.getElementById('root').addEventListener('click', selectProgram);
     // Open window
@@ -137,7 +99,7 @@ function openWindow(e) {
     } else if (parentIcon.id === 'game') {
         createWindow('Game');
     } else if (parentIcon.id === 'pool') {
-        createWindow('Game');
+        createWindow('Pool');
     }
     
 }
@@ -182,6 +144,11 @@ function setWindowContent(uniqueId) {
         var cssUrl = '../games/pong/pongStyle.css';
         var scriptUrl = '../games/pong/pongScript.js';
     }
+    else if (uniqueId == 'myWindowPool') {
+        var htmlUrl = '../games/pool/pool.html';
+        var cssUrl = '../games/pool/poolStyle.css';
+        var scriptUrl = '../games/pool/poolScript.js';
+    }
     // console.log(uniqueId);
     let window = document.getElementById(uniqueId + "-content");
     Promise.all([
@@ -194,8 +161,7 @@ function setWindowContent(uniqueId) {
         // Load css
         let style = document.createElement('style');
         style.textContent = css;
-        //style.textContent = css.replace(/(\.)([^{]+)/g, '#content $1$2');
-        document.head.appendChild(style);
+        window.appendChild(style);
         // Load js
         javascript.init();
     }).catch(error => {
@@ -204,7 +170,7 @@ function setWindowContent(uniqueId) {
     //setWindowEvents(uniqueId)
 }
 
-function createWindow(appName) {
+export function createWindow(appName) {
     var uniqueId = "myWindow" + appName;
     // Comprobar que la ventana no existe (prevenir abrir 2 veces una app)
     var windowExist = document.getElementById(uniqueId);

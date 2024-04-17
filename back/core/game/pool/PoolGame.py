@@ -237,7 +237,7 @@ class PoolGame:
         self.playerCount -= 1
         await send_to_group(self.consumer, self.game_id, "rival_leave", "Rival leave")
         def finishGame():
-            if self.playerCount != 2:
+            if self.playerCount == 1:
                 self.loop.stop()
                 del games[self.game_id]
         t = Timer(10, finishGame)

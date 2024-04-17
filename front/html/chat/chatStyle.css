@@ -67,7 +67,8 @@ body{
 }
 
 .people-list .chat-list img {
-    width: 45px;
+    height: 40px;
+    width: 40px;
     border-radius: 50%
 }
 
@@ -94,7 +95,8 @@ body{
 .chat .chat-header img {
     float: left;
     border-radius: 40px;
-    width: 40px
+    width: 40px;
+    height: 40px;
 }
 
 .chat .chat-header .chat-about {
@@ -254,4 +256,21 @@ body{
 
 ::-webkit-scrollbar-track {
     background-color: rgba(0, 0, 0, 0.1);
+}
+
+.nav-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #28292d;
+    width: 100%;
+}
+
+.modal-content {
+    background-color: #28292d;
+    border-color: #45f3ff;
+}
+
+.modal-header .btn-close {
+    display: none;
 }
