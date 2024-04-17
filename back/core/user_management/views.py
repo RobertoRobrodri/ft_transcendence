@@ -46,10 +46,12 @@ class UserUpdateActivate2FA(generics.GenericAPIView):
 
 	def patch(self, request):
 		user = request.user
-		user_serializer = self.serializer_class(user, data=request.data)
+		user_serializer = self.serializer_class(user, data=request.data, context={'user': user})
 		if user_serializer.is_valid():
 			user_serializer.save()
 			if user_serializer.validated_data.get('TwoFactorAuth') == True:
+				if user.TwoFactorAuth == True:
+					return Response({'message':'Already activated'}, status=status.HTTP_400_BAD_REQUEST)
 				encoded_qr = GenerateQR(user)
 				return Response({'message': 'Please confirm the following code',
 					'qr' : encoded_qr,

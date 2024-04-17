@@ -30,7 +30,8 @@ class UserUpdateTwoFactorAuthSerializer(serializers.ModelSerializer):
         fields = ('TwoFactorAuth',)
 
     def update(self, instance, validated_data):
-        if validated_data.get('TwoFactorAuth') == True:
+        user = self.context.get('user')
+        if validated_data.get('TwoFactorAuth') == True and user.TwoFactorAuth == False:
             instance.OTP_SECRET_KEY = pyotp.random_base32()
         else:
             instance.OTP_SECRET_KEY = None

@@ -1,6 +1,5 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayError } from "../components/loader.js"
-import { load2FApage } from "../2FA/twoFactorAuthScript.js"
 
 export async function loadUserInfo() {
     const token = sessionStorage.getItem('token')
@@ -77,7 +76,7 @@ function updateUser(e)
         updatePassword();
     else if (e.target.matches('#activateTwoFactorAuthForm') == true)
         update2FA();
-    else if (e.target.matches('#confirmSendOTPForm') == true)
+    else if (e.target.matches('#confirmOTP') == true)
         TwoFactorAuthConfirmOTPUpdate();
 }
 
@@ -103,27 +102,9 @@ async function update2FA()
     const data = await response.json();
     if (response.status === 307)
     {
-        let qr_code = document.getElementById('update_forms');
-        // Use template literals and remove the '+ ' before data.qr
-        console.log(qr_code)
-        let qr = 'data:image/png;base64,' + data.qr;
-        var htmlDinamico = `
-        <div class="form">
-            <h2><b>Enter QR code</b></h2>
-            <form id="confirmSendOTPForm">
-                <div class="form-group">
-                    <input type="text" id="OTP" autocomplete="off" class="form-control OTPInput" required="required" placeholder="OTP">
-                </div>
-                <div class="submit-buttons">
-                    <button type="submit" class="btn btn-primary">Confirm OTP</button>
-                </div>
-            </form>
-        </div>
-        <div class="vertical-center">
-            <img class="qrcode" src='${qr}' alt="QR code">
-        </div>
-        `;
-        qr_code.innerHTML += htmlDinamico;
+        document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qr;
+        // Show modal
+        $('#twoFactorAuthModal').modal('show');
     }
     } catch (error) {
         displayError(error.message, 'small', 'activateTwoFactorAuthForm');
@@ -221,7 +202,7 @@ async function TwoFactorAuthConfirmOTPUpdate() {
         console.log(response)
         } catch (error) {
             console.error('Error:', error.message);
-            displayError(error.message, 'small', 'confirmSendOTPForm');
+            displayError(error.message, 'small', 'confirmOTP');
         }
 }
 
