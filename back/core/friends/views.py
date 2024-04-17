@@ -13,13 +13,11 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 		receiver_name = request.data.get('receiver', None)
 		receiver_user = CustomUser.objects.filter(username=receiver_name).first() 
 		
-		print(receiver_user)
 		# Want to be friends with an unexistent user
 		if receiver_user is None:
 			return Response({"message": "Receiver user does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
 		receiver_id = receiver_user.pk
-		print(receiver_id)
 		# Search in the user list if they are already friends
 		if user_sender.friends.filter(pk=receiver_id).exists():
 			return Response({"message": "Already friends"}, status=status.HTTP_400_BAD_REQUEST)
