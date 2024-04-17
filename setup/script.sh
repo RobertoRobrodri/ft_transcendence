@@ -1,7 +1,12 @@
 #!/bin/bash
 # wait to service elasticsearch is ready
+# change log directory permissions needed on linux system
 chmod 777 /var/nginx
 chmod 777 /var/db
+
+# Delete past logs
+rm /var/nginx/*.log
+rm /var/db/*.log
 
 max_attempts=$((5 * 60))
 attempt=1
