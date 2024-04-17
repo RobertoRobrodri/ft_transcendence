@@ -102,7 +102,7 @@ class UserListView(generics.GenericAPIView):
 			# Add the base64 encoded image to the serializer data
 			user_data['profile_picture'] = encoded_image
 		if (user_serializer.data['TwoFactorAuth'] == True):
-			# Send qr image as base64
+			# Send qr image as base64
 			encoded_qr = GenerateQR(user)
 			user_data['qr'] = encoded_qr
 		return Response(user_data, status=status.HTTP_200_OK)

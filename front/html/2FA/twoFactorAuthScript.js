@@ -12,7 +12,7 @@ async function handleSubmitOTP(e) {
         otp: userOTP,
       };
       try {
-            const response = await fetch('https://localhost:443/api/pong_auth/verify_otp/', {
+            const response = await fetch('api/pong_auth/verify_otp/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -66,8 +66,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-	'DEFAULT_PERMISSION_CLASSES': [
-		'rest_framework.permissions.IsAuthenticated',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
         'pong_auth.permissions.Verify2FAPermission'
     ]
 }
@@ -238,10 +238,3 @@ LOGGING = {
     },
 }
 # CORS_ORIGIN_ALLOW_ALL = True
-
-# Channel Layers
-CHANNEL_LAYERS = { 
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }   
-}

@@ -1,8 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from channels.db import database_sync_to_async
+import base64
 
 # Create your models here.
+import logging
+logger = logging.getLogger(__name__)
 
 class CustomUser(AbstractUser):
     class Status(models.TextChoices):
@@ -36,9 +39,28 @@ class CustomUser(AbstractUser):
     @classmethod
     @database_sync_to_async
     def get_connected_users_not_me(cls, user):
-        connected_users = cls.objects.filter(connected=True).exclude(id=user.id).values('id', 'username')
-        # connected_users = cls.objects.filter(connected=True).exclude(id=user.id).values_list('username', flat=True)
-        return list(connected_users)
+        connected_users = cls.objects.filter(connected=True).exclude(id=user.id)
+        
+        # Lista para almacenar los datos de los usuarios conectados
+        users_data = []
+        
+        for connected_user in connected_users:
+            # Obtiene la URL de la imagen del perfil si está disponible
+            profile_picture_url = ''
+            if connected_user.profile_picture:
+                # Open the profile picture file, read its content, and encode it in base64
+                with open(connected_user.profile_picture.path, "rb") as image_file:
+                    profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
+                    profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
+            
+            # Agrega los datos del usuario a la lista
+            users_data.append({
+                'id': connected_user.id,
+                'username': connected_user.username,
+                'image': profile_picture_url,
+            })
+        
+        return users_data
     
     # @classmethod
     # @database_sync_to_async
@@ -82,7 +104,33 @@ class CustomUser(AbstractUser):
         user_to_unignore = CustomUser.objects.get(id=user_id)
         user.ignored_users.remove(user_to_unignore)
         user.save()
-
+        
+    @classmethod
+    @database_sync_to_async
+    def get_ignored_users_data(cls, user_id):
+        user = CustomUser.objects.get(id=user_id)
+        ignored_users = user.ignored_users.all()
+        
+        # Lista para almacenar los datos de los usuarios ignorados
+        users_data = []
+        
+        for ignored_user in ignored_users:
+            # Obtiene la URL de la imagen del perfil si está disponible
+            profile_picture_url = ''
+            if ignored_user.profile_picture:
+                with open(ignored_user.profile_picture.path, "rb") as image_file:
+                    profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
+                    profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
+            
+            # Agrega los datos del usuario ignorado a la lista
+            users_data.append({
+                'id': ignored_user.id,
+                'username': ignored_user.username,
+                'image': profile_picture_url,
+            })
+        
+        return users_data
+    
     @classmethod
     @database_sync_to_async
     def get_ignored_users(cls, user_id):

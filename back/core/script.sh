@@ -1,5 +1,7 @@
 #!/bin/bash
 
+./wait-for-it.sh db:5432 -t 60
+
 python3 manage.py makemigrations --no-input
 
 python3 manage.py migrate --no-input
