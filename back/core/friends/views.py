@@ -10,23 +10,26 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 
 	def create(self, request, *args, **kwargs):
 		user_sender = request.user
-		receiver_id = request.data.get('receiver', None)
-		user_receiver = CustomUser.objects.filter(pk=receiver_id).first()
+		receiver_name = request.data.get('receiver', None)
+		receiver_user = CustomUser.objects.filter(username=receiver_name).first() 
 		
+		print(receiver_user)
 		# Want to be friends with an unexistent user
-		if user_receiver is None:
+		if receiver_user is None:
 			return Response({"message": "Receiver user does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
+		receiver_id = receiver_user.pk
+		print(receiver_id)
 		# Search in the user list if they are already friends
 		if user_sender.friends.filter(pk=receiver_id).exists():
 			return Response({"message": "Already friends"}, status=status.HTTP_400_BAD_REQUEST)
 		
 		# Check if the request already exists
 		# Bidirectional, means it checks for both receiver and sender in both fields
-		if user_sender.friend_requests_sent.filter(pk=receiver_id).exists() or user_receiver.friend_requests_sent.filter(pk=user_sender.pk).exists():
+		if user_sender.friend_requests_sent.filter(pk=receiver_id).exists() or receiver_user.friend_requests_sent.filter(pk=user_sender.pk).exists():
 			return Response({"message": "Friend request already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
-		user_sender.friend_requests_sent.add(user_receiver)
+		user_sender.friend_requests_sent.add(receiver_user)
 		return Response({"message": "Friend Request sent"}, status=status.HTTP_200_OK)
 	
 	def destroy(self, request, *args, **kwargs):
