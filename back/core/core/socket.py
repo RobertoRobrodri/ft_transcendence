@@ -24,7 +24,7 @@ async def send_to_user(consumer, user_channel_name, type, message):
         }
     )
     
- # Function to send message to entire group
+# Function to send message to entire group
 async def send_to_group(consumer, group_name, type, message):
     await consumer.channel_layer.group_send(
         group_name,
@@ -50,8 +50,3 @@ async def send_to_group_exclude_self(consumer, group_name, type, message):
             }),
         }
     )
-
-
-######################
-## HELPER FUNCTIONS ##
-######################

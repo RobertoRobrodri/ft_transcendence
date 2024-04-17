@@ -13,7 +13,7 @@ async function handleSubmitUpdatedData(e) {
       };
       try {
             // TODO probably we need to change localhost to domain
-            const response = await fetch('https://localhost:443/api/user_management/user_update/', {
+            const response = await fetch('api/user_management/user_update/', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export async function callback42(e) {
 
     // Make a POST request to your backend with the authorization code
     if (authorizationCode) {
-        const response = await fetch('https://localhost:443/api/pong_auth/42/callback/', {
+        const response = await fetch('api/pong_auth/42/callback/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

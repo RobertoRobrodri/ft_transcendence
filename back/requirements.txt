@@ -21,3 +21,6 @@ channels-redis==4.1.0
 #One Time Password
 pyotp==2.9.0
 qrcode==7.4.2
+#Pool Game
+numpy==1.26.4
+numpy-quaternion==2023.0.0
