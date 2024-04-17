@@ -41,7 +41,7 @@ class UserUpdatePasswordView(generics.GenericAPIView):
 			return Response({'message': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserListAllView(generics.ListAPIView):
-	serializer_class = UserUpdateSerializer
+	serializer_class = UserListSerializer
 	queryset = CustomUser.objects.all()
 
 # Override the requirement for a PK, because we already know the user sending the request
