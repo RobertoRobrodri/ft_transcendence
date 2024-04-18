@@ -27,8 +27,10 @@ function poolEventHandler(e) {
         toggleView(optionsView, true);
         CancelMatchmaking();
     }
-    else if (e.target.matches('#red-myWindowChat') === true)
+    else if (e.target.matches('#red-myWindowPool') === true) {
         gameSM.disconnect();
+        POOL = null;
+    }
 }
 
 function toggleView(view, visible = true) {
@@ -74,10 +76,16 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
     
 });
 
+gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
+    //gameSM.disconnect();
+    resetThreejs();
+});
 
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if(data.game == GAMES.POOL) {
         toggleView(optionsView, false);
+        if (POOL == null)
+            POOL = new Main(document.getElementById('renderView'), gameSM);
     }
 });
 
@@ -167,4 +175,16 @@ gameSM.registerCallback("place_white", data => {
 
 gameSM.registerCallback("rival_leave", data => {
     console.log("The opponent leaves, the game ends in 10 seconds if he does not reconnect")
+    //gameSM.disconnect();
+    resetThreejs();
 });
+
+function resetThreejs() {
+    //POOL.stop();
+    var renderViewDiv = document.getElementById("renderView");
+    var canvas = renderViewDiv.querySelector("canvas");
+    if (canvas)
+        renderViewDiv.removeChild(canvas);
+    POOL = null;
+    toggleView(optionsView, true);
+}

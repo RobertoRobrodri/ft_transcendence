@@ -204,19 +204,16 @@ class Ball:
     async def ballInPocket(self):
         # Simple rules
 
-        # if 8 ball enter in pocket, user lose
-        if self.number == 8:
-            await self.main.setWinner(self.number)
-        # if white ball enter in pocket, rival have ball in hand
-        elif self.number == 0:
+        if self.number == 0:
             self.main.placeWhite = True
             # await self.main.freeBall()
         else:
             self.main.balls.remove(self)
 
-        # Check reaming balls to set winner and ball type to check if it's fault
-        # self.main.movingBalls -= 1
+        # Check reaming balls to set winner and ball type to check if it's fault/continue playing
+        await self.main.checkGame(self)
+        
+
         await send_to_group(self.main.consumer, self.main.game_id, "poket", self.number)
         self.speed = np.array([0.0, 0.0, 0.0])
-        # self.ballLoop = self.main.loop.remove(self.ballLoop)
         

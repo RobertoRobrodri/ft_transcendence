@@ -21,9 +21,9 @@ class Scene extends THREE.Scene {
         this.renderer.setSize(this.renderElement.offsetWidth, this.renderElement.offsetHeight);
         this.renderElement.appendChild(this.renderer.domElement);
 
-        // window.addEventListener('resize', function() {
-        //     scene.onWindowResize();
-        // }, false);
+        window.addEventListener('resize', function() {
+            scene.onWindowResize();
+        }, false);
 
         this.controls = new THREE.OrbitControls(this.camera, renderElement);
         this.controls.maxPolarAngle = Math.PI / 2 - 0.01;

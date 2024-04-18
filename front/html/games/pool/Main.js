@@ -264,4 +264,19 @@ class Main {
             this.scene.add(line);
         }
     }
+
+    stop() {
+        this.loop.stop();
+        var renderViewDiv = document.getElementById("renderView");
+        var canvas = renderViewDiv.querySelector("canvas");
+        if (canvas)
+            renderViewDiv.removeChild(canvas);
+        this.scene.renderer.dispose();
+        this.scene.renderer.forceContextLoss();
+        // this.scene.traverse((obj) => {
+        //     if (obj.geometry) obj.geometry.dispose();
+        //     if (obj.material) obj.material.dispose();
+        //     this.scene.remove(obj);
+        // });
+    }
 }

@@ -38,6 +38,7 @@ class PoolGame:
         self.maxPower = self.ballRadious * self.tps * 1.5
         self.placeWhite = False
         self.playerCount = 0
+        self.isFault = True
         self.cue = {
             "position": {"x": 0.0, "y": self.ballRadious, "z": -6.75},
             "rotation": {"x": 0.0, "y": 0.0, "z": 0.0},
@@ -54,7 +55,7 @@ class PoolGame:
 
             Ball(self, 0.0, 4 + 2.75, self.ballRadious, 1, False),
 
-            Ball(self, -0.32, 4.6 + 2.75, self.ballRadious, 3, True),
+            Ball(self, -0.32, 4.6 + 2.75, self.ballRadious, 3, False),
             Ball(self, 0.32, 4.6 + 2.75, self.ballRadious, 11, True),
 
             Ball(self, 0, 5.2 + 2.75, self.ballRadious, 8, False),
@@ -106,8 +107,8 @@ class PoolGame:
             await asyncio.wait_for(self.wait_for_players_ready(), timeout=30)
         except asyncio.TimeoutError:
             self.running = False
-            del games[self.game_id]
             logger.warning("Players are not ready after 30 seconds. Leaving game.")
+            del games[self.game_id]
             return
         
         await self.send_balls_position()
@@ -136,7 +137,7 @@ class PoolGame:
 
     def add_player(self, username, userid, player_number):
         self.playerCount += 1
-        self.players[userid] = {'username': username, 'userid': userid, 'nbr': player_number, 'ready': False, "power": self.maxPower, "nbr": player_number - 1, "ballType": ""}
+        self.players[userid] = {'username': username, 'userid': userid, 'nbr': player_number, 'ready': False, "power": self.maxPower, "nbr": player_number - 1, "stripe": None}
     
     async def player_ready(self, userid):
         if userid in self.players:
@@ -225,7 +226,9 @@ class PoolGame:
                 self.allowShoot = True
             t = Timer(1, enableShoot) # await 1 second to sync with front animation
             t.start()
-            self.turnPlayer = (self.turnPlayer + 1) % 2
+            if self.isFault:
+                self.turnPlayer = (self.turnPlayer + 1) % 2
+        self.isFault = True
 
     async def restore(self):
         self.playerCount += 1
@@ -235,13 +238,20 @@ class PoolGame:
     
     async def userLeave(self, userId):
         self.playerCount -= 1
-        await send_to_group(self.consumer, self.game_id, "rival_leave", "Rival leave")
-        def finishGame():
+        async def finishGameTimeout():
+            await asyncio.sleep(10)
             if self.playerCount == 1:
-                self.loop.stop()
-                del games[self.game_id]
-        t = Timer(10, finishGame)
-        t.start()
+                self.stopGame()
+                await send_to_group(self.consumer, self.game_id, "rival_leave", "Rival leave")
+            return
+        if self.playerCount == 0:
+            self.stopGame()
+        elif self.playerCount == 1:
+            await finishGameTimeout()
+
+    def stopGame(self):
+        self.loop.stop()
+        del games[self.game_id]
 
     async def setWinner(self, ballNumber):
         players_list = list(self.players.values())
@@ -251,7 +261,7 @@ class PoolGame:
             winner  = user1 if players_list[0]["nbr"] != self.turnPlayer else user2
             loser   = user2 if winner == user1 else user1
         else:
-            winner  = user1 if players_list[0]["nbr"] == 0 else user2
+            winner  = user1 if players_list[0]["nbr"] == self.turnPlayer else user2
             loser   = user2 if winner == user1 else user1
         # Add match to db
         await Game.store_match(user1, user2, winner, self.scores)
@@ -259,7 +269,54 @@ class PoolGame:
         await CustomUser.user_win(winner)
         # Increment loss in 1
         await CustomUser.user_lose(loser)
+        # Stop game
+        self.loop.running = False
+        self.running = False
+        del games[self.game_id]
+        await send_to_group(self.consumer, self.game_id, 'game_end', {
+            "winner": winner.username,
+            "loser": loser.username
+        })
     
+    async def checkGame(self, ball):
+        players_list = list(self.players.values())
+
+        # logger.warning(f"bola: {ball.number}  jugador: {self.turnPlayer}")
+        # logger.warning(f"bola: {ball.stripe}  jugador: {players_list[self.turnPlayer]['stripe']}")
+
+        # Check correct ball
+        # if not ball set
+        if players_list[self.turnPlayer]["stripe"] == None:
+            players_list[self.turnPlayer]["stripe"] = True if ball.stripe else False
+            players_list[(self.turnPlayer + 1) % 2]["stripe"] = False if ball.stripe else True
+            self.isFault = False
+            return
+        
+        # Get number of stripe and smoth in table
+        striped_true_count = 0
+        striped_false_count = 0
+
+        for b in self.balls:
+            if b.stripe:
+                striped_true_count += 1
+            else:
+                if b.number != 0 and b.number != 8:
+                    striped_false_count += 1
+    
+        # If number of balls of same type as player play are 0, and ball 8 in, player win
+        if (players_list[self.turnPlayer]["stripe"] and striped_true_count == 0 and ball.number == 8) or \
+            (not players_list[self.turnPlayer]["stripe"] and striped_false_count == 0 and ball.number == 8):
+            await self.setWinner(0)
+            return
+
+        if ball.number == 8:
+            await self.setWinner(ball.number)
+            return
+        
+        if (ball.stripe and players_list[self.turnPlayer]["stripe"]) or (not ball.stripe and not players_list[self.turnPlayer]["stripe"]):
+            self.isFault = False
+
+        return
     def collidingAny(self, pos, excludedBall):
         balls = [ball for ball in self.balls if ball != excludedBall]
         for ball in balls:
