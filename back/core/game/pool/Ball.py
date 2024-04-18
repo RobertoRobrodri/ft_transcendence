@@ -19,14 +19,12 @@ class Ball:
             "wall": 0.8
         }
         self.number = number
-        self.currentRotation = 0
         self.main = main
 
         self.nextPosition = self.position
         self.speed = np.array([0.0, 0.0, 0.0])
         self.rollFriction = 0.6
         self.ballLoop = False
-        # self.stoppedRolling = function() {}
         
     def setSpeed(self, speed):
         self.speed = speed
@@ -49,15 +47,6 @@ class Ball:
                 await self.main.switchPlayer()
             self.ballLoop = self.main.loop.remove(self.ballLoop)
         else:
-            circumference = self.radius
-            traversedDistance = np.linalg.norm(self.speed)
-            addedAngle = traversedDistance / circumference
-            rollDirection = self.speed / np.linalg.norm(self.speed)
-            rotateAxis = np.array([0.0, 1.0, 0.0])
-            rollDirection = np.cross(rotateAxis, rollDirection)
-            self.currentRotation += addedAngle
-            
-
             self.currentPosition = self.nextPosition
             
             # Check Wall collisson

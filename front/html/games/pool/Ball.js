@@ -16,13 +16,27 @@ class Ball extends THREE.Mesh {
         this.position.set(data.position[0], data.position[1], data.position[2]);
         this.castShadow = true;
         this.number = data.number;
-        this.currentRotation = data.currentRotation;
         main.scene.add(this);
 
     }
     
-    moveBall(pos) {
+    moveBall(pos, speed) {
+        
+        // Update ball position
         this.position.set(pos[0], pos[1], pos[2]);
+        
+        // Update ball rotation
+        let stepX = speed[0];
+        let stepY = speed[2];
+        let tempMat = new THREE.Matrix4();
+        tempMat.makeRotationAxis(new THREE.Vector3(0, 0, 1), -stepX / this.radius);
+        tempMat.multiply(this.matrix);
+        this.matrix = tempMat;
+        tempMat = new THREE.Matrix4();
+        tempMat.makeRotationAxis(new THREE.Vector3(1, 0, 0), stepY / this.radius);
+        tempMat.multiply(this.matrix);
+        this.matrix = tempMat;
+        this.rotation.setFromRotationMatrix(this.matrix);
     }
 
     playSound(ball) {

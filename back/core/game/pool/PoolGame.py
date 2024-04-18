@@ -77,7 +77,7 @@ class PoolGame:
     async def gameLoop(self):
         all_balls = []
         for i in range(len(self.balls)):
-            all_balls.append({"nbr": self.balls[i].number, "position": self.balls[i].position.tolist()})
+            all_balls.append({"nbr": self.balls[i].number, "position": self.balls[i].position.tolist(), "speed": self.balls[i].speed.tolist()})
             for j in range(i + 1, len(self.balls)):
                 if self.balls[i].colliding(self.balls[j]):
                     await self.balls[i].resolve_collision(self.balls[j])
@@ -93,9 +93,7 @@ class PoolGame:
                     "stripe": ball.stripe,
                     "radius": ball.radius,
                     "position": ball.position.tolist(),
-                    "number": ball.number,
-                    "currentRotation": ball.currentRotation,
-                    "speed": ball.speed.tolist()
+                    "number": ball.number
                 }
                 ball_info_array.append(ball_info)
         await send_to_group(self.consumer, self.game_id, INIT_STATE, ball_info_array)
@@ -330,7 +328,7 @@ class PoolGame:
         px = moveWhite["x"]
         pz = moveWhite["z"]
         self.balls[0].position = np.array([px, self.ballRadious, pz])
-        await send_to_group(self.consumer, self.game_id, "place_white", self.balls[0].position.tolist())
+        await send_to_group(self.consumer, self.game_id, "place_white", {"position": self.balls[0].position.tolist(), "rotation": self.balls[0].speed.tolist()})
 
     async def moveFreeBall(self, moveWhite):
         px = moveWhite["x"]
@@ -339,7 +337,7 @@ class PoolGame:
             if pz <= self.tableSize["z"] / 2 - 0.05 - self.ballRadious and pz >= -self.tableSize["z"] / 2 + 0.05 + self.ballRadious:
                 if not self.collidingAny(np.array([px, self.ballRadious, pz]), self.balls[0]):
                     self.balls[0].position = np.array([px, self.ballRadious, pz])
-                    await send_to_group(self.consumer, self.game_id, "move_white", self.balls[0].position.tolist())
+                    await send_to_group(self.consumer, self.game_id, "move_white", {"position": self.balls[0].position.tolist(), "rotation": self.balls[0].speed.tolist()})
 
     ######################
     ## HELPER FUNCTIONS ##
