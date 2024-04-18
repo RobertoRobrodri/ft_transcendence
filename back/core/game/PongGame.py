@@ -1,11 +1,11 @@
-import json
-import time
+from channels.layers import get_channel_layer
 import math
 import asyncio
 import random
 from core.socket import *
 from .models import Game
 from .models import CustomUser
+from .game_state import games, tournaments
 
 import logging
 logger = logging.getLogger(__name__)
@@ -13,11 +13,12 @@ logger = logging.getLogger(__name__)
 GAME_STATE      = 'game_state'
 GAME_SCORE      = 'game_score'
 GAME_END        = 'game_end'
-WALL_COLLISON   = 'wall_collison',
-PADDLE_COLLISON = 'paddle_collison',
+WALL_COLLISON   = 'wall_collison'
+PADDLE_COLLISON = 'paddle_collison'
+COUNTDOWN       = 'countdown'
 
 class PongGame:
-    def __init__(self, game_id, consumer, storeResults):
+    def __init__(self, game_id, consumer, tournament_id = None):
 
         ##############################
         # ADJUST WITH FRONTEND SIZES #
@@ -30,7 +31,7 @@ class PongGame:
         self.canvas_y           = 200 # Canvas Height 
         self.ball_radius        = 5   # Ball Radious
         self.border_thickness   = 0   # Canvas frame border thickness (always 1/2 of lineWidth)
-        self.sleep_match        = 3   # Seconds of pause at start of game
+        self.sleep_match        = 5   # Seconds of pause at start of game
         self.sleep              = 1   # Seconds of pause between each point
         self.ball_speed         = 3   # Base ball speed
         self.inc_ball_speed     = 1   # Increment of ball speed
@@ -39,7 +40,6 @@ class PongGame:
 
         self.points_to_win      = 6
         ######
-        self.storeResults = storeResults
         self.game_id = game_id
         self.players = {}
         self.scores = [0, 0]
@@ -48,25 +48,26 @@ class PongGame:
         self.ball['speed_y'] = self.get_random_angle()
         self.ball['speed_x'] = self.get_random_direction()
         self.running = False
-        self.finished = False
         self.consumer = consumer
         self.player1_paddle_x = 0 + self.border_thickness + self.paddle_margin
         self.player1_paddle_y = (self.canvas_y / 2) - (self.paddle_height / 2)
         self.player2_paddle_x = self.canvas_x - self.border_thickness - self.paddle_width - self.paddle_margin
         self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_height / 2)
+        self.tournament_id = tournament_id
+        # del games[self.game_id]
 
     async def start_game(self):
         # Waiting 2 players set ready status
         try:
-            await asyncio.wait_for(self.wait_for_players_ready(), timeout=30)
+            await asyncio.wait_for(self.wait_for_players_ready(), timeout=20)
+            await asyncio.wait_for(self.countdown(), timeout=self.sleep_match + 3)
+
         except asyncio.TimeoutError:
             self.running = False
-            self.finished = True
+            del games[self.game_id]
             logger.warning("Players are not ready after 30 seconds. Leaving game.")
             return
             
-        # Sleep time before game
-        await asyncio.sleep(self.sleep_match)
         # Main Game while
         while self.running:
             await self.detect_collisions()
@@ -79,11 +80,21 @@ class PongGame:
             # Wait a short period before the next update
             await asyncio.sleep(1 / 60)
     
+    async def countdown(self):
+        i = 0
+        while True:
+            await send_to_group(self.consumer, self.game_id, COUNTDOWN, {"counter": i})
+            i += 1
+            if i >= self.sleep_match:
+                return
+            await asyncio.sleep(1)
+
+            
     async def wait_for_players_ready(self):
         # Esperar a que los jugadores estén listos
         while not self.running:
-            await self.send_game_state()
-            logger.warning(f"game waiting")
+            if self.consumer is not None:
+                await self.send_game_state()
             await self.are_players_ready()
             await asyncio.sleep(1)
 
@@ -101,11 +112,15 @@ class PongGame:
     async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
             await self.send_game_end()
-            if self.storeResults:
+            if self.tournament_id is None:
                 await self.save_game_result(players_list, winner)
+            else:
+                await self.set_game_tournament_points()
+                await self.set_winner_tournament(players_list, winner)
             self.running = False
-            self.finished = True
-
+            del games[self.game_id]
+            await self.consumer.sendlistGamesToAll("Pong")
+    
     async def reset_game(self, winner):
         self.ball = {'x': self.canvas_x / 2, 'y': self.canvas_y / 2}
         self.ball['speed_y'] = self.get_random_angle()
@@ -159,7 +174,7 @@ class PongGame:
             await self.reset_game(winner)                   # Reset Game
             return
         
-        # Collision detection with upper and lower walls and revent infinite bounce on upper and lower
+        # Collision detection with upper and lower walls
         if (ball['y'] <= top_side and ball['speed_y'] < 0) or (ball['y'] >= bottom_side and ball['speed_y'] > 0):
             ball['speed_y'] *= -1  # Reverse direction on the y axis
             await send_to_group(self.consumer, self.game_id, WALL_COLLISON, {})
@@ -187,7 +202,7 @@ class PongGame:
             return False
         
         # If middle of ball through inner side of paddle, then don't collide
-        if player_nbr == 1 and ball['x'] < paddle_right - 2: #before paddle_left
+        if player_nbr == 1 and ball['x'] < paddle_right - 2:
             return False
         elif player_nbr == 2 and ball['x'] > paddle_left + 2:
             return False
@@ -280,25 +295,20 @@ class PongGame:
         if userid in self.players:
             self.players[userid]['ready'] = True
 
-    # async def change_player(self, new_player_id, userid):
-    #     player_ids = list(self.players.keys())
-        
-    #     for player_id in player_ids:
-    #         player_data = self.players[player_id]
-    #         if player_data['userid'] == userid:
-    #             self.players[new_player_id] = player_data
-    #             self.players[new_player_id]['id'] = new_player_id
-    #             del self.players[player_id]
-    #     await self.send_game_state()
-    
-    def move_paddle(self, userid, direction):
+    async def execute_action(self, userid, action):
         if userid in self.players:
             player = self.players[userid]
             paddle_y = player['paddle_y']
             # Prevent move out of bounds
-            if (paddle_y + int(direction)) >= 0 + self.border_thickness and (paddle_y + self.paddle_height + int(direction)) <= self.canvas_y - self.border_thickness:
-                player['paddle_y'] += int(direction) * self.paddle_speed
+            if (paddle_y + int(action)) >= 0 + self.border_thickness and (paddle_y + self.paddle_height + int(action)) <= self.canvas_y - self.border_thickness:
+                player['paddle_y'] += int(action) * self.paddle_speed
     
+    async def restore(self): #Not used here
+        return
+    
+    async def userLeave(self, userId): #Not used here
+        return
+            
     def remove_player(self, userid):
         if userid in self.players:
             del self.players[userid]
@@ -321,6 +331,25 @@ class PongGame:
         await CustomUser.user_win(winner)
         # Increment loss in 1
         await CustomUser.user_lose(loser)
-
-
+    
+    async def set_game_tournament_points(self):
+        current_round = tournaments[self.tournament_id]['rounds'][-1]
+        for round in current_round:
+            for player_data in round:
+                userid = player_data['userid']
+                player = self.players.get(userid)
+                if player:
+                    player_number = player['nbr']
+                    score_index = player_number - 1
+                    player_data['points'] = self.scores[score_index]
+    
+    async def set_winner_tournament(self, players_list, winner):
+        if self.tournament_id is not None:
+            winner_id = players_list[winner]['userid']  # Obtener el ID del ganador
+            for idx, participants in enumerate(tournaments[self.tournament_id]['rounds'][-1]):
+                for idx2, p in enumerate(participants):# for participant in participants:
+                    if p['userid'] == winner_id:
+                        tournaments[self.tournament_id]["rounds"][-1][idx][idx2]['winner'] = True
+                        break
+            await self.consumer.start_next_round(self.tournament_id)
         

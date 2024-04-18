@@ -3,13 +3,15 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from pong_auth.models import CustomUser
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
+import pyotp
 
 class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth')
+        fields = ('username', 'profile_picture',)
 
     def update(self, instance, validated_data):
         previous_profile_picture = instance.profile_picture
@@ -17,23 +19,41 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             previous_profile_picture.delete()
         instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
         instance.username        = validated_data.get('username', instance.username)
-        instance.status          = validated_data.get('status', instance.status)
-        instance.TwoFactorAuth   = validated_data.get('TwoFactorAuth', instance.TwoFactorAuth)
         instance.save()
         return instance
-    
-class UserUpdatePasswordSerializer(serializers.ModelSerializer):
 
+class UserUpdateTwoFactorAuthSerializer(serializers.ModelSerializer):
+    TwoFactorAuth = serializers.BooleanField(required=True)
+    
     class Meta:
         model = CustomUser
-        fields = ('password', )
-        extra_kwargs = {
-            'password': {
-                'write_only': True,
-            },
-        }
+        fields = ('TwoFactorAuth',)
 
-    def validate_password(self, value):
+    def update(self, instance, validated_data):
+        user = self.context.get('user')
+        if validated_data.get('TwoFactorAuth') == True and user.TwoFactorAuth == False:
+            instance.OTP_SECRET_KEY = pyotp.random_base32()
+        else:
+            instance.OTP_SECRET_KEY = None
+            instance.TwoFactorAuth   = validated_data.get('TwoFactorAuth', instance.TwoFactorAuth)
+        instance.save()
+        return instance
+
+class UserUpdatePasswordSerializer(serializers.Serializer):
+
+    old_password  = serializers.CharField(required=True)
+    new_password  = serializers.CharField(required=True)
+    new_password2 = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        user = self.context.get('user')
+        if attrs['new_password'] != attrs['new_password2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        if not check_password(attrs['old_password'], user.password):
+            raise serializers.ValidationError({"password": "Old password didn't match"})
+        return attrs
+
+    def validate_new_password(self, value):
         try:
             validate_password(value)
         except ValidationError as e:
@@ -41,7 +61,7 @@ class UserUpdatePasswordSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
-        instance.set_password(validated_data.get('password'))
+        instance.set_password(validated_data.get('new_password'))
         instance.save()
         return instance
 

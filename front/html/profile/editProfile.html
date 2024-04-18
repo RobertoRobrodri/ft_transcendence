@@ -1,14 +1,10 @@
-<div class="container mt-5">
+<div class="container mt-5" id="update_forms">
     <h1 class="commonText">Edit Profile</h1>
     <form id="editProfileForm">
         <div class="mb-3">
-            <label for="username" class="form-label commonText">Username</label>
+            <label for="new_username" class="form-label commonText">Username</label>
             <input type="text" class="form-control" id="new_username" autocomplete="off" placeholder="Enter your username">
         </div>
-        <!-- <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Enter your password">
-        </div> -->
         <div class="mb-3">
             <label for="profilePicture" class="form-label commonText">Profile Picture</label>
             <br>
@@ -17,11 +13,59 @@
                 <input type="file" id="new_profilePicture" name="src-file1" aria-label="Archivo">
             </div>
         </div>
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
-            <label class="form-check-label commonText" for="twoFactorAuth">Activate Two-Factor Authentication</label>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+    <!-- Modal -->
+    <div class="modal fade" id="twoFactorAuthModal" tabindex="-1" role="dialog" aria-labelledby="twoFactorAuthModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="twoFactorAuthModalLabel">Enter OTP</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="confirmOTP">
+                        <div class="form-group">
+                            <input type="text" id="OTP" autocomplete="off" class="form-control" required="required" placeholder="OTP">
+                        </div>
+                        <div class="text-center">
+                            <img class="qrcode" id="qrCodeImg" src="" alt="QR code">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Confirm OTP</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary btn-save">Save Changes</button>
+    </div>
+    <form id="activateTwoFactorAuthForm">
+        <div class="form-check mb-3">
+            <label class="form-check-label" for="twoFactorAuth">Activate Two-Factor Authentication</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="twoFactorAuth" id="twoFactorAuthTrue" value="true" required="required">
+                <label class="form-check-label" for="twoFactorAuthTrue">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="twoFactorAuth" id="twoFactorAuthFalse" value="false" required="required">
+                <label class="form-check-label" for="twoFactorAuthFalse">No</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+    <form id="changePasswordForm">
+        <div class="mb-3">
+            <label for="old_password" class="form-label">Old password</label>
+            <input type="text" class="form-control" id="old_password" required="required" placeholder="Enter your old password">
+            <label for="new_password" class="form-label">New password</label>
+            <input type="text" class="form-control" id="new_password" required="required" placeholder="Enter your new password">
+            <label for="confirm_password" class="form-label">Confirm password</label>
+            <input type="text" class="form-control" id="confirm_password" required="required" placeholder="Confirm password">
+        </div>
+        <button type="submit" class="btn btn-primary">Update your password</button>
     </form>
 </div>
 <div class="system-bar fixed-bottom">

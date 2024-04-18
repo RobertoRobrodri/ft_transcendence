@@ -1,4 +1,5 @@
 import { loadMainPage } from "../index/index.js"
+import { displayError } from "../components/loader.js"
 
 async function handleSubmitOTP(e) {
     if (e.target.matches('#SendOTPForm') === false)
@@ -7,25 +8,31 @@ async function handleSubmitOTP(e) {
     // Get the input values
     const token = sessionStorage.getItem('verification_token')
     const userOTP = document.querySelector('#OTP').value;
-    console.log(userOTP)
-    const otp = {
+    const UserData = {
         otp: userOTP,
       };
       try {
-            const response = await fetch('https://localhost:443/api/pong_auth/verify_otp/', {
+            const response = await fetch('api/pong_auth/verify_otp/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-            },body: otp,
+            },
+            body: JSON.stringify(UserData),
         });
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        sessionStorage.removeItem("verification_token");
+        const data = await response.json();
+        const new_token = data.token;
+		const refresh = data.refresh;
+        sessionStorage.setItem('token', new_token);
+		sessionStorage.setItem('refresh', refresh);
         loadMainPage();
         } catch (error) {
             console.error('Error:', error.message);
-            // displayError(error.message, 'small', 'SendOTPForm');
+            displayError(error.message, 'small', 'SendOTPForm');
         }
 }
 
