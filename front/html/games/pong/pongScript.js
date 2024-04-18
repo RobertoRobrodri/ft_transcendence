@@ -38,11 +38,14 @@ function gameEventHandler(e) {
     }
     else if (e.target.matches('#onlineGameButton_pong') === true)
     {
+        toggleView(onlineMenuView, false);
+        toggleView(matchmakingView, true);
         InitMatchmaking();
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true)
     {
         toggleView(matchmakingView, false);
+        toggleView(onlineMenuView, false);
         toggleView(optionsView, true);
         CancelMatchmaking();
     }
