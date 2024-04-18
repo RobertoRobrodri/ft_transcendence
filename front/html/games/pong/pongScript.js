@@ -1,5 +1,7 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js"
 import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
+import { initializeSingleGame, endSingleGame } from "./singlegame.js"
+import { initializeVersusGame, endVersusGame } from "./versusgame.js"
 
 /////////////////
 // Global vars //
