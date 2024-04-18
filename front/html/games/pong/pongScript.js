@@ -90,17 +90,6 @@ function toggleView(view, visible = true) {
         view.classList.add("mshide");
 }
 
-// export async function connectGame()
-// {
-//     //gameSM.connect();
-//     // register();
-//     //await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
-//     InitMatchmaking();
-//     // ! We now get the canvas from the update game
-//     // canvas = document.getElementById("pongCanvas");
-//     // ctx = canvas.getContext("2d");
-// }
-
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
     //when game open, try restore any running game, i put here for test

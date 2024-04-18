@@ -26,7 +26,7 @@ class CustomUser(AbstractUser):
     # 2FA
     TwoFactorAuth       = models.BooleanField(default=False)
     OTP_SECRET_KEY      = models.CharField(max_length = 200, blank=True, null=True)
-    friend_requests_sent = models.ManyToManyField('self', symmetrical=False, related_name='friend_requests_received')
+    friend_requests     = models.ManyToManyField('self', symmetrical=False, related_name='friend_requests_received')
     #TODO Historial should be a table of tournaments
     #history
 

@@ -25,48 +25,8 @@ export function loadFriendsPage() {
         console.error('Error al cargar el formulario:', error);
     });
     loadUsersTable();
-    getFriendList();
     FriendRequestListener();
 
-}
-
-async function getFriendList() {
-    const token = sessionStorage.getItem('token')
-    try {
-        const response = await fetch('api/user_management/user_list/', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            }
-        }
-        );
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        let friend_list = document.getElementById("friend-list");
-        data.friends.forEach(friend => {
-            const listItem = document.createElement('li');
-            listItem.className = 'list-group-item';
-            listItem.textContent = friend;
-            friend_list.appendChild(listItem);
-        });
-        // TODO find a way to show pending requests
-        // let pending_requests = document.getElementById("pending-requests");
-        // data.friend_requests.forEach(request => {
-        // 	const listItem = document.createElement('li');
-        // 	listItem.className = 'list-group-item';
-        // 	listItem.textContent = request;
-        // 	pending_requests.appendChild(listItem);
-        // });
-
-    }
-    catch (error) {
-        console.error('Error:', error.message);
-        // Token error, try update jwt
-        renewJWT();
-    }
 }
 
 async function loadUsersTable() {
@@ -74,7 +34,7 @@ async function loadUsersTable() {
     const token = sessionStorage.getItem('token')
     try {
         // TODO: Cambiar la api por la que obtiene los usuarios
-        const response = await fetch('https://localhost:443/api/user_management/user_list/', {
+        const response = await fetch('/api/user_management/user_list/', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -98,7 +58,19 @@ async function loadUsersTable() {
             `;
             userTableBody.appendChild(row);
         });
+        // List friend requests
+        let requests = userInfo.friend_requests
+        let requestTableBody = document.getElementById("request-table-body");
+        requestTableBody.innerHTML = "";
 
+        requests.forEach(request => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${request.id}</td>
+                <td>${request.username}</td>
+            `;
+            requestTableBody.appendChild(row);
+        });
     }
     catch (error) {
         console.error('Error:', error.message);
