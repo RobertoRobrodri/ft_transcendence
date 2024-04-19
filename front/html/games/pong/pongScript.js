@@ -101,13 +101,10 @@ gameSM.registerCallback(SOCKET.CONNECTED, event => {
     //when game open, try restore any running game, i put here for test
     gameSM.send(GAME_TYPES.RESTORE_GAME, GAMES.PONG);
     // When need get list of current tournaments
-    // gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, {
-    //     "game": GAMES.PONG //replace with specific game
-    // });
+    // gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, GAMES.PONG);
+
     // When need get list of current tournaments
-    // gameSM.send(GAME_TYPES.LIST_GAMES, {
-    //     "game": GAMES.PONG //replace with specific game
-    // }); 
+    // gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG); 
 });
 
 // Callback socket disconnected
@@ -182,7 +179,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 
 gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
     if(data.game == GAMES.PONG) {
-        fillTournaments(data);
+        fillTournaments(data.data);
     }
 });
 
