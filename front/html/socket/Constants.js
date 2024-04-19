@@ -31,6 +31,7 @@ export const GAME_TYPES = {
     GAME_RESTORED:          'game_restored',
     INQUEUE:                'queue_matchmaking',
     RESTORE_GAME:           'restore_game',
+    USERS_PLAYING:          'users_playing',
 
     //Ingame
     PLAYER_READY:           'player_ready',

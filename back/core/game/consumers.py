@@ -37,6 +37,7 @@ INITMATCHMAKING     = 'init_matchmaking'
 GAME_RESTORED       = 'game_restored'
 CANCELMATCHMAKING   = 'cancel_matchmaking'
 RESTORE_GAME        = 'restore_game'
+USERS_PLAYING       = 'users_playing'
 # ingame
 ACTION              = 'action'
 PLAYER_READY        = 'player_ready'
@@ -157,7 +158,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     participant['channel_name'] = self.channel_name
 
     def getTournamentList(self, data):
-        game_req = alldata.get("message")
+        game_req = data.get("message")
         if game_req is None:
             return
         tournament_list = []
@@ -454,11 +455,18 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 await send_to_me(self, GAME_RESTORED, {'game': game_req, 'message': message})
                 await self.channel_layer.group_add(game_id, self.channel_name)
                 await games[game_id]["instance"].restore()
+                await self.send_game_players(game_id, True)
 
     ####################
     ## GAME FUNCTIONS ##
     ####################
-            
+    
+    async def send_game_players(self, game_id, singleSend = False):
+        if singleSend:
+            await send_to_me(self, USERS_PLAYING, {'game': games[game_id]["game"], 'users': games[game_id]["instance"].players})
+        else:
+            await send_to_group(self, game_id, USERS_PLAYING, {'game': games[game_id]["game"], 'users': games[game_id]["instance"].players})
+
     async def start_game(self, players, game_id, game_request = "Pong", tournament_id = None):
         game = None
         if game_request == "Pong":
@@ -486,6 +494,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             # Send info game start
             message = {'message': f'Pairing successful! United in the room {game_id}'}
             await send_to_group(self, game_id, INITMATCHMAKING, {'game': game_request, 'message': message})
+            await self.send_game_players(game_id)
             await self.sendlistGamesToAll(game_request)
 
     async def execute_action(self, data, user):
@@ -533,6 +542,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             return
         await self.channel_layer.group_add(room_req, self.channel_name)
         await games[room_req]["instance"].restore()
+        await self.send_game_players(room_req, True)
             
 def get_game_id(userid):
     # Find game_id asscociated with player_id

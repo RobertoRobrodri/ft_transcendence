@@ -162,6 +162,34 @@ function setWindowContent(uniqueId) {
     //setWindowEvents(uniqueId)
 }
 
+// export function createWindow(appName) {
+//     var uniqueId = "myWindow" + appName;
+//     // Comprobar que la ventana no existe (prevenir abrir 2 veces una app)
+//     var windowExist = document.getElementById(uniqueId);
+//     if (windowExist)
+//         return;
+
+//     // Crear el HTML dinámico
+//     var htmlDinamico = `
+//         <div id="${uniqueId}" class="window">
+//             <div class="window-top">
+//                 <button class="round green"></button>
+//                 <button class="round yellow"></button>
+//                 <button class="round red" id="red-${uniqueId}"></button>
+//             </div>
+//             <div class="window-content" id="${uniqueId}-content">
+//             </div>
+//         </div>
+//     `;
+
+//     var divRow = document.querySelector('.row');
+//     divRow.innerHTML += htmlDinamico;
+//     document.querySelectorAll('.window').forEach(window => makeDraggable(window, '.window-top'));
+//     // No se la razón, pero solo por agregar el html los iconos dejan de ser movibles, asi que se setea de nuevo
+//     makeIconsDraggable();
+//     setWindowContent(uniqueId);
+// }
+
 export function createWindow(appName) {
     var uniqueId = "myWindow" + appName;
     // Comprobar que la ventana no existe (prevenir abrir 2 veces una app)
@@ -169,24 +197,45 @@ export function createWindow(appName) {
     if (windowExist)
         return;
 
-    // Crear el HTML dinámico
-    var htmlDinamico = `
-        <div id="${uniqueId}" class="window">
-            <div class="window-top">
-                <button class="round green"></button>
-                <button class="round yellow"></button>
-                <button class="round red" id="red-${uniqueId}"></button>
-            </div>
-            <div class="window-content" id="${uniqueId}-content">
-            </div>
-        </div>
-    `;
+    // Crear el contenedor de ventana
+    var windowContainer = document.createElement('div');
+    windowContainer.id = uniqueId;
+    windowContainer.classList.add('window');
 
+    // Crear la parte superior de la ventana
+    var windowTop = document.createElement('div');
+    windowTop.classList.add('window-top');
+
+    var greenButton = document.createElement('button');
+    greenButton.classList.add('round', 'green');
+    windowTop.appendChild(greenButton);
+
+    var yellowButton = document.createElement('button');
+    yellowButton.classList.add('round', 'yellow');
+    windowTop.appendChild(yellowButton);
+
+    var redButton = document.createElement('button');
+    redButton.classList.add('round', 'red');
+    redButton.id = 'red-' + uniqueId;
+    windowTop.appendChild(redButton);
+
+    // Crear el contenido de la ventana
+    var windowContent = document.createElement('div');
+    windowContent.classList.add('window-content');
+    windowContent.id = uniqueId + '-content';
+
+    // Agregar la parte superior y el contenido a la ventana
+    windowContainer.appendChild(windowTop);
+    windowContainer.appendChild(windowContent);
+
+    // Agregar la ventana al contenedor existente
     var divRow = document.querySelector('.row');
-    divRow.innerHTML += htmlDinamico;
-    document.querySelectorAll('.window').forEach(window => makeDraggable(window, '.window-top'));
-    // No se la razón, pero solo por agregar el html los iconos dejan de ser movibles, asi que se setea de nuevo
-    makeIconsDraggable();
+    divRow.appendChild(windowContainer);
+
+    // Hacer la ventana draggable
+    makeDraggable(windowContainer, '.window-top');
+
+    // Establecer el contenido de la ventana
     setWindowContent(uniqueId);
 }
 

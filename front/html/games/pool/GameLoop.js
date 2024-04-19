@@ -22,6 +22,9 @@ class GameLoop {
             gameLoop.loop();
         }, 1000 / this.tps);
     }
+    stop() {
+        clearInterval(this.gameloop);
+    }
     loop() {
         for (let funKey in this.functions)
             this.functions[funKey]();
