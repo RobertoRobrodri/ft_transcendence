@@ -58,20 +58,23 @@
 	<div class="col-md-12 mt-5 text-center">
 		<h2>Create a tournament</h2>
 		<div class="tournament-form-container d-flex justify-content-center">
-			<form id="myForm" class="row g-3 align-items-center">
+			<div id="myForm" class="row g-3 align-items-center">
 				<div class="col-auto">
-					<input type="text" class="form-control" id="nombre" name="name" placeholder="Tournament name" required>
+					<input type="text" class="form-control" id="nickname" placeholder="Nickname" required>
 				</div>
 				<div class="col-auto">
-					<input type="number" class="form-control" id="numero" name="size" placeholder="Players" required>
+					<input type="text" class="form-control" id="tournament-name" placeholder="Tournament name" required>
 				</div>
 				<div class="col-auto">
-					<button type="submit" class="game-button">Create</button>
+					<input type="number" class="form-control" id="number-of-players" placeholder="Players" required>
 				</div>
-			</form>
+				<div class="col-md-12">
+					<button type="button" class="game-button" id="createTournament">Create</button>
+				</div>
+			</div>
 		</div>
 	</div>
-	<div class="col-md-12 mt-5 text-center">
+	<div class="col-md-12 mt-5 text-left">
 		<button class="game-button" id="cancelMatchmakingButton_pong">Go back</button>
 	</div>
 </div>
