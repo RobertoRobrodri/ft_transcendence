@@ -87,6 +87,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if(data.game == GAMES.POOL) {
         toggleView(optionsView, false);
         toggleView(uiView, true);
+        resetUI();
         if (POOL == null)
             POOL = new Main(document.getElementById('renderView'), gameSM);
     }
@@ -98,6 +99,7 @@ gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
         toggleView(matchmakingView, false);
         toggleView(uiView, true);
         gameSM.send(GAME_TYPES.PLAYER_READY);
+        resetUI();
         if (POOL == null)
             POOL = new Main(document.getElementById('renderView'), gameSM);
         //Game matched! game started
@@ -232,5 +234,14 @@ function resetThreejs() {
     POOL = null;
     toggleView(uiView, false);
     toggleView(optionsView, true);
+    resetUI();
+}
 
+function resetUI() {
+    //Reset content if have
+    document.querySelector('.progress-bar').style.width = '100%'
+    document.querySelector('.top-right').textContent = '';
+    document.querySelector('.top-left').textContent = '';
+    document.querySelector('.image-row').innerHTML = '';
+    document.querySelector('.image-row-2').innerHTML = '';
 }
