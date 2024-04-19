@@ -1,7 +1,8 @@
-import { GameSocketManager } from "../../socket/GameSocketManager.js"
+import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
-import { initializeSingleGame, endSingleGame } from "./singlegame.js"
-import { initializeVersusGame, endVersusGame } from "./versusgame.js"
+import { initializeSingleGame, endSingleGame } from "./singlegame.js";
+import { initializeVersusGame, endVersusGame } from "./versusgame.js";
+// import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
 // Global vars //
@@ -13,7 +14,7 @@ let score = [0, 0];
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 
-let optionsView, matchmakingView, localgameView, onlineMenuView;
+let optionsView, matchmakingView, localgameView, onlineMenuView, tournamentView;
 
 export function init() {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -22,10 +23,58 @@ export function init() {
     matchmakingView = document.getElementById("matchmaking_pong");
     localgameView = document.getElementById("local_game_options_pong");
     onlineMenuView = document.getElementById("online_menu_pong");
+    tournamentView = document.getElementById("tournament_menu");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
     gameSM.connect();
+}
+
+async function setTournaments() {
+    const token = sessionStorage.getItem('token')
+    try {
+        // TODO: Cambiar la api por la que obtiene los usuarios
+        const response = await fetch('/api/tournaments/obtain_tournaments', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }
+        }
+        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const tournaments = await response.json();
+        let userTableBody = document.getElementById("allTournaments-table-body");
+        userTableBody.innerHTML = "";
+
+        tournaments.forEach(friend => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                    <td>${friend.username}</td>
+                    <td>${friend.status}</td>
+            `;
+            userTableBody.appendChild(row);
+        });
+        // List friend requests
+        let requests = userInfo.friend_requests
+        let requestTableBody = document.getElementById("allTournaments-table-body");
+        requestTableBody.innerHTML = "";
+
+        requests.forEach(request => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${request.id}</td>
+                <td>${request.username}</td>
+            `;
+            requestTableBody.appendChild(row);
+        });
+    }
+    catch (error) {
+        console.error('Error:', error.message);
+        // renewJWT();
+    }
 }
 
 function gameEventHandler(e) {
@@ -35,6 +84,12 @@ function gameEventHandler(e) {
         gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG);
         toggleView(optionsView, false);
         toggleView(onlineMenuView, true);
+    }
+    else if (e.target.matches('#tournamentButton_pong') === true)
+    {
+        toggleView(optionsView, false);
+        toggleView(tournamentView, true);
+        setTournaments();
     }
     else if (e.target.matches('#onlineGameButton_pong') === true)
     {
@@ -46,6 +101,7 @@ function gameEventHandler(e) {
     {
         toggleView(matchmakingView, false);
         toggleView(onlineMenuView, false);
+        toggleView(tournamentView, false);
         toggleView(optionsView, true);
         CancelMatchmaking();
     }
@@ -81,6 +137,7 @@ function gameEventHandler(e) {
         // si está jugando en una partida multijugador local, la termina
         endVersusGame();
     }
+    
 }
 
 function toggleView(view, visible = true) {

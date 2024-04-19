@@ -75,3 +75,9 @@ canvas {
 	width: 700px;
 	height: 350px;
 }
+
+/* Estilo de tabla de torneos */
+.tournament-table-container {
+    max-height: 10vh; /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */
+    overflow-y: auto; /* Agrega scroll vertical si es necesario */
+}
