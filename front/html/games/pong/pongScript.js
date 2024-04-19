@@ -166,11 +166,13 @@ gameSM.registerCallback(GAME_TYPES.PADDLE_COLLISON, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
-    const audio = new Audio("assets/game/sounds/chipi-chapa.mp3");
-    score = [0, 0];
-    audio.play();
-    //gameSM.disconnect();
-    toggleView(optionsView, true);
+    if(data.game == GAMES.PONG) {
+        const audio = new Audio("assets/game/sounds/chipi-chapa.mp3");
+        score = [0, 0];
+        audio.play();
+        //gameSM.disconnect();
+        toggleView(optionsView, true);
+    }
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
@@ -198,6 +200,11 @@ gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
     console.log(`tournament data table: ${data}`)
 });
 
+gameSM.registerCallback(GAME_TYPES.USERS_PLAYING, data => {
+    if (data.game == GAMES.PONG) {
+
+    }
+});
 
 ////////////////
 // GAME LOGIC //

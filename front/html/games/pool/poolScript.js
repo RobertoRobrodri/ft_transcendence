@@ -5,24 +5,24 @@ import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
 let gameSM = new GameSocketManager();
 let POOL = null;
 
-let optionsView, matchmakingView;
+let optionsView, matchmakingView, uiView;
 
 export function init()
 {
     document.getElementById('root').addEventListener('click', poolEventHandler);
 
-    optionsView = document.getElementById("game_options_pool");
+    optionsView     = document.getElementById("game_options_pool");
     matchmakingView = document.getElementById("matchmaking_pool");
+    uiView          = document.getElementById("ui");
 
     gameSM.connect();
 }
 
 function poolEventHandler(e) {
-    if (e.target.matches('#onlineGameButton_pool') === true)
-    {
+    if (e.target.matches('#onlineGameButton_pool') === true) {
         connectGame();
-    } else if (e.target.matches('#cancelMatchmakingButton_pool') === true)
-    {
+    } 
+    else if (e.target.matches('#cancelMatchmakingButton_pool') === true) {
         toggleView(matchmakingView, false);
         toggleView(optionsView, true);
         CancelMatchmaking();
@@ -78,12 +78,15 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
     //gameSM.disconnect();
-    resetThreejs();
+    if(data.game == GAMES.POOL) {
+        resetThreejs();
+    }
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if(data.game == GAMES.POOL) {
         toggleView(optionsView, false);
+        toggleView(uiView, true);
         if (POOL == null)
             POOL = new Main(document.getElementById('renderView'), gameSM);
     }
@@ -93,6 +96,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
     if (data.game == GAMES.POOL) {
         toggleView(matchmakingView, false);
+        toggleView(uiView, true);
         gameSM.send(GAME_TYPES.PLAYER_READY);
         if (POOL == null)
             POOL = new Main(document.getElementById('renderView'), gameSM);
@@ -121,8 +125,21 @@ gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
-    toggleView(matchmakingView, true);
-    toggleView(optionsView, false);
+    if(data.game == GAMES.POOL) {
+        toggleView(matchmakingView, true);
+        toggleView(optionsView, false);
+    }
+});
+
+gameSM.registerCallback(GAME_TYPES.USERS_PLAYING, data => {
+    if (data.game == GAMES.POOL) {
+        const usersArray = Object.values(data.users);
+        const username0 = usersArray[0].username;
+        const username1 = usersArray[1].username;
+
+        document.querySelector('.top-right').textContent = username0;
+        document.querySelector('.top-left').textContent = username1;
+    }
 });
 
 // GAME
@@ -143,8 +160,30 @@ gameSM.registerCallback("sound", data => {
 });
 
 gameSM.registerCallback("poket", data => {
-    POOL.poket(data)
+    POOL.poket(data.ballNumber)
+    if(data.ballNumber != 0 && data.ballNumber != 8) {
+        if(data.ballNumber < 8) {
+            if(data.user1Balls)
+                inserBalltImage(data.ballNumber, '.image-row');
+            else
+                inserBalltImage(data.ballNumber, '.image-row-2');
+        }
+        else {
+            if(!data.user1Balls)
+                inserBalltImage(data.ballNumber, '.image-row');
+            else
+                inserBalltImage(data.ballNumber, '.image-row-2');
+        }
+    }
 });
+
+function inserBalltImage(imageNumber, targetContainer) {
+    const img = document.createElement('img');
+    const imageUrl = `games/pool/textures/balls/${imageNumber}.png`;
+    img.src = imageUrl;
+    const container = document.querySelector(targetContainer);
+    container.appendChild(img);
+}
 
 gameSM.registerCallback("shoot", data => {
     POOL.shoot(data)
@@ -152,7 +191,12 @@ gameSM.registerCallback("shoot", data => {
 
 gameSM.registerCallback("cue_power", data => {
     //cue power changed
-    console.log(data)
+    const minValue = 6;
+    const maxValue = 55;
+    const receivedValue = data;
+    const percentage = ((receivedValue - minValue) / (maxValue - minValue)) * 100;
+    const progressBar = document.querySelector('.progress-bar');
+    progressBar.style.width = percentage + '%';
 });
 
 gameSM.registerCallback("switch_player", data => {
@@ -186,5 +230,7 @@ function resetThreejs() {
     if (canvas)
         renderViewDiv.removeChild(canvas);
     POOL = null;
+    toggleView(uiView, false);
     toggleView(optionsView, true);
+
 }

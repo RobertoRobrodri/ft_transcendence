@@ -3,7 +3,7 @@ class Ball extends THREE.Mesh {
         let textureLoader = new THREE.TextureLoader();
         let map = null;
         if (data.number !== 0)
-            map = textureLoader.load(`./games/pool/img/textures/balls/${data.number}.png`);
+            map = textureLoader.load(`./games/pool/textures/balls/${data.number}.png`);
 
         let geometry = new THREE.SphereGeometry(data.radius, 36, 36),
             material = new THREE.MeshPhongMaterial(data.number === 0 ? { color: 0xffffff } : {

@@ -35,7 +35,7 @@ class PoolGame:
         self.running = False
         self.consumer = consumer
         self.movingBalls = 0
-        self.maxPower = self.ballRadious * self.tps * 1.5
+        self.maxPower = 55
         self.placeWhite = False
         self.playerCount = 0
         self.isFault = True
@@ -226,6 +226,9 @@ class PoolGame:
             t.start()
             if self.isFault:
                 self.turnPlayer = (self.turnPlayer + 1) % 2
+                players_list = list(self.players.values())
+                await send_to_group(self.consumer, self.game_id, "cue_power", players_list[self.turnPlayer]["power"])
+
         self.isFault = True
 
     async def restore(self):
@@ -272,6 +275,7 @@ class PoolGame:
         self.running = False
         del games[self.game_id]
         await send_to_group(self.consumer, self.game_id, 'game_end', {
+            "game": "Pool",
             "winner": winner.username,
             "loser": loser.username
         })
