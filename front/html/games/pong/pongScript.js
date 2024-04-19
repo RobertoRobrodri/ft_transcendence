@@ -102,7 +102,6 @@ gameSM.registerCallback(SOCKET.CONNECTED, event => {
     gameSM.send(GAME_TYPES.RESTORE_GAME, GAMES.PONG);
     // When need get list of current tournaments
     // gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, GAMES.PONG);
-
     // When need get list of current tournaments
     // gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG); 
 });
