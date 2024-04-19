@@ -199,13 +199,12 @@ class Ball:
             self.main.balls.remove(self)
 
         # Check reaming balls to set winner and ball type to check if it's fault/continue playing
-        await self.main.checkGame(self)
-        
-        players_list = list(self.main.players.values())
-        await send_to_group(self.main.consumer, self.main.game_id, "poket", {
-            "ballNumber": self.number,
-            "user1Balls": players_list[0]["stripe"],
-            "user2Balls": players_list[1]["stripe"]
-        })
+        if await self.main.checkGame(self):
+            players_list = list(self.main.players.values())
+            await send_to_group(self.main.consumer, self.main.game_id, "poket", {
+                "ballNumber": self.number,
+                "user1Balls": players_list[0]["stripe"],
+                "user2Balls": players_list[1]["stripe"]
+            })
         self.speed = np.array([0.0, 0.0, 0.0])
         

@@ -292,7 +292,7 @@ class PoolGame:
             players_list[self.turnPlayer]["stripe"] = True if ball.stripe else False
             players_list[(self.turnPlayer + 1) % 2]["stripe"] = False if ball.stripe else True
             self.isFault = False
-            return
+            return True
         
         # Get number of stripe and smoth in table
         striped_true_count = 0
@@ -309,16 +309,17 @@ class PoolGame:
         if (players_list[self.turnPlayer]["stripe"] and striped_true_count == 0 and ball.number == 8) or \
             (not players_list[self.turnPlayer]["stripe"] and striped_false_count == 0 and ball.number == 8):
             await self.setWinner(0)
-            return
+            return False
 
         if ball.number == 8:
             await self.setWinner(ball.number)
-            return
+            return False
         
         if (ball.stripe and players_list[self.turnPlayer]["stripe"]) or (not ball.stripe and not players_list[self.turnPlayer]["stripe"]):
             self.isFault = False
 
-        return
+        return True
+    
     def collidingAny(self, pos, excludedBall):
         balls = [ball for ball in self.balls if ball != excludedBall]
         for ball in balls:
