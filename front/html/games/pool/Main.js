@@ -24,11 +24,6 @@ class Main {
         this.setKeymap();
     }
 
-    startGame(player1, player2) {
-        console.log("gamestarted")
-        //this.game = new Game(player1, player2);
-    }
-
     setKeymap() {
         let main = this;
         this.keyHandler.setSingleKey(' ', 'Shoot cue', function () {
@@ -111,13 +106,12 @@ class Main {
 
     moveBall(data) {
         if (this.ballLength === 0) {
-            console.log("ballLength: 0")
             return;
         }
         data.forEach((ballData) => {
             let ball = this.balls[String(ballData["nbr"])]
             if (ball)
-                ball.moveBall(ballData["position"]);
+                ball.moveBall(ballData["position"], ballData["speed"]);
         });
         // let ball = this.balls[data.idx];
         // ball.moveBall(data.pos)
@@ -128,7 +122,6 @@ class Main {
     }
 
     poket(ballNumber) {
-        console.log("poket: " + ballNumber)
         let ballWithNumber = null;
         // Get ball
         for (let key in this.balls) {
@@ -209,13 +202,13 @@ class Main {
     }
 
     placeWhite(data) {
-        this.balls["0"].moveBall(data);
+        this.balls["0"].moveBall(data.position, data.rotation);
         this.scene.animateObject(this.scene.cue, this.balls["0"].position, 500);
         this.placeLoop = this.loop.remove(this.placeLoop);
     }
 
     moveWhite(data) {
-        this.balls["0"].moveBall(data);
+        this.balls["0"].moveBall(data.position, data.rotation);
     }
 
     mousemove = (e) => {
@@ -263,5 +256,20 @@ class Main {
             this.scene.children = this.scene.children.filter((child) => child.type !== 'Line');
             this.scene.add(line);
         }
+    }
+
+    stop() {
+        this.loop.stop();
+        var renderViewDiv = document.getElementById("renderView");
+        var canvas = renderViewDiv.querySelector("canvas");
+        if (canvas)
+            renderViewDiv.removeChild(canvas);
+        this.scene.renderer.dispose();
+        this.scene.renderer.forceContextLoss();
+        // this.scene.traverse((obj) => {
+        //     if (obj.geometry) obj.geometry.dispose();
+        //     if (obj.material) obj.material.dispose();
+        //     this.scene.remove(obj);
+        // });
     }
 }

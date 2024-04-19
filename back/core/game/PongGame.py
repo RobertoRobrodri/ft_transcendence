@@ -267,7 +267,7 @@ class PongGame:
     async def send_game_end(self):
         # Send game finish
         scores = {0: self.scores[0], 1: self.scores[1]}
-        await send_to_group(self.consumer, self.game_id, GAME_END, scores)
+        await send_to_group(self.consumer, self.game_id, GAME_END, {"game": "Pong", "scores": scores})
     
     async def send_game_score(self):
         # Send players score

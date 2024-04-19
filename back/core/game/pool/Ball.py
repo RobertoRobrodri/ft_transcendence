@@ -19,14 +19,12 @@ class Ball:
             "wall": 0.8
         }
         self.number = number
-        self.currentRotation = 0
         self.main = main
 
         self.nextPosition = self.position
         self.speed = np.array([0.0, 0.0, 0.0])
         self.rollFriction = 0.6
         self.ballLoop = False
-        # self.stoppedRolling = function() {}
         
     def setSpeed(self, speed):
         self.speed = speed
@@ -49,15 +47,6 @@ class Ball:
                 await self.main.switchPlayer()
             self.ballLoop = self.main.loop.remove(self.ballLoop)
         else:
-            circumference = self.radius
-            traversedDistance = np.linalg.norm(self.speed)
-            addedAngle = traversedDistance / circumference
-            rollDirection = self.speed / np.linalg.norm(self.speed)
-            rotateAxis = np.array([0.0, 1.0, 0.0])
-            rollDirection = np.cross(rotateAxis, rollDirection)
-            self.currentRotation += addedAngle
-            
-
             self.currentPosition = self.nextPosition
             
             # Check Wall collisson
@@ -203,20 +192,19 @@ class Ball:
     
     async def ballInPocket(self):
         # Simple rules
-
-        # if 8 ball enter in pocket, user lose
-        if self.number == 8:
-            await self.main.setWinner(self.number)
-        # if white ball enter in pocket, rival have ball in hand
-        elif self.number == 0:
+        if self.number == 0:
             self.main.placeWhite = True
             # await self.main.freeBall()
         else:
             self.main.balls.remove(self)
 
-        # Check reaming balls to set winner and ball type to check if it's fault
-        # self.main.movingBalls -= 1
-        await send_to_group(self.main.consumer, self.main.game_id, "poket", self.number)
+        # Check reaming balls to set winner and ball type to check if it's fault/continue playing
+        if await self.main.checkGame(self):
+            players_list = list(self.main.players.values())
+            await send_to_group(self.main.consumer, self.main.game_id, "poket", {
+                "ballNumber": self.number,
+                "user1Balls": players_list[0]["stripe"],
+                "user2Balls": players_list[1]["stripe"]
+            })
         self.speed = np.array([0.0, 0.0, 0.0])
-        # self.ballLoop = self.main.loop.remove(self.ballLoop)
         
