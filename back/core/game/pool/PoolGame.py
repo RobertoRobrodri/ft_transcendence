@@ -289,6 +289,9 @@ class PoolGame:
         # Check correct ball
         # if not ball set
         if players_list[self.turnPlayer]["stripe"] == None:
+            if ball.number == 8:
+                await self.setWinner(ball.number)
+                return False
             players_list[self.turnPlayer]["stripe"] = True if ball.stripe else False
             players_list[(self.turnPlayer + 1) % 2]["stripe"] = False if ball.stripe else True
             self.isFault = False
