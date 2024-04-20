@@ -157,10 +157,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 if participant['userid'] == userid:
                     participant['channel_name'] = self.channel_name
 
-    def getTournamentList(self, data):
-        game_req = data.get("message")
-        if game_req is None:
-            return
+    def getTournamentList(self, game_req):
         tournament_list = []
         for tournament_id, tournament_info in tournaments.items():
             if tournament_info['game_request'] == game_req and tournament_info['started'] == False:
@@ -172,10 +169,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     'currentPlayers': current_players
                 }
                 tournament_list.append(tournament_summary)
-        return tournament_list
+        return {"game": game_req, "data": tournament_list}
 
     async def listTournaments(self, data):
-        await send_to_me(self, LIST_TOURNAMENTS, self.getTournamentList(data))
+        game_req = data.get("message")
+        if game_req is None:
+            return
+        await send_to_me(self, LIST_TOURNAMENTS, self.getTournamentList(game_req))
     
     async def leaveTournament(self, user, data):
         alldata = data.get("message")
@@ -183,6 +183,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             return
         tournament_id = alldata.get("id")
         if tournament_id not in tournaments:
+            return
+        game_req = alldata.get("game")
+        if alldata is None:
             return
         participants = tournaments[tournament_id].get('participants', [])
         user_exists = any(participant.get('userid') == user.id for participant in participants)
@@ -192,13 +195,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             # If owner leave, tounrament are removed
             if tournaments[tournament_id]["owner"] == user.id:
                 del tournaments[tournament_id]
-                await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(data))
+                await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
                 return
             # Remove user from tournament participants
             for i, participant in enumerate(participants):
                 if participant['userid'] == user.id:
                     participants.pop(i)
-                    await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(data))
+                    await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
                     return
     
     async def createTournament(self, user, data):
@@ -251,7 +254,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             "message": f'New {game_req} tournament created!\nMax players {size}',
             "sender_name": "Admin"
         })
-        await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(data))
+        await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
 
     async def joinTournament(self, user, data):
         alldata = data.get("message")
@@ -259,7 +262,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             return
         tournament_id = alldata.get("id")
         nickname = alldata.get("nick")
-        if tournament_id is None or nickname is None:
+        game_req = alldata.get("game")
+        if tournament_id is None or nickname is None or game_req is None:
             return
         if tournament_id not in tournaments:
             return
@@ -289,7 +293,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     tournaments[tournament_id]['started'] = True
                     await self.startTournament(tournament_id)
                     # We can replace to send only information of only 1 tournament instead entire list
-                await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(data))
+                await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
 
     async def startTournament(self, tournament_id):
         tournament = tournaments[tournament_id]
