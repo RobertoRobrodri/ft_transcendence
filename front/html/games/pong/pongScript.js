@@ -14,7 +14,7 @@ let score = [0, 0];
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 
-let optionsView, matchmakingView, localgameView, onlineMenuView, tournamentView;
+let optionsView, matchmakingView, localgameView, onlineMenuView, tournamentView, tournamentJoinView;
 
 export function init() {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -24,6 +24,7 @@ export function init() {
     localgameView = document.getElementById("local_game_options_pong");
     onlineMenuView = document.getElementById("online_menu_pong");
     tournamentView = document.getElementById("tournament_menu");
+    tournamentJoinView = document.getElementById("tournament_join");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
@@ -31,53 +32,7 @@ export function init() {
 }
 
 async function setTournaments() {
-    // const token = sessionStorage.getItem('token')
-    // try {
-    //     // TODO: Cambiar la api por la que obtiene los usuarios
-    //     const response = await fetch('/api/tournaments/obtain_tournaments', {
-    //         method: 'GET',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'Authorization': `Bearer ${token}`,
-    //         }
-    //     }
-    //     );
-    //     if (!response.ok) {
-    //         throw new Error(`HTTP error! Status: ${response.status}`);
-    //     }
-    //     const tournaments = await response.json();
-    //     let userTableBody = document.getElementById("allTournaments-table-body");
-    //     userTableBody.innerHTML = "";
-
-    //     tournaments.forEach(friend => {
-    //         const row = document.createElement("tr");
-    //         row.innerHTML = `
-    //                 <td>${friend.username}</td>
-    //                 <td>${friend.status}</td>
-    //         `;
-    //         userTableBody.appendChild(row);
-    //     });
-    //     // List friend requests
-    //     let requests = userInfo.friend_requests
-    //     let requestTableBody = document.getElementById("allTournaments-table-body");
-    //     requestTableBody.innerHTML = "";
-
-    //     requests.forEach(request => {
-    //         const row = document.createElement("tr");
-    //         row.innerHTML = `
-    //             <td>${request.id}</td>
-    //             <td>${request.username}</td>
-    //         `;
-    //         requestTableBody.appendChild(row);
-    //     });
-    // }
-    // catch (error) {
-    //     console.error('Error:', error.message);
-    //     // renewJWT();
-    // }
-    gameSM.send(GAME_TYPES.LIST_TOURNAMENTS);
-
-
+    gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, GAMES.PONG);
 }
 
 function gameEventHandler(e) {
@@ -93,6 +48,11 @@ function gameEventHandler(e) {
         toggleView(optionsView, false);
         toggleView(tournamentView, true);
         setTournaments();
+    }
+    else if (e.target.matches('#backToTournaments') === true)
+    {
+        toggleView(tournamentJoinView, false);
+        toggleView(tournamentView, true);
     }
     else if (e.target.matches('#createTournament') === true) {
         // console.log("Creas torneo");
@@ -372,8 +332,28 @@ function getDirectionFromKeyCode(keyCode) {
     }
 }
 
-// Fill Tournament list
+// Fill Tournament table
 function fillTournaments(data) {
+    console.log(data);
+    var tournaments = document.getElementById("allTournaments-table-body");
+    tournaments.innerHTML = "";
+    data.forEach((element) => {
+        const row = document.createElement("tr");
+        row.addEventListener("click", function() {
+            console.log(element.id);
+            toggleView(tournamentView, false);
+            toggleView(tournamentJoinView, true);
+        });
+        row.innerHTML = `
+            <td>${element.name}</td>
+            <td>${element.currentPlayers}/${element.size}</td>
+        `;
+        tournaments.appendChild(row);
+    });
+}
+
+// Fill Tournament list
+function fillTournaments2(data) {
     var tournaments = document.getElementById("tournamentList");
 
     // Remove previous li elements
