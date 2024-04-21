@@ -34,6 +34,7 @@ GAME_REQUEST        = 'game_request'
 ACCEPT_GAME         = 'accept_game'
 REJECT_GAME         = 'reject_game'
 
+logger = logging.getLogger('mylogger')
 class ChatConsumer(AsyncWebsocketConsumer):
     
     # Base function to send message to all in group
@@ -56,19 +57,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         try:
             user = self.scope["user"]
-            if user.is_authenticated and not user.is_anonymous:
-                await self.accept()
-                await CustomUser.update_user_on_connect(user, self.channel_name)
-                # Add user to `{general_chat}` room
-                await self.channel_layer.group_add(GENERAL_CHANNEL, self.channel_name)
-                profile_picture_url = ''
-                if user.profile_picture:
-                    # Open the profile picture file, read its content, and encode it in base64
-                    with open(user.profile_picture.path, "rb") as image_file:
-                        profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
-                        profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
-                await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username, 'image': profile_picture_url})
-                await send_to_me(self, MY_DATA, {'id': user.id, 'username': user.username})
+            if user and user.is_authenticated and not user.is_anonymous:
+                # maybe throw an error
+                if user.connected is False:
+                    await self.accept()
+                    logger.debug('Connected')
+                    await CustomUser.update_user_on_connect(user, self.channel_name)
+                    # Add user to `{general_chat}` room
+                    await self.channel_layer.group_add(GENERAL_CHANNEL, self.channel_name)
+                    profile_picture_url = ''
+                    if user.profile_picture:
+                        # Open the profile picture file, read its content, and encode it in base64
+                        with open(user.profile_picture.path, "rb") as image_file:
+                            profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
+                            profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
+                    await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username, 'image': profile_picture_url})
+                    await send_to_me(self, MY_DATA, {'id': user.id, 'username': user.username})
                 
         except ExpiredSignatureError as e:
             logger.warning(f'ExpiredSignatureError: {e}')
