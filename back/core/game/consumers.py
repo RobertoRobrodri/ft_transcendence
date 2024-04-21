@@ -155,6 +155,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             participants = tournament_info.get('participants', [])
             for participant in participants:
                 if participant['userid'] == userid:
+                    if 'channel_name' in participant:
+                        return
                     participant['channel_name'] = self.channel_name
 
     def getTournamentList(self, game_req):
@@ -451,6 +453,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if game_id is not None:
             game_req = data.get("message")
             if game_req is None:
+                return
+            # Check if the user is already connected to the game
+            if self.channel_name in self.channel_layer.groups.get(game_id, set()):
                 return
             if games[game_id]["game"] == game_req:
                 if games[game_id]["instance"].consumer == None:
