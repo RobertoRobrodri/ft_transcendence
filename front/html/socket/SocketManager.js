@@ -5,6 +5,7 @@ export class SocketManager {
             CONNECTED:           'Connected',
             ALREADY_CONNECTED:   'Already_Connected'
         };
+        this.nbrConnection = 0;
     }
     connect() {
         // Prevent reconnection on navigation
@@ -15,19 +16,24 @@ export class SocketManager {
             let socketHost = host === 'localhost' ? 'localhost' : window.location.host;
             this.socket = new WebSocket(`wss://${socketHost}:443/${this.path}/?token=${token}`);
             this.setupSocketEvents();
+            this.nbrConnection++;
             return this.SOCKETSTATUS.CONNECTED
         }else {
+            this.nbrConnection++;
             return this.SOCKETSTATUS.ALREADY_CONNECTED
         }
     }
 
     disconnect()
     {
-        const code = 3008;
-        const reasson = 'Unexpected';
-        if(this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.socket.close(code, reasson);
-            this.socket = undefined;
+        this.nbrConnection--;
+        if(this.nbrConnection == 0) {
+            const code = 3008;
+            const reasson = 'Unexpected';
+            if(this.socket && this.socket.readyState === WebSocket.OPEN) {
+                this.socket.close(code, reasson);
+                this.socket = undefined;
+            }
         }
     }
 

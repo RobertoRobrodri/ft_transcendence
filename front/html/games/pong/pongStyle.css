@@ -91,9 +91,9 @@ h2 {
 }
 
 /* Canvas Styles */
-canvas {
+#pongCanvas {
     display: block;
-    margin: 50px auto; /* Adjust margin as needed */
+    margin: 50px auto;
 	align-content: center;
     border-radius: 10px;
 	width: 700px;
