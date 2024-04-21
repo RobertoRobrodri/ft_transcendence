@@ -9,4 +9,5 @@ urlpatterns = [
     path('user_delete/', views.UserDeleteView.as_view(), name='user-delete'),
     path('user_list/', views.UserListView.as_view(), name='user-list'),
     path('user_list_all/', views.UserListAllView.as_view(), name='user-list-all'),
+    path('user_specific/<int:user_id>/', views.UserDetailView.as_view(), name='user-detail'),
 ]

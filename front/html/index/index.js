@@ -128,7 +128,7 @@ function selectProgram(e) {
 
 }
 
-function setWindowContent(uniqueId) {
+function setWindowContent(uniqueId, customData = null) {
     if (uniqueId == 'myWindowProfile') {
         var htmlUrl = '../profile/profile.html';
         var cssUrl = '../profile/profileStyle.css';
@@ -163,7 +163,7 @@ function setWindowContent(uniqueId) {
         style.textContent = css;
         window.appendChild(style);
         // Load js
-        javascript.init();
+        javascript.init(customData);
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
@@ -198,7 +198,7 @@ function setWindowContent(uniqueId) {
 //     setWindowContent(uniqueId);
 // }
 
-export function createWindow(appName) {
+export function createWindow(appName, customData = null) {
     var uniqueId = "myWindow" + appName;
     // Comprobar que la ventana no existe (prevenir abrir 2 veces una app)
     var windowExist = document.getElementById(uniqueId);
@@ -244,7 +244,7 @@ export function createWindow(appName) {
     makeDraggable(windowContainer, '.window-top');
 
     // Establecer el contenido de la ventana
-    setWindowContent(uniqueId);
+    setWindowContent(uniqueId, customData);
 }
 
 function closeWindow(e) {

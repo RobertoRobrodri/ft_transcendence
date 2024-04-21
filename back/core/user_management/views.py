@@ -107,6 +107,34 @@ class UserListView(generics.GenericAPIView):
 			user_data['qr'] = encoded_qr
 		return Response(user_data, status=status.HTTP_200_OK)
 
+class UserDetailView(generics.GenericAPIView):
+    serializer_class = UserListSerializer
+
+    def get(self, request, user_id):
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+            user_serializer = self.serializer_class(user)
+            user_data = user_serializer.data
+
+            # Encode profile picture in base64
+            profile_picture_path = user_serializer.data['profile_picture']
+            if profile_picture_path is not None:
+                absolute_profile_picture_path = '/core' + profile_picture_path
+                # Open the profile picture file, read its content, and encode it in base64
+                with open(absolute_profile_picture_path, "rb") as image_file:
+                    encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+                # Add the base64 encoded image to the serializer data
+                user_data['profile_picture'] = encoded_image
+            
+            if user_serializer.data['TwoFactorAuth'] == True:
+                # Send qr image as base64
+                encoded_qr = GenerateQR(user)
+                user_data['qr'] = encoded_qr
+
+            return Response(user_data, status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+		
 class UserDeleteView(generics.GenericAPIView):
 	queryset = CustomUser.objects.all()
 

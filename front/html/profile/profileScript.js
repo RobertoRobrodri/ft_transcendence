@@ -1,18 +1,21 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayError } from "../components/loader.js"
 
-export function init() {
-    loadUserInfo();
+export function init(customData = null) {
+    loadUserInfo(customData);
 }
 
 // window.addEventListener('beforeunload', function(event) {
 //     console.log('La página está a punto de descargarse.');
 // });
 
-export async function loadUserInfo() {
+export async function loadUserInfo(customData = null) {
     const token = sessionStorage.getItem('token')
     try {
-        const response = await fetch('api/user_management/user_list/', {
+        let url = 'api/user_management/user_list/';
+        if(customData)
+            url = `/api/user_management/user_specific/${customData}/`;
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ let POOL = null;
 
 let optionsView, matchmakingView, uiView;
 
-export function init()
+export function init(customData = null)
 {
     document.getElementById('root').addEventListener('click', poolEventHandler);
 

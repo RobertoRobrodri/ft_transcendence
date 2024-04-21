@@ -501,13 +501,27 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             await self.send_game_players(game_id)
             await self.sendlistGamesToAll(game_request)
 
+    # async def execute_action(self, data, user):
+    #     game_id = get_game_id(user.id)
+    #     action = data.get("message")
+    #     if action is None:
+    #         return
+    #     if game_id is not None:
+    #         await games[game_id]["instance"].execute_action(user.id, action)
     async def execute_action(self, data, user):
-        game_id = get_game_id(user.id)
-        action = data.get("message")
-        if action is None:
-            return
-        if game_id is not None:
-            await games[game_id]["instance"].execute_action(user.id, action)
+       game_id = get_game_id(user.id)
+       if game_id is None:
+           return
+       all_data = data.get("message")
+       if all_data is None:
+           return
+       game_req = all_data.get("game")
+       action = all_data.get("action")
+       if game_req is None or action is None:
+           return
+       if game_req == games[game_id]["game"]:
+           await games[game_id]["instance"].execute_action(user.id, action)
+
 
     def getGamesList(self, game_req):
         game_list = []
