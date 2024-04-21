@@ -119,7 +119,7 @@ function gameEventHandler(e) {
     
 }
 
-function toggleView(view, visible = true) {
+export function toggleView(view, visible = true) {
     if (visible)
         view.classList.remove("mshide");
     else

@@ -1,13 +1,38 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayError } from "../components/loader.js"
+import {toggleView} from "../games/pong/pongScript.js"
+
+let editProfileView, setMFAView, changePasswordView;
+
+document.getElementById('root').addEventListener('click', gameEventHandler);
 
 export function init(customData = null) {
     loadUserInfo(customData);
+
+    editProfileView = document.getElementById('edit_profile');
+    setMFAView = document.getElementById('set_MFA');
+    changePasswordView = document.getElementById('change_password');
 }
 
 // window.addEventListener('beforeunload', function(event) {
 //     console.log('La página está a punto de descargarse.');
 // });
+
+
+function gameEventHandler(e) {
+    if (e.target.matches('#editProfile') === true) {
+        console.log("Test");
+        toggleView(editProfileView, true);
+    }
+    else if (e.target.matches('#setMFA') === true) {
+        console.log("Test");
+        toggleView(setMFAView, true);
+    }
+    else if (e.target.matches('#changePassword') === true) {
+        console.log("Test");
+        toggleView(changePasswordView, true);
+    }
+};
 
 export async function loadUserInfo(customData = null) {
     const token = sessionStorage.getItem('token')
