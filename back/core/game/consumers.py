@@ -31,6 +31,7 @@ MATCHMAKING_C = 'matchmaking_group'
 GENERAL_GAME  = 'general_game'
 
 # SOCKET CALLBACKS
+MY_DATA             = 'my_data'
 # matchmaking
 INQUEUE             = 'queue_matchmaking'
 INITMATCHMAKING     = 'init_matchmaking'
@@ -46,10 +47,12 @@ LIST_GAMES          = 'list_games'
 SPECTATE_GAME       = 'spectate_game'
 LEAVE_SPECTATE_GAME = 'leave_spectate_game'
 # tournament
+TOURNAMENT_CREATED  = 'tournament_created'
 CREATE_TOURNAMENT   = 'create_tournament'
 JOIN_TOURNAMENT     = 'join_tournament'
 LEAVE_TOURNAMENT    = 'leave_tournament'
 LIST_TOURNAMENTS    = 'list_tournaments'
+IN_TOURNAMENT       = 'in_tournament'
 TOURNAMENT_TABLE    = 'tournament_table'
 
 
@@ -72,6 +75,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             if user.is_authenticated and not user.is_anonymous:
                 await self.channel_layer.group_add(GENERAL_GAME, self.channel_name)
                 await self.accept()
+                await send_to_me(self, MY_DATA, {'id': user.id, 'username': user.username})
                 
         except ExpiredSignatureError as e:
             logger.warning(f'ExpiredSignatureError: {e}')
@@ -131,6 +135,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     await self.spectateGame(data)
                 elif type == LEAVE_SPECTATE_GAME:
                     await self.leaveSpectateGame(data)
+                elif type == TOURNAMENT_TABLE:
+                    await self.get_tournament_table(data)
+                    
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
             await self.close(code=4003)
@@ -156,6 +163,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             for participant in participants:
                 if participant['userid'] == userid:
                     participant['channel_name'] = self.channel_name
+                    await send_to_me(self, IN_TOURNAMENT, {"game": "Pong", "data": tournament_info})
 
     def getTournamentList(self, game_req):
         tournament_list = []
@@ -164,6 +172,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 current_players = len(tournament_info['participants'])
                 tournament_summary = {
                     'id': tournament_id,
+                    'adminId': tournament_info['owner'],
+                    'admin': tournament_info['admin'],
                     'name': tournament_info['name'],
                     'size': tournament_info['size'],
                     'currentPlayers': current_players
@@ -237,6 +247,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             'id': tournament_name,
             'name': name,
             'owner': user.id,
+            'admin': user.username,
             'size': size,
             'started': False,
             'game_request': game_req,
@@ -254,6 +265,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             "message": f'New {game_req} tournament created!\nMax players {size}',
             "sender_name": "Admin"
         })
+        await send_to_me(self, TOURNAMENT_CREATED, {"game": game_req, "data": tournament_info})
         await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
 
     async def joinTournament(self, user, data):
@@ -365,6 +377,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     participants[participants_index]['winner'] = True
         else:
             pass
+    
+    async def get_tournament_table(self, data):
+        alldata = data.get("message")
+        if alldata is None:
+            return
+        tournament_id = alldata.get("id")
+        tournament = tournaments[tournament_id]
+        await send_to_group(self, GENERAL_GAME, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
 
     def extract_player_info(self, tournament_id):
         tournament = tournaments[tournament_id]
