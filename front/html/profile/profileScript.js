@@ -32,6 +32,12 @@ function gameEventHandler(e) {
         toggleView(setMFAView, true);
         toggleView(profileOptionsView, false);
     }
+    else if (e.target.matches('#backToEditProfile') === true) {
+        toggleView(editProfileView, false);
+        toggleView(setMFAView, false);
+        toggleView(changePasswordView, false);
+        toggleView(profileOptionsView, true);
+    }
     else if (e.target.matches('#changePassword') === true) {
         toggleView(changePasswordView, true);
         toggleView(profileOptionsView, false);

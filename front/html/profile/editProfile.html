@@ -15,18 +15,21 @@
     <div class="editProfile mshide" id="edit_profile">
         <form id="editProfileForm">
             <div class="mb-3">
-                <label for="new_username" class="form-label commonText">Username</label>
+                <label for="new_username" class="commonText">Username</label>
                 <input type="text" class="form-control" id="new_username" autocomplete="off" placeholder="Enter your username">
             </div>
             <div class="mb-3">
-                <label for="profilePicture" class="form-label commonText">Profile Picture</label>
+                <label for="profilePicture" class="commonText">Profile Picture</label>
                 <br>
                 <!-- <input type="file" class="form-control file-select" id="new_profilePicture"> -->
                 <div class="file-select" id="src-file" >
                     <input type="file" id="new_profilePicture" name="src-file1" aria-label="Archivo">
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <div class="col-md-12 mt-2 text-center">
+				<button type="button" class="back-button mr-5" id="backToEditProfile">Back</button>
+                <button type="submit" class="profile-button">Save Changes</button>
+			</div>
         </form>
     </div>
 
@@ -59,16 +62,19 @@
         </div>
         <form id="activateTwoFactorAuthForm">
             <div class="form-check mb-3">
-                <label class="form-check-label" for="twoFactorAuth">Activate Two-Factor Authentication</label>
+                <label class="commonText" for="twoFactorAuth">Activate Two-Factor Authentication</label>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="twoFactorAuth" id="twoFactorAuthTrue" value="true" required="required">
-                    <label class="form-check-label" for="twoFactorAuthTrue">Yes</label>
+                    <label class="commonText" for="twoFactorAuthTrue">Yes</label>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="twoFactorAuth" id="twoFactorAuthFalse" value="false" required="required">
-                    <label class="form-check-label" for="twoFactorAuthFalse">No</label>
+                    <label class="commonText" for="twoFactorAuthFalse">No</label>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="col-md-12 mt-2 text-center">
+                    <button type="button" class="back-button mr-5" id="backToEditProfile">Back</button>
+                    <button type="submit" class="profile-button">Save Changes</button>
+                </div>
             </div>
         </form>
     </div>
@@ -76,14 +82,17 @@
     <div class="changePassword mshide" id="change_password">
         <form id="changePasswordForm">
             <div class="mb-3">
-                <label for="old_password" class="form-label">Old password</label>
-                <input type="text" class="form-control" id="old_password" required="required" placeholder="Enter your old password">
-                <label for="new_password" class="form-label">New password</label>
-                <input type="text" class="form-control" id="new_password" required="required" placeholder="Enter your new password">
-                <label for="confirm_password" class="form-label">Confirm password</label>
-                <input type="text" class="form-control" id="confirm_password" required="required" placeholder="Confirm password">
+                <label for="old_password" class="commonText">Old password</label>
+                <input type="text" class="form-control mb-5" id="old_password" required="required" placeholder="Enter your old password">
+                <label for="new_password" class="commonText">New password</label>
+                <input type="text" class="form-control mb-5" id="new_password" required="required" placeholder="Enter your new password">
+                <label for="confirm_password" class="commonText">Confirm password</label>
+                <input type="text" class="form-control mb-5" id="confirm_password" required="required" placeholder="Confirm password">
             </div>
-            <button type="submit" class="btn btn-primary">Update your password</button>
+            <div class="col-md-12 mt-2 text-center">
+                <button type="button" class="back-button mr-5" id="backToEditProfile">Back</button>
+                <button type="submit" class="profile-button">Update your password</button>
+            </div>
         </form>
     </div>
 
