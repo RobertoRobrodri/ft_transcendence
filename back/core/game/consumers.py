@@ -57,7 +57,7 @@ TOURNAMENT_TABLE    = 'tournament_table'
 
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
-    
+    connected_users = {}
     # Base function to send message to all in group
     async def general_message(self, event):
         text = event["text"]
@@ -73,6 +73,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         try:
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
+                if user.id in self.connected_users:
+                    await self.close(code=4001)
+                    logger.debug('Already connected')
+                    return
+                logger.debug('Connect')
+                self.connected_users[user.id] = self.channel_name
                 await self.channel_layer.group_add(GENERAL_GAME, self.channel_name)
                 await self.accept()
                 await send_to_me(self, MY_DATA, {'id': user.id, 'username': user.username})
@@ -88,6 +94,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         try:
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
+                if user.id in self.connected_users:
+                    del self.connected_users[user.id]
                 await self.channel_layer.group_discard(GENERAL_GAME, self.channel_name)
                 # If the user leaves and is inside queue, remove it
                 await self.leaveMatchmaking(user)
