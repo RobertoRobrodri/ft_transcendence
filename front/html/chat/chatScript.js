@@ -14,7 +14,7 @@ let selectedList = "users";
 let myUserId = null;
 let myUsername = null;
 
-export function init() {
+export function init(customData = null) {
     connectChat();
     document.getElementById('root').addEventListener('click', chatEventHandler);
     // Message send
@@ -81,7 +81,7 @@ function chatEventHandler(e) {
             } else { //If clicked item is user block
                 options.classList.remove('d-none');
                 loadPrivateChat(id);
-                clearUnreadCount(id);
+                clearUnreadCount(`chatList_${id}`);
             }
             //change active
             const listItems = document.querySelectorAll('#chatList li');
@@ -122,6 +122,9 @@ function chatEventHandler(e) {
             chatSM.send(CHAT_TYPES.UNIGNORE_USER, selectedChat);
             removeSingleUser({id: selectedChat}, 'blockedList')
         }
+    }
+    else if (e.target.matches('#view_profile') || e.target.matches('#view_profile_a')) {
+        createWindow('Profile', selectedChat);
     }
 }
 
@@ -226,7 +229,6 @@ chatSM.registerCallback(CHAT_TYPES.LIST_MSG, data => {
 
 // Callback get list of ignored users
 chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, blockedList => {
-
     blockedList.forEach((user) => {
         addSingleUser(user, "blockedList")
     });
@@ -405,7 +407,8 @@ function addPrivateMsg(data) {
         addSingleMessage(`${data.message}`, selectedChat != data.recipient);
     } else {
         // set/increase unread messages
-        incrementUnreadCount(data.sender);
+        console.log(data.sender)
+        incrementUnreadCount(`chatList_${data.sender}`);
     }
 }
 

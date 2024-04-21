@@ -13,7 +13,7 @@ let gameSM = new GameSocketManager();
 
 let optionsView, matchmakingView, localgameView, onlineMenuView;
 
-export function init() {
+export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
 
     optionsView = document.getElementById("game_options_pong");
@@ -294,7 +294,7 @@ function handleKeyUp(event) {
 function sendDirectionToServer() {
     if (direction) {
         // Send direction
-        gameSM.send(GAME_TYPES.ACTION, direction);
+        gameSM.send(GAME_TYPES.ACTION,  {"game" : GAMES.PONG, "action": direction })
         // Schedule the next update while the key is pressed
         requestAnimationFrame(sendDirectionToServer);
     } else {

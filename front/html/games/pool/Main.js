@@ -27,7 +27,7 @@ class Main {
     setKeymap() {
         let main = this;
         this.keyHandler.setSingleKey(' ', 'Shoot cue', function () {
-            this.gameSM.send("action", "shoot");
+            this.sendAction("shoot");
         }.bind(this));
         this.keyHandler.setSingleKey('5', 'Top view', function () {
             main.scene.topView();
@@ -56,34 +56,30 @@ class Main {
             let rotateSpeed = 3 / this.tps;
             rotateSpeed /= this.keyHandler.isPressed('Shift') ? 10 : 1;
             rotateSpeed /= this.keyHandler.isPressed('Control') ? 5 : 1;
-            this.gameSM.send("action", {
-                "rotateCue": rotateSpeed
-            });
+            this.sendAction({"rotateCue": rotateSpeed});
         }.bind(this));
         this.keyHandler.setContinuousKey('ArrowRight', 'Rotate cue right', function () {
             let rotateSpeed = 3 / this.tps;
             rotateSpeed /= this.keyHandler.isPressed('Shift') ? 10 : 1;
             rotateSpeed /= this.keyHandler.isPressed('Control') ? 5 : 1;
-            this.gameSM.send("action", {
-                "rotateCue": -rotateSpeed
-            });
+            this.sendAction({"rotateCue": -rotateSpeed})
         }.bind(this));
         this.keyHandler.setContinuousKey('ArrowUp', 'Cue power up', function () {
             let powerSpeed = 20 / this.tps;
             powerSpeed /= this.keyHandler.isPressed('Shift') ? 5 : 1;
             powerSpeed /= this.keyHandler.isPressed('Control') ? 5 : 1;
-            this.gameSM.send("action", {
-                "power": powerSpeed
-            });
+            this.sendAction({"power": powerSpeed});
         }.bind(this));
         this.keyHandler.setContinuousKey('ArrowDown', 'Cue power down', function () {
             let powerSpeed = 20 / this.tps;
             powerSpeed /= this.keyHandler.isPressed('Shift') ? 5 : 1;
             powerSpeed /= this.keyHandler.isPressed('Control') ? 5 : 1;
-            this.gameSM.send("action", {
-                "power": -powerSpeed
-            });
+            this.sendAction({"power": -powerSpeed});
         }.bind(this));
+    }
+    
+    sendAction(action) {
+        this.gameSM.send("action", {"game": "Pool", "action": action});
     }
 
     setBalls(ballDataArray) {
@@ -191,12 +187,10 @@ class Main {
             let intersects = this.raycaster.intersectObjects([this.scene.tableFloor.mesh]);
             if (intersects.length !== 0) {
                 this.mousePlace = intersects[0].point;
-                this.gameSM.send("action", {
-                    "move_white": {
-                        "x": this.mousePlace.x,
-                        "z": this.mousePlace.z,
-                    }
-                });
+                this.sendAction({"move_white": {
+                    "x": this.mousePlace.x,
+                    "z": this.mousePlace.z,
+                }});
             }
         });
     }
@@ -220,12 +214,10 @@ class Main {
     mousedown = (e) => {
         document.removeEventListener('mousemove', this.mousemove);
         document.removeEventListener('mousedown', this.mousedown);
-        this.gameSM.send("action", {
-            "place_white": {
-                "x": this.mousePlace.x,
-                "z": this.mousePlace.z,
-            }
-        });
+        this.sendAction({"place_white": {
+            "x": this.mousePlace.x,
+            "z": this.mousePlace.z,
+        }});
     }
 
     onLoop() {
