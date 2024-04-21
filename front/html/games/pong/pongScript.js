@@ -14,7 +14,8 @@ let score = [0, 0];
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 
-let optionsView, matchmakingView, localgameView, onlineMenuView, tournamentView, tournamentJoinView;
+let optionsView, matchmakingView, localgameView, onlineMenuView,
+    tournamentView, tournamentJoinView, tournamentReadyView;
 
 export function init() {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -25,6 +26,7 @@ export function init() {
     onlineMenuView = document.getElementById("online_menu_pong");
     tournamentView = document.getElementById("tournament_menu");
     tournamentJoinView = document.getElementById("tournament_join");
+    tournamentReadyView = document.getElementById("tournament_ready");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
@@ -54,8 +56,18 @@ function gameEventHandler(e) {
         toggleView(tournamentJoinView, false);
         toggleView(tournamentView, true);
     }
+    else if (e.target.matches('#leaveTournament') === true) {
+        // Llamamos a la funcion para salir de un torneo
+        toggleView(tournamentReadyView, false);
+        toggleView(tournamentJoinView, true);
+    }
+    else if (e.target.matches('#joinTournament') === true) {
+        // Comprobamos si el nickname es valido
+        // Llamamos a la funcion para entrar a un torneo
+        toggleView(tournamentJoinView, false);
+        toggleView(tournamentReadyView, true);
+    }
     else if (e.target.matches('#createTournament') === true) {
-        // console.log("Creas torneo");
         CreateTournament();
     }
     else if (e.target.matches('#onlineGameButton_pong') === true)
@@ -245,7 +257,7 @@ function CreateTournament()
         size: playerSize,
         tournament_name: tournamentName
     });
-
+    // Ahora cambiamos la vista a la del torneo
 }
 
 function CancelMatchmaking()

@@ -2,7 +2,7 @@
 .game-button {
     background-color: #45f3ff;
     border: none;
-    color: black;
+    color: #28292d;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
@@ -18,6 +18,30 @@
 
 .game-button:hover {
     background-color: #aae0e4;
+    transform: scale(1.05); /* Scale button slightly on hover */
+}
+
+/* Button Styles */
+.game-button-back {
+    background-color: transparent;
+    border: #45f3ff 1px solid;
+    color: #45f3ff;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 12px;
+    transition-duration: 0.4s;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    outline: none; /* Remove default button focus */
+}
+
+.game-button-back:hover {
+    background-color: #aae0e4;
+    color: #28292d;
     transform: scale(1.05); /* Scale button slightly on hover */
 }
 
