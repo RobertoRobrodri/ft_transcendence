@@ -3,10 +3,17 @@ body {
     background-color: #28292d;
     margin: 0;
     padding: 0;
-    height: 100vh; /* Altura del 100% de la ventana */
+    height: 100vh;
+    /* Altura del 100% de la ventana */
     cursor: url('../assets/cursor3.svg'), auto !important;
     background-image: url('../assets/fondo.png');
     user-select: none;
+    backdrop-filter: blur(25px);
+}
+
+/* Estilo de los textos comunes */
+.commonText {
+    color: #fff;
 }
 
 h1 {
@@ -72,27 +79,72 @@ h1 {
 
 /* Estilo para el contenedor del menu */
 .menuContainer {
-    width: 100px; /* Ancho deseado */
-    height: 30px; /* Alto deseado */
-    padding-left: 5px; /* Espaciado interno para el contenido dentro del contenedor */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra para efecto de elevación */
+    width: 100px;
+    /* Ancho deseado */
+    height: 30px;
+    /* Alto deseado */
+    padding-left: 5px;
+    /* Espaciado interno para el contenido dentro del contenedor */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    /* Sombra para efecto de elevación */
 }
 
 /* Estilo para el desplegable */
 .menu {
     display: none;
     flex-direction: column;
-    justify-content: flex-end; /* Alinea los elementos al final del eje principal (abajo) */
+    justify-content: flex-end;
+    /* Alinea los elementos al final del eje principal (abajo) */
     position: fixed;
-    bottom: 50px; /* Pegado al borde superior de la barra de inicio */
+    bottom: 50px;
+    /* Pegado al borde superior de la barra de inicio */
     left: 0;
     background-color: #333;
     color: #fff;
-    max-height: 80vh; /* Ajusta la altura máxima según necesites */
+    max-height: 80vh;
+    /* Ajusta la altura máxima según necesites */
     overflow-y: auto;
-	z-index: 9999; /* Se superpone por encima de todo */
+    z-index: 9999;
+    /* Se superpone por encima de todo */
 }
 
+/* Estilo para los input del formulario */
+input {
+    background-color: transparent !important;
+}
+
+/* Estilo para el input de cargar archivo */
+.file-select {
+    position: relative;
+    display: inline-block;
+}
+
+.file-select::before {
+    /* background-color: #5678EF; */
+    background-color: transparent;
+    border: #45f3ff 1px solid;
+    color: #45f3ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 3px;
+    content: 'Seleccionar';
+    /* testo por defecto */
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.file-select input[type="file"] {
+    opacity: 0;
+    width: 200px;
+    height: 32px;
+    display: inline-block;
+}
+
+/* Estilo del menu */
 .menu ul {
     list-style-type: none;
     padding: 0;
@@ -105,4 +157,17 @@ h1 {
 .menu ul li a {
     color: #45f3ff;
     text-decoration: none;
+}
+
+/* Estilo del boton final */
+.btn-save {
+    background-color: transparent;
+    border: #45f3ff 1px solid;
+    color: #45f3ff;
+    /* background-color: #5678EF; */
+}
+
+.btn-save:hover {
+    background-color: #45f3ff;
+    color: #28292d;
 }

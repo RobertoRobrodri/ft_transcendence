@@ -1,12 +1,4 @@
-//import { loadUserInfo } from "../profile/profileScript.js"
-//import { connectChat, sendMessage, disconnect } from "../chat/chatScript.js"
 import { renewJWT } from "../components/updatejwt.js"
-// import { connectGame } from "./game.js"
-// import { connectPoolGame } from "../games/pool/script.js"
-// import { connectGame, CancelMatchmaking } from "../games/pong/pongScript.js"
-// import { GameSocketManager } from "../socket/GameSocketManager.js"
-// import { initializeSingleGame, endSingleGame } from "../games/pong/singlegame.js"
-// import { initializeVersusGame, endVersusGame } from "../games/pong/versusgame.js"
 
 export function loadMainPage() {
     // Renew jwt

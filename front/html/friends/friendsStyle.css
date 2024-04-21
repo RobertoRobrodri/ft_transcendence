@@ -7,8 +7,13 @@ body {
     cursor: url('../assets/cursor3.svg'), auto !important;
     background-image: url('../assets/fondo.png');
     user-select: none;
+    backdrop-filter: blur(25px);
 }
 
+/* Estilo de los textos comunes */
+.commonText {
+    color: #fff;
+}
 /* Barra de abajo de la página */
 .system-bar {
     background-color: #333;
@@ -55,6 +60,11 @@ body {
 	z-index: 9999; /* Se superpone por encima de todo */
 }
 
+/* Estilo para los input del formulario */
+input {
+    background-color: transparent !important;
+}
+
 .menu ul {
     list-style-type: none;
     padding: 0;
@@ -67,4 +77,23 @@ body {
 .menu ul li a {
     color: #45f3ff;
     text-decoration: none;
+}
+
+/* Estilo del boton final */
+.btn-save {
+    background-color: transparent;
+    border: #45f3ff 1px solid;
+    color: #45f3ff;
+    /* background-color: #5678EF; */
+}
+
+.btn-save:hover {
+    background-color: #45f3ff;
+    color: #28292d;
+}
+
+/* Estilo de la tabla de usuarios */
+.user-table-container {
+    max-height: 50vh; /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */
+    overflow-y: auto; /* Agrega scroll vertical si es necesario */
 }

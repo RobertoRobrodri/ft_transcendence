@@ -1,29 +1,50 @@
-<div class="container">
-    <h1>Friends</h1>
-    <div class="row">
-        <div class="col">
-            <h2>Friend List</h2>
-            <ul class="list-group" id="friend-list">
-                <!-- Get friend list from the API -->
-            </ul>
-        </div>
-
-        <div class="col">
-            <h2>Pending Friend Requests</h2>
-            <ul class="list-group" id="pending-requests">
-                <!-- TODO get friend request from the API -->
-            </ul>
-        </div>
-    </div>
-    <form id="FriendRequestForm">
+<div class="container mt-5">
+	<h1 class="commonText">Friends</h1>
+	<form id="FriendRequestForm">
 		<div class="form-group">
-			<input type="text" id="new_friend" class="form-control" required="required" placeholder="New friend ID">
-		</div>">
-			<button type="submit" class="btn btn-primary">Send!</button>
+			<input type="text" id="new_friend" class="form-control" required="required" autocomplete="off" placeholder="New friend ID">
 		</div>
+		<button type="submit" class="btn btn-primary btn-save">Send!</button>
 	</form>
+	<!-- Aquí es donde debes agregar el nuevo div -->
+	<div class="row justify-content-end">
+		<div class="col-md-3 text-right">
+			<h2 class="commonText">Friends</h2>
+			<div class="user-table-container">
+				<table class="table table-dark">
+					<thead>
+						<tr>
+							<!-- <th scope="col">ID</th> -->
+							<th scope="col">Username</th>
+							<th scope="col">Status</th>
+						</tr>
+					</thead>
+					<tbody id="user-table-body">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="row justify-content-end">
+		<div class="col-md-3 text-right">
+			<h2 class="commonText">Friend Requests</h2>
+			<div class="request-table-container">
+				<table class="table table-dark">
+					<thead>
+						<tr>
+							<!-- <th scope="col">ID</th> -->
+							<th scope="col">ID</th>
+							<th scope="col">Username</th>
+						</tr>
+					</thead>
+					<tbody id="request-table-body">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 </div>
-</div>
+<!-- </div> -->
 <div class="system-bar fixed-bottom">
 	<div class="current-time" id="current-time"></div>
 	<div class="menu-icon" id="menu-icon">
