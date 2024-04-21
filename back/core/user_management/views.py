@@ -80,7 +80,7 @@ class UserUpdateValidateOTPView(generics.GenericAPIView):
 		return Response({'error': 'Not valid code, please try again'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserListAllView(generics.ListAPIView):
-	serializer_class = UserUpdateSerializer
+	serializer_class = UserListSerializer
 	queryset = CustomUser.objects.all()
 
 # Override the requirement for a PK, because we already know the user sending the request

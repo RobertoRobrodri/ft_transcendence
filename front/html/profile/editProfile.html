@@ -1,13 +1,17 @@
 <div class="container mt-5" id="update_forms">
-    <h1>Edit Profile</h1>
+    <h1 class="commonText">Edit Profile</h1>
     <form id="editProfileForm">
         <div class="mb-3">
-            <label for="new_username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="new_username" placeholder="Enter your username">
+            <label for="new_username" class="form-label commonText">Username</label>
+            <input type="text" class="form-control" id="new_username" autocomplete="off" placeholder="Enter your username">
         </div>
         <div class="mb-3">
-            <label for="new_profilePicture" class="form-label">Profile Picture</label>
-            <input type="file" class="form-control" id="new_profilePicture">
+            <label for="profilePicture" class="form-label commonText">Profile Picture</label>
+            <br>
+            <!-- <input type="file" class="form-control file-select" id="new_profilePicture"> -->
+            <div class="file-select" id="src-file" >
+                <input type="file" id="new_profilePicture" name="src-file1" aria-label="Archivo">
+            </div>
         </div>
         <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>

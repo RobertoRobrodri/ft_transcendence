@@ -65,8 +65,19 @@ class UserUpdatePasswordSerializer(serializers.Serializer):
         instance.save()
         return instance
 
-class UserListSerializer(serializers.ModelSerializer):
-
+class FriendSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth', 'wins', 'losses', 'friends')
+        fields = ('id', 'username', 'status')
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username',)
+
+class UserListSerializer(serializers.ModelSerializer):
+    friends = FriendSerializer(many=True, read_only=True)
+    friend_requests = FriendRequestSerializer(many=True, read_only=True)
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth', 'wins', 'losses', 'friends', 'friend_requests')

@@ -18,6 +18,7 @@
 		</div>
 	</div>
 </div>
+
 <div class="matchmaking mshide" id="matchmaking_pong">
 	<div class="col-md-12 mt-5 text-center">
 		<h2>Searching for an opponent...</h2>
@@ -27,16 +28,135 @@
 	</div>
 </div>
 <div class="online_menu mshide" id="online_menu_pong">
-    <div class="vertical-center text-center">
+	<div class="vertical-center text-center">
 		<button class="game-button" id="onlineGameButton_pong">New Game</button>
 	</div>
-    <div class="scrollable-list">
-        <ul>
-            <li>Elemento 1</li>
-            <li>Elemento 2</li>
-        </ul>
-    </div>
+	<div class="scrollable-list">
+		<ul>
+			<li>Elemento 1</li>
+			<li>Elemento 2</li>
+		</ul>
+	</div>
 </div>
+
+<div class="tournament_ready mshide" id="tournament_ready">
+	<div class="col-md-12 mt-5 text-center">
+		<h2>Tournament</h2>
+		<div class="col-md-7 mx-auto text-center">
+			<table class="table table-dark">
+				<tr>
+					<th class="text-right"><b>Tournament name: </b></th>
+					<td id="tournament_name_joinned">Test tournament</td>
+				</tr>
+				<tr>
+					<th class="text-right"><b>Number of players: </b></th>
+					<td id="tournament_number_joined text">1/10</td>
+				</tr>
+				<tr>
+					<th class="text-right"><b>Admin: </b></th>
+					<td id="tournament_admin_joined">Pei</td>
+				</tr>
+			</table>
+		</div>
+		<div class="tournament-table-container">
+			<table class="table table-dark">
+				<thead>
+					<tr>
+						<th scope="col">Players</th>
+					</tr>
+				</thead>
+				<tbody id="tournament-players-body">
+				</tbody>
+			</table>
+		</div>
+		<div class="col-md-12 text-left">
+			<button type="button" class="game-button-back mr-5" id="leaveTournament">Leave Tournament</button>
+		</div>
+	</div>
+</div>
+
+<div class="tournament-join mshide" id="tournament_join">
+	<div class="col-md-12 mt-5 text-center">
+		<h2>Join tournament</h2>
+		<div class="col-md-7 mx-auto text-center">
+			<table class="table table-dark">
+				<tr>
+					<th class="text-right"><b>Tournament name: </b></th>
+					<td id="tournament_name_join">Test tournament</td>
+				</tr>
+				<tr>
+					<th class="text-right"><b>Number of players: </b></th>
+					<td id="tournament_number_join text">1/10</td>
+				</tr>
+				<tr>
+					<th class="text-right"><b>Admin: </b></th>
+					<td id="tournament_admin_join">Pei</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="col-md-12 mt-5 text-center">
+			<div class="col-auto">
+				<input type="text" class="form-control" id="tournament-nickname" placeholder="Nickname" required>
+			</div>
+			<div class="col-md-12 mt-2">
+				<button type="button" class="game-button-back mr-5" id="backToTournaments">Back</button>
+				<button type="button" class="game-button" id="joinTournament">Join</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="tournament mshide" id="tournament_menu">
+	<div class="col-md-12 mt-5 text-center">
+		<h2>Available Tournaments</h2>
+		<div class="tournament-table-container">
+			<table class="table table-dark">
+				<thead>
+					<tr>
+						<th scope="col">Tournament name</th>
+						<th scope="col">Players</th>
+					</tr>
+				</thead>
+				<tbody id="allTournaments-table-body">
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-12 mt-5 text-center">
+		<h2>Create a tournament</h2>
+		<div class="tournament-form-container d-flex justify-content-center">
+			<div id="myForm" class="row g-3 align-items-center">
+				<div class="col-auto">
+					<input type="text" class="form-control" id="nickname" placeholder="Nickname" required>
+				</div>
+				<div class="col-auto">
+					<input type="text" class="form-control" id="tournament-name" placeholder="Tournament name" required>
+				</div>
+				<div class="col-auto">
+					<input type="number" class="form-control" id="number-of-players" placeholder="Players" required>
+				</div>
+				<div class="col-md-12 mt-3">
+					<button class="game-button-back mr-5" id="cancelMatchmakingButton_pong">Back</button>
+					<button type="button" class="game-button" id="createTournament">Create</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="online_menu mshide" id="online_menu_pong">
+	<div class="vertical-center text-center">
+		<button class="game-button" id="onlineGameButton_pong">New Game</button>
+	</div>
+	<div class="scrollable-list">
+		<ul>
+			<li>Elemento 1</li>
+			<li>Elemento 2</li>
+		</ul>
+	</div>
+</div>
+
 <div class="row row-game mshide" id="local_game_options_pong">
 	<div class="col-md-12 mt-5 text-center">
 		<h2>Local Game</h2>
@@ -52,7 +172,7 @@
 		</div>
 	</div>
 	<div class="col-md-12 mt-5 text-center">
-		<button class="back" id="goBackButton_pong">Go back</button>
+		<button class="game-button-back" id="goBackButton_pong">Go back</button>
 	</div>
 </div>
 <canvas id="pongCanvas" width="400" height="200"></canvas>

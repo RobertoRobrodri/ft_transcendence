@@ -192,6 +192,8 @@ main {
 	height: 100%;
 	font-family: monospace;
 	padding: 5px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .window-top, .window-top-no-bind {

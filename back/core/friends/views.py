@@ -16,7 +16,9 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 		# Want to be friends with an unexistent user
 		if receiver_user is None:
 			return Response({"message": "Receiver user does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-
+		
+		if user_sender == receiver_user:
+			return Response({"message": "Can´t add yourself as friend"}, status=status.HTTP_400_BAD_REQUEST)
 		receiver_id = receiver_user.pk
 		# Search in the user list if they are already friends
 		if user_sender.friends.filter(pk=receiver_id).exists():
@@ -24,10 +26,10 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 		
 		# Check if the request already exists
 		# Bidirectional, means it checks for both receiver and sender in both fields
-		if user_sender.friend_requests_sent.filter(pk=receiver_id).exists() or receiver_user.friend_requests_sent.filter(pk=user_sender.pk).exists():
+		if user_sender.friend_requests.filter(pk=receiver_id).exists() or receiver_user.friend_requests.filter(pk=user_sender.pk).exists():
 			return Response({"message": "Friend request already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
-		user_sender.friend_requests_sent.add(receiver_user)
+		receiver_user.friend_requests.add(user_sender)
 		return Response({"message": "Friend Request sent"}, status=status.HTTP_200_OK)
 	
 	def destroy(self, request, *args, **kwargs):

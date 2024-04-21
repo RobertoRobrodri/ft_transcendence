@@ -1,5 +1,8 @@
-import { GameSocketManager } from "../../socket/GameSocketManager.js"
+import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
+import { initializeSingleGame, endSingleGame } from "./singlegame.js";
+import { initializeVersusGame, endVersusGame } from "./versusgame.js";
+// import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
 // Global vars //
@@ -11,7 +14,8 @@ let score = [0, 0];
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 
-let optionsView, matchmakingView, localgameView, onlineMenuView;
+let optionsView, matchmakingView, localgameView, onlineMenuView,
+    tournamentView, tournamentJoinView, tournamentReadyView;
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -20,10 +24,17 @@ export function init(customData = null) {
     matchmakingView = document.getElementById("matchmaking_pong");
     localgameView = document.getElementById("local_game_options_pong");
     onlineMenuView = document.getElementById("online_menu_pong");
+    tournamentView = document.getElementById("tournament_menu");
+    tournamentJoinView = document.getElementById("tournament_join");
+    tournamentReadyView = document.getElementById("tournament_ready");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
     gameSM.connect();
+}
+
+async function setTournaments() {
+    gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, GAMES.PONG);
 }
 
 function gameEventHandler(e) {
@@ -34,13 +45,42 @@ function gameEventHandler(e) {
         toggleView(optionsView, false);
         toggleView(onlineMenuView, true);
     }
+    else if (e.target.matches('#tournamentButton_pong') === true)
+    {
+        toggleView(optionsView, false);
+        toggleView(tournamentView, true);
+        setTournaments();
+    }
+    else if (e.target.matches('#backToTournaments') === true)
+    {
+        toggleView(tournamentJoinView, false);
+        toggleView(tournamentView, true);
+    }
+    else if (e.target.matches('#leaveTournament') === true) {
+        // Llamamos a la funcion para salir de un torneo
+        toggleView(tournamentReadyView, false);
+        toggleView(tournamentJoinView, true);
+    }
+    else if (e.target.matches('#joinTournament') === true) {
+        // Comprobamos si el nickname es valido
+        // Llamamos a la funcion para entrar a un torneo
+        toggleView(tournamentJoinView, false);
+        toggleView(tournamentReadyView, true);
+    }
+    else if (e.target.matches('#createTournament') === true) {
+        CreateTournament();
+    }
     else if (e.target.matches('#onlineGameButton_pong') === true)
     {
+        toggleView(onlineMenuView, false);
+        toggleView(matchmakingView, true);
         InitMatchmaking();
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true)
     {
         toggleView(matchmakingView, false);
+        toggleView(onlineMenuView, false);
+        toggleView(tournamentView, false);
         toggleView(optionsView, true);
         CancelMatchmaking();
     }
@@ -76,6 +116,7 @@ function gameEventHandler(e) {
         // si está jugando en una partida multijugador local, la termina
         endVersusGame();
     }
+    
 }
 
 function toggleView(view, visible = true) {
@@ -84,17 +125,6 @@ function toggleView(view, visible = true) {
     else
         view.classList.add("mshide");
 }
-
-// export async function connectGame()
-// {
-//     //gameSM.connect();
-//     // register();
-//     //await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
-//     InitMatchmaking();
-//     // ! We now get the canvas from the update game
-//     // canvas = document.getElementById("pongCanvas");
-//     // ctx = canvas.getContext("2d");
-// }
 
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
@@ -227,7 +257,7 @@ function CreateTournament()
         size: playerSize,
         tournament_name: tournamentName
     });
-
+    // Ahora cambiamos la vista a la del torneo
 }
 
 function CancelMatchmaking()
@@ -314,14 +344,36 @@ function getDirectionFromKeyCode(keyCode) {
     }
 }
 
-// Fill Tournament list
+// Fill Tournament table
 function fillTournaments(data) {
+    console.log(data);
+    var tournaments = document.getElementById("allTournaments-table-body");
+    tournaments.innerHTML = "";
+    data.forEach((element) => {
+        const row = document.createElement("tr");
+        row.addEventListener("click", function() {
+            console.log(element.id);
+            toggleView(tournamentView, false);
+            toggleView(tournamentJoinView, true);
+        });
+        row.innerHTML = `
+            <td>${element.name}</td>
+            <td>${element.currentPlayers}/${element.size}</td>
+        `;
+        tournaments.appendChild(row);
+    });
+}
+
+// Fill Tournament list
+function fillTournaments2(data) {
     var tournaments = document.getElementById("tournamentList");
 
     // Remove previous li elements
     while (tournaments.firstChild)
         tournaments.removeChild(tournaments.firstChild);
     
+    console.log(data);
+
     data.forEach((element) => {
         var curli = document.createElement("li");
         curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
