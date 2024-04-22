@@ -111,14 +111,15 @@ class PongGame:
     
     async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
+            self.running = False
+            logger.warning(f"remove: {self.game_id}")
+            del games[self.game_id]
             await self.send_game_end()
             if self.tournament_id is None:
                 await self.save_game_result(players_list, winner)
             else:
                 await self.set_game_tournament_points()
                 await self.set_winner_tournament(players_list, winner)
-            self.running = False
-            del games[self.game_id]
             await self.consumer.sendlistGamesToAll("Pong")
     
     async def reset_game(self, winner):

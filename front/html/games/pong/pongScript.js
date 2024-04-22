@@ -7,8 +7,10 @@ import { initializeVersusGame, endVersusGame } from "./versusgame.js";
 /////////////////
 // Global vars //
 /////////////////
+let isPlaying = false;
 let myUserId = null;
 let myUsername = null;
+let tournamentJoined = null;
 let canvas;
 let ctx;
 let score = [0, 0];
@@ -55,19 +57,36 @@ function gameEventHandler(e) {
     }
     else if (e.target.matches('#backToTournaments') === true)
     {
+        tournamentJoined = null;
         toggleView(tournamentJoinView, false);
         toggleView(tournamentView, true);
     }
     else if (e.target.matches('#leaveTournament') === true) {
         // Llamamos a la funcion para salir de un torneo
+        gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+            id: tournamentJoined,
+            game: GAMES.PONG
+        })
+        tournamentJoined = null;
+        toggleView(tournamentJoinView, false);
         toggleView(tournamentReadyView, false);
-        toggleView(tournamentJoinView, true);
+        toggleView(tournamentView, true);
     }
     else if (e.target.matches('#joinTournament') === true) {
+        let nickname = document.getElementById("tournament-nickname").value;
+        if (nickname !== null && nickname !== "") {
+            //JOIN_TOURNAMENT
+            gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
+                id: tournamentJoined,
+                nick: nickname,
+                game: GAMES.PONG
+            })
+        }
         // Comprobamos si el nickname es valido
         // Llamamos a la funcion para entrar a un torneo
-        toggleView(tournamentJoinView, false);
-        toggleView(tournamentReadyView, true);
+        // toggleView(tournamentJoinView, false);
+        // toggleView(tournamentView, false);
+        // toggleView(tournamentReadyView, true);
     }
     else if (e.target.matches('#createTournament') === true) {
         CreateTournament();
@@ -158,7 +177,14 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
 // MATCHMAKING
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
     if(data.game == GAMES.PONG) {
+        isPlaying = true;
         toggleView(matchmakingView, false);
+        toggleView(onlineMenuView, false);
+        toggleView(tournamentView, false);
+        toggleView(optionsView, false);
+        toggleView(tournamentReadyView, false);
+        toggleView(tournamentJoinView, false);
+        toggleView(localgameView, false);
         gameSM.send(GAME_TYPES.PLAYER_READY);
     }
 });
@@ -192,6 +218,7 @@ gameSM.registerCallback(GAME_TYPES.PADDLE_COLLISON, data => {
 
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
     if(data.game == GAMES.PONG) {
+        isPlaying = false;
         const audio = new Audio("assets/game/sounds/chipi-chapa.mp3");
         score = [0, 0];
         audio.play();
@@ -234,7 +261,7 @@ gameSM.registerCallback(GAME_TYPES.USERS_PLAYING, data => {
 
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_CREATED, data => {
     if (data.game == GAMES.PONG) {
-        if(data.data.owner == myUserId) {
+        if(data.data.adminId == myUserId) {
             fillTournamentData(data.data)
             toggleView(tournamentView, false);
             toggleView(tournamentReadyView, true);
@@ -244,6 +271,8 @@ gameSM.registerCallback(GAME_TYPES.TOURNAMENT_CREATED, data => {
 
 gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
     if (data.game == GAMES.PONG) {
+        if(isPlaying)
+            return;
         //el usuario está en un torneo
         console.log(data.data)
         fillTournamentData(data.data)
@@ -256,12 +285,20 @@ gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
     console.log(`tournament data table: ${data}`)
 });
 
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
+    console.log(`tournament players: ${data}`)
+});
+
 //////////////////////
 // TOURNAMENT LOGIC //
 //////////////////////
 
-function requestTournament(tournamentID) {
+function requestTournamentTable(tournamentID) {
     gameSM.send(GAME_TYPES.TOURNAMENT_TABLE, tournamentID);
+}
+
+function requestTournamentPlayers(tournamentID) {
+    gameSM.send(GAME_TYPES.TOURNAMENT_PLAYERS, tournamentID);
 }
 
 function CreateTournament()
@@ -275,17 +312,22 @@ function CreateTournament()
         size: playerSize,
         tournament_name: tournamentName
     });
-    // Ahora cambiamos la vista a la del torneo
 }
 
 // Fill Tournament table
 function fillTournamentsList(data) {
     var tournaments = document.getElementById("allTournaments-table-body");
     tournaments.innerHTML = "";
+    let currentTournamentExist = false;
     data.forEach((element) => {
+        if (!currentTournamentExist && element.id == tournamentJoined) {
+            currentTournamentExist = true;
+        }
         const row = document.createElement("tr");
         row.addEventListener("click", function() {
             // Fill tournament_name_join data:
+            toggleView(tournamentView, false);
+            toggleView(tournamentJoinView, true);
             fillTournamentData(element);
         });
         row.innerHTML = `
@@ -294,16 +336,32 @@ function fillTournamentsList(data) {
         `;
         tournaments.appendChild(row);
     });
+    if(!currentTournamentExist && tournamentJoined != null && !isPlaying) {
+        toggleView(tournamentView, true);
+        toggleView(tournamentJoinView, false);
+        toggleView(tournamentReadyView, false);
+    }
 }
 
 function fillTournamentData(data) {
+    
+    //Joined
     let tournamentName  = document.getElementById("tournament_name_joinned");
     let nbrPlayers      = document.getElementById("tournament_number_joined");
     let admin           = document.getElementById("tournament_admin_joined");
-
     tournamentName.textContent  = data.name;
-    nbrPlayers.textContent      = `1/${data.size}`;
+    nbrPlayers.textContent      = `${data.currentPlayers}/${data.size}`;
     admin.textContent           = data.admin;
+    tournamentJoined            = data.id;
+
+    //Join
+    let tournamentName2  = document.getElementById("tournament_name_join");
+    let nbrPlayers2      = document.getElementById("tournament_number_join");
+    let admin2           = document.getElementById("tournament_admin_join");
+    tournamentName2.textContent  = data.name;
+    nbrPlayers2.textContent      = `${data.currentPlayers}/${data.size}`;
+    admin2.textContent           = data.admin;
+    tournamentJoined             = data.id;
 }
 
 // Fill Tournament list

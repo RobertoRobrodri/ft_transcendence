@@ -54,6 +54,7 @@ LEAVE_TOURNAMENT    = 'leave_tournament'
 LIST_TOURNAMENTS    = 'list_tournaments'
 IN_TOURNAMENT       = 'in_tournament'
 TOURNAMENT_TABLE    = 'tournament_table'
+TOURNAMENT_PLAYERS  = 'tournament_players'
 
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
@@ -145,6 +146,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     await self.leaveSpectateGame(data)
                 elif type == TOURNAMENT_TABLE:
                     await self.get_tournament_table(data)
+                elif type == TOURNAMENT_PLAYERS:
+                    await self.get_tournament_players(data)
                     
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
@@ -166,12 +169,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     
     async def restoreTournament(self, user):
         userid = user.id
-        for _, tournament_info in tournaments.items():
+        for tournament_id, tournament_info in tournaments.items():
             participants = tournament_info.get('participants', [])
             for participant in participants:
                 if participant['userid'] == userid:
                     participant['channel_name'] = self.channel_name
-                    await send_to_me(self, IN_TOURNAMENT, {"game": "Pong", "data": tournament_info})
+                    await send_to_me(self, IN_TOURNAMENT, {"game": tournament_info['game_request'], "data": self.getSingleTournament(tournament_id)})
 
     def getTournamentList(self, game_req):
         tournament_list = []
@@ -180,7 +183,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 current_players = len(tournament_info['participants'])
                 tournament_summary = {
                     'id': tournament_id,
-                    'adminId': tournament_info['owner'],
+                    'adminId': tournament_info['adminId'],
                     'admin': tournament_info['admin'],
                     'name': tournament_info['name'],
                     'size': tournament_info['size'],
@@ -188,7 +191,21 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 }
                 tournament_list.append(tournament_summary)
         return {"game": game_req, "data": tournament_list}
-
+    
+    def getSingleTournament(self, tournament_id):
+        if tournament_id not in tournaments:
+            return
+        current_players = len(tournaments[tournament_id]['participants'])
+        tournament_summary = {
+            'id': tournament_id,
+            'adminId': tournaments[tournament_id]['adminId'],
+            'admin': tournaments[tournament_id]['admin'],
+            'name': tournaments[tournament_id]['name'],
+            'size': tournaments[tournament_id]['size'],
+            'currentPlayers': current_players
+        }
+        return tournament_summary
+        
     async def listTournaments(self, data):
         game_req = data.get("message")
         if game_req is None:
@@ -211,7 +228,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             return
         async with join_tournament_lock:
             # If owner leave, tounrament are removed
-            if tournaments[tournament_id]["owner"] == user.id:
+            if tournaments[tournament_id]["adminId"] == user.id:
                 del tournaments[tournament_id]
                 await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
                 return
@@ -254,7 +271,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         tournament_info = {
             'id': tournament_name,
             'name': name,
-            'owner': user.id,
+            'adminId': user.id,
             'admin': user.username,
             'size': size,
             'started': False,
@@ -273,8 +290,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             "message": f'New {game_req} tournament created!\nMax players {size}',
             "sender_name": "Admin"
         })
-        await send_to_me(self, TOURNAMENT_CREATED, {"game": game_req, "data": tournament_info})
-        await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
+        await send_to_me(self, TOURNAMENT_CREATED, {"game": game_req, "data": self.getSingleTournament(tournament_name)})
+        await send_to_group_exclude_self(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
 
     async def joinTournament(self, user, data):
         alldata = data.get("message")
@@ -314,6 +331,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     await self.startTournament(tournament_id)
                     # We can replace to send only information of only 1 tournament instead entire list
                 await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
+                await send_to_me(self, IN_TOURNAMENT, {"game": "Pong", "data": self.getSingleTournament(tournament_id)})
 
     async def startTournament(self, tournament_id):
         tournament = tournaments[tournament_id]
@@ -393,6 +411,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         tournament_id = alldata.get("id")
         tournament = tournaments[tournament_id]
         await send_to_group(self, GENERAL_GAME, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+    
+    async def get_tournament_players(self, data):
+        tournament_id = data.get("message")
+        if tournament_id is None:
+            return
+        await send_to_group(self, GENERAL_GAME, TOURNAMENT_PLAYERS, tournaments[tournament_id]['participants'])
+        
 
     def extract_player_info(self, tournament_id):
         tournament = tournaments[tournament_id]
@@ -419,6 +444,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 if participant['userid'] == userid:
                     return participant['channel_name']
         return None
+    
     ###########################
     ## MATCHMAKING FUNCTIONS ##
     ###########################
@@ -467,6 +493,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
     async def player_ready(self, user):
         game_id = get_game_id(user.id)
+        logger.warning(f"user: {user.username}  game: {game_id}")
         if game_id is not None:
             await games[game_id]["instance"].player_ready(user.id)
     
