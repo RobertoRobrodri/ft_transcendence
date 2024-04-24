@@ -1,4 +1,8 @@
 import { renewJWT } from "../components/updatejwt.js"
+import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
+import { CHAT_TYPES, GAMES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
+
+let NotificationsSM = new NotificationsSocketManager();
 
 export function loadMainPage() {
     // Renew jwt
@@ -27,6 +31,7 @@ export function loadMainPage() {
         //clear hash
         history.pushState("", document.title, window.location.pathname + window.location.search);
         setClickEvents();
+        connectNotifications();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
@@ -347,3 +352,41 @@ function makeDraggable(element, elementClick) {
         document.removeEventListener('mousemove', elementDrag);
     }
 }
+
+function connectNotifications() {
+    NotificationsSM.connect();
+}
+
+NotificationsSM.registerCallback(SOCKET.CONNECTED, event => {
+    // Request all connected users
+    NotificationsSM.send(CHAT_TYPES.USER_LIST);
+});
+
+NotificationsSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
+    let userTableBody = document.getElementById("user-table-body");
+    userTableBody.innerHTML = "";
+    Object.values(userList).forEach(user => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${user}</td>
+        `;
+        userTableBody.appendChild(row);
+    });
+});
+
+// Callback rcv connected user
+NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, userList => {
+    let userTableBody = document.getElementById("user-table-body");
+    userTableBody.innerHTML = "";
+    Object.values(userList).forEach(user => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${user}</td>
+        `;
+        userTableBody.appendChild(row);
+    });
+});
+
+NotificationsSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
+    console.log(data)
+});
