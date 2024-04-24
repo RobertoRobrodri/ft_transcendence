@@ -1,8 +1,5 @@
 import json
-import time
-import asyncio
-import hashlib
-import random
+import base64
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -44,9 +41,14 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                 await self.accept()
                 await self.channel_layer.group_add(STATUS_CHANNEL, self.channel_name)
                 self.connected_users[self.channel_name] = user
-                user_list = self.get_user_list()
-                await CustomUser.update_user_on_connect_to_site(user)
-                await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_CONNECTED, user_list)
+                # send yourself to all the users
+                profile_picture_url = ''
+                if user.profile_picture:
+                        # Open the profile picture file, read its content, and encode it in base64
+                        with open(user.profile_picture.path, "rb") as image_file:
+                            profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
+                            profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
+                await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username, 'image': profile_picture_url})
 
         except ExpiredSignatureError as e:
             logger.warning(f'ExpiredSignatureError: {e}')
@@ -81,9 +83,22 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
             await self.close(code=4003)
             
     async def send_user_list(self):
+        # Send the whole list
         user_list = self.get_user_list()
         await send_to_me(self, USER_LIST, user_list)
     
     def get_user_list(self):
-        user_list = [{'id': user.id, 'username': user.username} for user in self.connected_users.values()]
+        user_list = []
+        for user in self.connected_users.values():
+            user_data = {
+                'id': user.id,
+                'username': user.username,
+                'image': ''  # Default value if user doesn't have a profile picture
+            }
+            if user.profile_picture:
+                # Open the profile picture file, read its content, and encode it in base64
+                with open(user.profile_picture.path, "rb") as image_file:
+                    profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
+                    user_data['image'] = f'data:image/jpeg;base64,{profile_picture_content}'
+            user_list.append(user_data)
         return user_list

@@ -1,7 +1,7 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
 import { CHAT_TYPES, GAMES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
-import { addSingleUser } from "../chat/chatScript.js";
+import { addSingleUser, removeSingleUser } from "../chat/chatScript.js";
 
 let NotificationsSM = new NotificationsSocketManager();
 
@@ -364,46 +364,18 @@ NotificationsSM.registerCallback(SOCKET.CONNECTED, event => {
 });
 
 NotificationsSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
-    console.log('Connect me')
-    // addSingleUser(userList, "user-table-body")
-    update_user_list(userList);
+    console.log(userList)
+    userList.forEach((user) => {
+        addSingleUser(user, 'user-table-body');
+    });
 });
 
-NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, userList => {
-    console.log('Connect other')
-    // addSingleUser(userList, "user-table-body")
-    update_user_list(userList);
+NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
+    console.log(user)
+    addSingleUser(user, 'user-table-body');
 });
 
 NotificationsSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
-    console.log('Connect other')
-    // addSingleUser(userList, "user-table-body")
-    remove_disconnected_user(user);
+    console.log('bye')
+    removeSingleUser(user, 'user-table-body');
 });
-
-
-function remove_disconnected_user(user) {
-    let userTableBody = document.getElementById("user-table-body");
-    let userRow = document.getElementById("user-" + user.id);
-    if (userRow) {
-        userTableBody.removeChild(userRow);
-        console.log('User with ID', user.id, 'removed from the user list.');
-    } else {
-        console.log('User with ID', user.id, 'not found in the user list.');
-    }
-}
-
-// Function to update the user list displayed on the client-side
-function update_user_list(userList) {
-    let userTableBody = document.getElementById("user-table-body");
-    userTableBody.innerHTML = ""; // Clear the existing user list
-
-    Object.values(userList).forEach(user => {
-        const row = document.createElement("tr");
-        row.setAttribute("id", "user-" + user.id); // Set a unique ID for the user row
-        row.innerHTML = `
-            <td>${user.username}</td>
-        `;
-        userTableBody.appendChild(row);
-    });
-}
