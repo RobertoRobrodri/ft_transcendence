@@ -37,14 +37,15 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
         try:
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
-                if user.id in self.connected_users:
+                if self.channel_name in self.connected_users:
                     await self.close(code=4001)
                     logger.debug('Already connected')
                     return
-                self.connected_users[user.id] = (self.channel_name)
-                # await self.channel_layer.group_add(GENERAL_GAME, self.channel_name)
                 await self.accept()
-                await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username})
+                await self.channel_layer.group_add(STATUS_CHANNEL, self.channel_name)
+                self.connected_users[self.channel_name] = user
+                user_list = self.get_user_list()
+                await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_CONNECTED, user_list)
 
         except ExpiredSignatureError as e:
             logger.warning(f'ExpiredSignatureError: {e}')
@@ -57,9 +58,9 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
         try:
             user = self.scope["user"]
             if user.is_authenticated and not user.is_anonymous:
-                if user.id in self.connected_users:
-                    del self.connected_users[user.id]
-                # await self.channel_layer.group_discard(GENERAL_GAME, self.channel_name)
+                if self.channel_name in self.connected_users:
+                    del self.connected_users[self.channel_name]
+                await self.channel_layer.group_discard(STATUS_CHANNEL, self.channel_name)
                 
         except Exception as e:
             logger.warning(f'Exception in disconnect: {e}')
@@ -72,14 +73,14 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                 type = data["type"]
                 if type == USER_LIST:
                     await self.send_user_list()
-
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
             await self.close(code=4003)
             
     async def send_user_list(self):
-        user_ids = list(self.connected_users.keys())
-        usernames_coroutine = CustomUser.objects.filter(id__in=user_ids).values_list('id', 'username')
-        usernames = await sync_to_async(list)(usernames_coroutine)
-        result = {user_id: username for user_id, username in usernames}
-        await send_to_me(self, USER_LIST, result)
+        user_list = self.get_user_list()
+        await send_to_me(self, USER_LIST, user_list)
+    
+    def get_user_list(self):
+        user_list = [{'id': user.id, 'username': user.username} for user in self.connected_users.values()]
+        return user_list

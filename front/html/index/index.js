@@ -363,30 +363,29 @@ NotificationsSM.registerCallback(SOCKET.CONNECTED, event => {
 });
 
 NotificationsSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
+    console.log('Connect me')
+    console.log(userList)
     let userTableBody = document.getElementById("user-table-body");
     userTableBody.innerHTML = "";
     Object.values(userList).forEach(user => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${user}</td>
+            <td>${user.username}</td>
         `;
         userTableBody.appendChild(row);
     });
 });
 
-// Callback rcv connected user
 NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, userList => {
+    console.log('User connected')
+    console.log(userList)
     let userTableBody = document.getElementById("user-table-body");
     userTableBody.innerHTML = "";
     Object.values(userList).forEach(user => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${user}</td>
+            <td>${user.username}</td>
         `;
         userTableBody.appendChild(row);
     });
-});
-
-NotificationsSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
-    console.log(data)
 });
