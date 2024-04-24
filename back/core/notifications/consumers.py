@@ -45,6 +45,7 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_add(STATUS_CHANNEL, self.channel_name)
                 self.connected_users[self.channel_name] = user
                 user_list = self.get_user_list()
+                await CustomUser.update_user_on_connect_to_site(user)
                 await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_CONNECTED, user_list)
 
         except ExpiredSignatureError as e:
@@ -60,6 +61,7 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
             if user.is_authenticated and not user.is_anonymous:
                 if self.channel_name in self.connected_users:
                     del self.connected_users[self.channel_name]
+                await CustomUser.update_user_on_disconnect_from_site(user)
                 await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_DISCONNECTED, {'id': user.id, 'username': user.username})
                 await self.channel_layer.group_discard(STATUS_CHANNEL, self.channel_name)
                 

@@ -12,6 +12,7 @@ class CustomUser(AbstractUser):
         INMENU = "inmenu"
         INGAME = "ingame"
         INQUEU = "inqueu"
+        OFFLINE = "offline"
 
     wins                = models.IntegerField(default=0)
     losses              = models.IntegerField(default=0)
@@ -87,8 +88,20 @@ class CustomUser(AbstractUser):
 
     @classmethod
     @database_sync_to_async
+    def update_user_on_connect_to_site(cls, user):
+        user.status = CustomUser.Status.INMENU
+        user.save()
+
+    @classmethod
+    @database_sync_to_async
     def update_user_on_disconnect(cls, user):
         user.connected = False
+        user.save()
+
+    @classmethod
+    @database_sync_to_async
+    def update_user_on_disconnect_from_site(cls, user):
+        user.status = CustomUser.Status.OFFLINE
         user.save()
     
     @classmethod
