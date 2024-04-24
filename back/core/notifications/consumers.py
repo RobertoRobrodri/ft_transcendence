@@ -60,6 +60,7 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
             if user.is_authenticated and not user.is_anonymous:
                 if self.channel_name in self.connected_users:
                     del self.connected_users[self.channel_name]
+                await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_DISCONNECTED, {'id': user.id, 'username': user.username})
                 await self.channel_layer.group_discard(STATUS_CHANNEL, self.channel_name)
                 
         except Exception as e:

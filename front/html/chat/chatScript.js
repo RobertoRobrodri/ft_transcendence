@@ -330,7 +330,7 @@ function clearUnreadCount(itemId) {
 }
 
 // Add new item to chat
-function addSingleUser(user, list = "chatList") {
+export function addSingleUser(user, list = "chatList") {
     const id = list + "_" + user.id;
     const exist = document.getElementById(id);
     if(exist)
