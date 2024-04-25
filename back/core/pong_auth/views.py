@@ -20,6 +20,7 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
 
     def post(self, request):
+        logger.debug('Processing registration request')
         registration = self.serializer_class(data=request.data)
         if registration.is_valid():
             try:
@@ -74,6 +75,7 @@ class UserValidateOTPView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        logger.debug('Validation OTP request in progress...')
         user = request.user
         if ('2FA' not in request.auth.payload):
             return Response({'error': 'Invalid Token'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -96,6 +98,7 @@ class UserValidateOTPView(generics.GenericAPIView):
 # We are not using logout because we are not using sessions
 class UserLogoutView(generics.GenericAPIView):
     def post(self, request,*args, **kwargs):
+        logger.debug('Processing logout request')
         user = request.user
         # Front has to delete the access token!!!
         RefreshToken.for_user(user)
@@ -108,6 +111,7 @@ class User42Callback(generics.GenericAPIView):
     serializer_class = User42RegistrationSerializer
 
     def post(self, request):
+        logger.debug('Processing 42 login request')
         token_url     = "https://api.intra.42.fr/oauth/token"
         code          = request.data.get('code', None)
         state         = request.data.get('state', None)

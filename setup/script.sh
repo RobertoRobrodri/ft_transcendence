@@ -40,3 +40,29 @@ else
   echo "Response: $response"
   echo "Failed to update kibana system password"
 fi
+
+# Data policy to delete logs after 3 days
+curl -X PUT "http://elasticsearch:9200/_ilm/policy/three_days_policy" -H 'Content-Type: application/json' -u $ELASTIC_USER:$ELASTIC_PASS -d'
+{
+  "policy": {
+    "phases": {
+      "delete": {
+        "min_age": "3d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}'
+
+# Template logs creation to index with data policy
+curl -X PUT "http://elasticsearch:9200/_index_template/my_template" -H 'Content-Type: application/json' -u $ELASTIC_USER:$ELASTIC_PASS -d'
+{
+  "index_patterns": ["postgresql-*", "nginx-*", "django-*"],
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "three_days_policy"
+    }
+  }
+}'
