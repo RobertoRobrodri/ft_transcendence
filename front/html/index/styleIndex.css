@@ -15,6 +15,19 @@ main {
     height: 100vh; /* Altura del 100% de la ventana */
 }
 
+.div-table-container {
+    display: flex;
+    flex-direction: row;
+    
+}
+
+.div-table-container #user-table-body img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%
+}
+
+
 /* Barra de abajo de la página */
 .system-bar {
     background-color: #333;

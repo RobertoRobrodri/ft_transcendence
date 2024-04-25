@@ -355,7 +355,9 @@ function makeDraggable(element, elementClick) {
 }
 
 function connectNotifications() {
-    NotificationsSM.connect();
+    if(NotificationsSM.connect() == NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED) {
+        NotificationsSM.send(CHAT_TYPES.USER_LIST);
+    }
 }
 
 NotificationsSM.registerCallback(SOCKET.CONNECTED, event => {
@@ -364,18 +366,15 @@ NotificationsSM.registerCallback(SOCKET.CONNECTED, event => {
 });
 
 NotificationsSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
-    console.log(userList)
     userList.forEach((user) => {
         addSingleUser(user, 'user-table-body');
     });
 });
 
 NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
-    console.log(user)
     addSingleUser(user, 'user-table-body');
 });
 
 NotificationsSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
-    console.log('bye')
     removeSingleUser(user, 'user-table-body');
 });
