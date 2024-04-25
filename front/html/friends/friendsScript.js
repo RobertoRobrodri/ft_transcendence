@@ -66,7 +66,10 @@ async function loadUsersTable() {
         requests.forEach(request => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${request.id}</td>
+                <td>${request.id}
+                    <button type="button" class="btn btn-success" id=ACCEPT_${request.id}>Accept</button>
+                    <button type="button" class="btn btn-danger" id=DECLINE_${request.id}>Decline</button>
+                </td>
                 <td>${request.username}</td>
             `;
             requestTableBody.appendChild(row);
@@ -107,6 +110,37 @@ async function sendFriendRequest(e) {
     }
 }
 
+
+async function HandleFriendRequest(e) {
+    const token = sessionStorage.getItem('token');
+    let target = e.target.id.split('_');
+    let id = target[1];
+    const FriendData = {
+        action: target[0],
+    };
+    try {
+        const response = await fetch(`/api/friends/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }, body: JSON.stringify(FriendData),
+        })
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(JSON.stringify(error));
+        }
+        const data = await response.json();
+        console.log(data);
+        loadFriendsPage();
+    }
+    catch (error) {
+        // displayErrorList(JSON.parse(error.message), 'FriendRequestForm');
+        console.log(error)
+    }
+}
+
 function FriendRequestListener() {
     document.getElementById('root').addEventListener('submit', sendFriendRequest);
+    document.getElementById('root').addEventListener('click', HandleFriendRequest);
 }

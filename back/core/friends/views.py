@@ -36,14 +36,14 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 		friend_request_id = kwargs.get('pk')
 		action = request.data.get('action', None)
 		try:
-			user_receiver = request.user.friend_requests_received.get(pk=friend_request_id)
+			user_receiver = request.user.friend_requests.get(pk=friend_request_id)
 			if action == 'ACCEPT':
 				request.user.friends.add(user_receiver)
 				user_receiver.friends.add(request.user)
-				request.user.friend_requests_received.remove(user_receiver)
+				request.user.friend_requests.remove(user_receiver)
 				return Response({"message": "Friend Request Accepted"}, status=status.HTTP_200_OK)
 			elif action == 'DECLINE':
-				request.user.friend_requests_received.remove(user_receiver)
+				request.user.friend_requests.remove(user_receiver)
 				return Response({"message": "Friend Request declined"}, status=status.HTTP_200_OK)
 		except CustomUser.DoesNotExist:
 			return Response({"message": "No such friend request"}, status=status.HTTP_400_BAD_REQUEST)
