@@ -12,6 +12,7 @@ class PongCLI:
     def __init__(self):
         self.token = None
         self.loguinUrl = 'https://localhost/api/pong_auth/login/'
+        self.loguin2fa = 'https://localhost/api/pong_auth/verify_otp/'
         self.socketUrl = 'wss://localhost:443/ws/game/?token='
 
         # SOCKET EVENTS
@@ -51,6 +52,21 @@ class PongCLI:
             if response.status_code == 200:
                 self.token = response.json()["token"]
                 print(f"Welcome {username}.")
+            elif response.status_code == 308: # 2fa
+                self.token = response.json()["verification_token"]
+                twofa = input("Enter 2FA code: ")
+                twofa_data = {"otp": twofa}
+                headers = {
+                    'Authorization': f'Bearer {self.token}',
+                    'Content-Type': 'application/json'
+                }
+                response = requests.post(self.loguin2fa, json=twofa_data, headers=headers, verify=False)
+                if response.status_code == 200:
+                    self.token = response.json()["token"]
+                    print(f"Welcome {username}.")
+                else:
+                    print("Login failed. Please verify your credentials.")
+                    self.login()
             else:
                 print("Login failed. Please verify your credentials.")
                 self.login()
