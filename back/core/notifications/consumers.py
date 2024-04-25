@@ -48,6 +48,7 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                         with open(user.profile_picture.path, "rb") as image_file:
                             profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
                             profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
+                await CustomUser.update_user_on_connect_to_site(user)
                 await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username, 'image': profile_picture_url})
 
         except ExpiredSignatureError as e:
