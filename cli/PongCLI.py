@@ -20,6 +20,7 @@ class PongCLI:
         self.GAME_END        = 'game_end'
         self.GAME_STATE      = 'game_state'
         self.ACTION          = 'action'
+        self.INQUEUE         = 'queue_matchmaking'
 
         # GAME VARS
         self.CANVAS_WIDTH  = 400
@@ -83,7 +84,6 @@ class PongCLI:
         ws = self.connect_to_pong()
         if ws:
             input("Press Enter to enter matchmaking...")
-            self.createWindow()
             self.send(ws, self.INITMATCHMAKING, "Pong")
             while True:
                 response = ws.recv()
@@ -92,11 +92,13 @@ class PongCLI:
                 data = json.loads(response)
                 type = data["type"]
                 if type == self.INITMATCHMAKING:
+                    self.createWindow()
                     threading.Thread(target=cli.handle_input, args=(ws,), daemon=True).start()
                     self.send(ws, self.PLAYER_READY)
                 elif type == self.GAME_STATE:
                     self.drawGame(data["message"])
-                    pass
+                elif type == self.INQUEUE:
+                    print("Wating rival")
                 elif type == self.GAME_END:
                     print("Game finished!")
                     self.endGame()
@@ -108,7 +110,10 @@ class PongCLI:
         # Get terminal dimensions
         stdscr = curses.initscr()
         height, width = stdscr.getmaxyx()
-        curses.endwin()
+        # curses.endwin()
+
+        # Disable echoing of key presses
+        curses.noecho()
 
         # Calculate scale factors for width and height
         self.width_scale = width / self.CANVAS_WIDTH
@@ -125,28 +130,31 @@ class PongCLI:
         self.game_win.clear()
 
     def drawGame(self, data):
-        self.game_win.clear()
+        try:
+            if self.game_win is None:
+                return
+            self.game_win.clear()
+            # Draw border
+            self.game_win.border()
+            # Draw "canvas"
+            self.game_win.addstr(0, 0, f'Pong cli')
 
-        # Draw border
-        self.game_win.border()
+            # Draw the paddle
+            for player_id, player_data in data["players"].items():
+                paddle_x = int(player_data["paddle_x"] * self.width_scale)
+                paddle_y = int(player_data["paddle_y"] * self.height_scale)
+                paddle_height = int(self.PADDLE_HEIGHT * self.height_scale)
+                paddle_width = int(self.PADDLE_WIDTH * self.width_scale)
+                
+                # Adjust paddle coordinates to fit inside the border
+                paddle_x = max(1, min(self.canvas_width - paddle_width - 2, paddle_x))
+                paddle_y = max(1, min(self.canvas_height - paddle_height - 2, paddle_y))
 
-        # Draw "canvas"
-        self.game_win.addstr(0, 0, f'Canvas: {self.CANVAS_WIDTH}x{self.CANVAS_HEIGHT}')
-
-        # Draw the paddle
-        for player_id, player_data in data["players"].items():
-            paddle_x = int(player_data["paddle_x"] * self.width_scale)
-            paddle_y = int(player_data["paddle_y"] * self.height_scale)
-            paddle_height = int(self.PADDLE_HEIGHT * self.height_scale)
-            paddle_width = int(self.PADDLE_WIDTH * self.width_scale)
-            
-            # Adjust paddle coordinates to fit inside the border
-            paddle_x = max(1, min(self.canvas_width - paddle_width - 2, paddle_x))
-            paddle_y = max(1, min(self.canvas_height - paddle_height - 2, paddle_y))
-
-            for i in range(paddle_height):
-                for j in range(paddle_width):
-                    self.game_win.addch(paddle_y + i, paddle_x + j, '|')
+                for i in range(paddle_height):
+                    for j in range(paddle_width):
+                        self.game_win.addch(paddle_y + i, paddle_x + j, '|')
+        except:
+            pass
 
         # Draw ball
         ball_x = int(data["ball"]["x"] * self.width_scale)
@@ -158,21 +166,28 @@ class PongCLI:
 
     def endGame(self):
         curses.endwin()
+        self.game_win = None
 
     def handle_input(self, ws):
+        # Configure the game window for non-blocking input
+        self.game_win.nodelay(True)
         while True:
+            if self.game_win == None:
+                return
             key = self.game_win.getch()
             if key != -1:
+                # If a key is detected, put it into the input queue
                 self.input_queue.put(key)
-            # time.sleep(0.05)  # Short pause to avoid excessive CPU consumption
 
-            # Empty input buffer and send all detected keys
+            # Process all keys in the input queue
             while not self.input_queue.empty():
                 key = self.input_queue.get()
                 if key == ord('w') or key == ord('W'):
                     self.send(ws, self.ACTION, {"game": "Pong", "action": "-3"})
                 elif key == ord('s') or key == ord('S'):
                     self.send(ws, self.ACTION, {"game": "Pong", "action": "3"})
+
+
 
 if __name__ == "__main__":
     cli = PongCLI()
