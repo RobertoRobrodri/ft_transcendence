@@ -112,7 +112,6 @@ class PongGame:
     async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
             self.running = False
-            logger.warning(f"remove: {self.game_id}")
             del games[self.game_id]
             await self.send_game_end()
             if self.tournament_id is None:

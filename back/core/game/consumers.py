@@ -493,7 +493,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
     async def player_ready(self, user):
         game_id = get_game_id(user.id)
-        logger.warning(f"user: {user.username}  game: {game_id}")
         if game_id is not None:
             await games[game_id]["instance"].player_ready(user.id)
     
