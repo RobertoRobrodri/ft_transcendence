@@ -1,0 +1,3 @@
+requests==2.31.0
+websocket-client==1.8.0
+windows-curses==2.3.2 #Only for windows, mac/linux have preinstalled courses
