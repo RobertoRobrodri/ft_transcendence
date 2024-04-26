@@ -25,7 +25,7 @@ export function loadMainPage() {
         style2.textContent = css2;
         document.head.appendChild(style2);
         //clear hash
-        history.pushState("", document.title, window.location.pathname + window.location.search);
+        //history.pushState("", document.title, window.location.pathname + window.location.search);
         setClickEvents();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);

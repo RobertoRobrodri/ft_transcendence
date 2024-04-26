@@ -22,28 +22,62 @@ export function router() {
     else if (hash === '#/edit-profile' && checkLoginStatus() === true) {
         loadEditProfilePage();
     }
-    else
+    else {
         displayLoginOrMenu();
+    }
 
     if(!menuLoaded) {
         menuLoaded = true;
         document.getElementById('root').addEventListener('click', configureMenu);
     }
+    
 }
 
 function configureMenu(e) {
-    if (e.target.matches('#menuContainer') === false &&
-        e.target.matches('#menuLogo') === false) {
-        return;
-    }
-    var menu = document.getElementById('menu');
-    if (getComputedStyle(menu).display === 'none') {
-        menu.style.display = 'flex';
+    if (e.target.matches('a')) {
+        if (e.target.closest('#menu') !== null) {
+            e.preventDefault();
+            let href = e.target.getAttribute('href');
+            history.pushState({ page: href }, "", href);
+            router();
+        }
     } else {
-        menu.style.display = 'none';
+        if (e.target.matches('#menuContainer') === false &&
+            e.target.matches('#menuLogo') === false) {
+            return;
+        }
+        var menu = document.getElementById('menu');
+        if (getComputedStyle(menu).display === 'none') {
+            menu.style.display = 'flex';
+        } else {
+            menu.style.display = 'none';
+        }
+        e.preventDefault();
     }
-    e.preventDefault()
 }
+
+window.onpopstate = function() {
+    router();
+};
+
+// window.addEventListener("popstate", function(event) {
+//     console.log("popstate")
+//     if (event.state && event.state.page) {
+//         // Cargar la ubicacion guardada en el historial
+//         router();
+//     }
+// });
+
+// Manejar el evento popstate
+// window.addEventListener("popstate", function(event) {
+//     if (event.state && event.state.previousLocation) {
+//         // Cargar la ubicación guardada en el historial
+//         location.href = event.state.previousLocation;
+//     } else {
+//         // Si no hay una ubicación anterior en el historial, cargar la página principal
+//         location.href = '#'; // Cambia '#/main' por tu ruta principal
+//     }
+// });
 
 function updateTime() {
     let currTime = document.getElementById('current-time');

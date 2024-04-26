@@ -93,6 +93,6 @@ export async function callback42(e) {
                 loadMainPage();
         }
     } else {
-        console.error('Authorization code not found in the URL.');
+        //console.error('Authorization code not found in the URL.');
     }
 }
