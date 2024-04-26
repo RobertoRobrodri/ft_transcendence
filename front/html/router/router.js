@@ -56,28 +56,16 @@ function configureMenu(e) {
     }
 }
 
-window.onpopstate = function() {
-    router();
-};
+// window.onpopstate = function() {
+//     router();
+// };
 
-// window.addEventListener("popstate", function(event) {
-//     console.log("popstate")
-//     if (event.state && event.state.page) {
-//         // Cargar la ubicacion guardada en el historial
-//         router();
-//     }
-// });
+window.addEventListener("popstate", function(event) {
+    if (event.state && event.state.page) {
+        router();
+    }
+});
 
-// Manejar el evento popstate
-// window.addEventListener("popstate", function(event) {
-//     if (event.state && event.state.previousLocation) {
-//         // Cargar la ubicación guardada en el historial
-//         location.href = event.state.previousLocation;
-//     } else {
-//         // Si no hay una ubicación anterior en el historial, cargar la página principal
-//         location.href = '#'; // Cambia '#/main' por tu ruta principal
-//     }
-// });
 
 function updateTime() {
     let currTime = document.getElementById('current-time');
