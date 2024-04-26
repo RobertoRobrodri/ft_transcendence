@@ -1,5 +1,5 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
-import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
+import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeSingleGame, endSingleGame } from "./singlegame.js";
 import { initializeVersusGame, endVersusGame } from "./versusgame.js";
 // import { renewJWT } from "../components/updatejwt.js";
@@ -7,6 +7,10 @@ import { initializeVersusGame, endVersusGame } from "./versusgame.js";
 /////////////////
 // Global vars //
 /////////////////
+let isPlaying = false;
+let myUserId = null;
+let myUsername = null;
+let tournamentJoined = null;
 let canvas;
 let ctx;
 let score = [0, 0];
@@ -53,19 +57,36 @@ function gameEventHandler(e) {
     }
     else if (e.target.matches('#backToTournaments') === true)
     {
+        tournamentJoined = null;
         toggleView(tournamentJoinView, false);
         toggleView(tournamentView, true);
     }
     else if (e.target.matches('#leaveTournament') === true) {
         // Llamamos a la funcion para salir de un torneo
+        gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+            id: tournamentJoined,
+            game: GAMES.PONG
+        })
+        tournamentJoined = null;
+        toggleView(tournamentJoinView, false);
         toggleView(tournamentReadyView, false);
-        toggleView(tournamentJoinView, true);
+        toggleView(tournamentView, true);
     }
     else if (e.target.matches('#joinTournament') === true) {
+        let nickname = document.getElementById("tournament-nickname").value;
+        if (nickname !== null && nickname !== "") {
+            //JOIN_TOURNAMENT
+            gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
+                id: tournamentJoined,
+                nick: nickname,
+                game: GAMES.PONG
+            })
+        }
         // Comprobamos si el nickname es valido
         // Llamamos a la funcion para entrar a un torneo
-        toggleView(tournamentJoinView, false);
-        toggleView(tournamentReadyView, true);
+        // toggleView(tournamentJoinView, false);
+        // toggleView(tournamentView, false);
+        // toggleView(tournamentReadyView, true);
     }
     else if (e.target.matches('#createTournament') === true) {
         CreateTournament();
@@ -155,11 +176,15 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
 
 // MATCHMAKING
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
-    //Game matched! game started
-    // send ready request after open game, message to ask about ready etc
-    // Hide matchmaking elements
     if(data.game == GAMES.PONG) {
+        isPlaying = true;
         toggleView(matchmakingView, false);
+        toggleView(onlineMenuView, false);
+        toggleView(tournamentView, false);
+        toggleView(optionsView, false);
+        toggleView(tournamentReadyView, false);
+        toggleView(tournamentJoinView, false);
+        toggleView(localgameView, false);
         gameSM.send(GAME_TYPES.PLAYER_READY);
     }
 });
@@ -193,6 +218,7 @@ gameSM.registerCallback(GAME_TYPES.PADDLE_COLLISON, data => {
 
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
     if(data.game == GAMES.PONG) {
+        isPlaying = false;
         const audio = new Audio("assets/game/sounds/chipi-chapa.mp3");
         score = [0, 0];
         audio.play();
@@ -208,7 +234,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 
 gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
     if(data.game == GAMES.PONG) {
-        fillTournaments(data.data);
+        fillTournamentsList(data.data);
     }
 });
 
@@ -222,28 +248,57 @@ gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
     console.log(`game start in: ${data.counter}`)
 });
 
-gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
-    console.log(`tournament data table: ${data}`)
+gameSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
+    myUserId = data.id;
+    myUsername = data.username;
 });
 
 gameSM.registerCallback(GAME_TYPES.USERS_PLAYING, data => {
     if (data.game == GAMES.PONG) {
-
+        //retrieve a list of users playing
     }
 });
 
-////////////////
-// GAME LOGIC //
-////////////////
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_CREATED, data => {
+    if (data.game == GAMES.PONG) {
+        if(data.data.adminId == myUserId) {
+            fillTournamentData(data.data)
+            toggleView(tournamentView, false);
+            toggleView(tournamentReadyView, true);
+        }
+    }
+});
 
-function InitMatchmaking()
-{
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
+    if (data.game == GAMES.PONG) {
+        if(isPlaying)
+            return;
+        //el usuario está en un torneo
+        console.log(data.data)
+        fillTournamentData(data.data)
+        toggleView(optionsView, false);
+        toggleView(tournamentReadyView, true);
+    }
+});
+
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
+    console.log(`tournament data table: ${data}`)
+});
+
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
+    console.log(`tournament players: ${data}`)
+});
+
+//////////////////////
+// TOURNAMENT LOGIC //
+//////////////////////
+
+function requestTournamentTable(tournamentID) {
+    gameSM.send(GAME_TYPES.TOURNAMENT_TABLE, tournamentID);
 }
 
-function InitMatchmakingTournament()
-{
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.TOURNAMENT);
+function requestTournamentPlayers(tournamentID) {
+    gameSM.send(GAME_TYPES.TOURNAMENT_PLAYERS, tournamentID);
 }
 
 function CreateTournament()
@@ -257,7 +312,149 @@ function CreateTournament()
         size: playerSize,
         tournament_name: tournamentName
     });
-    // Ahora cambiamos la vista a la del torneo
+}
+
+// Fill Tournament table
+function fillTournamentsList(data) {
+    var tournaments = document.getElementById("allTournaments-table-body");
+    tournaments.innerHTML = "";
+    let currentTournamentExist = false;
+    data.forEach((element) => {
+        if (!currentTournamentExist && element.id == tournamentJoined) {
+            currentTournamentExist = true;
+        }
+        const row = document.createElement("tr");
+        row.addEventListener("click", function() {
+            // Fill tournament_name_join data:
+            toggleView(tournamentView, false);
+            toggleView(tournamentJoinView, true);
+            fillTournamentData(element);
+        });
+        row.innerHTML = `
+            <td>${element.name}</td>
+            <td>${element.currentPlayers}/${element.size}</td>
+        `;
+        tournaments.appendChild(row);
+    });
+    if(!currentTournamentExist && tournamentJoined != null && !isPlaying) {
+        toggleView(tournamentView, true);
+        toggleView(tournamentJoinView, false);
+        toggleView(tournamentReadyView, false);
+    }
+}
+
+function fillTournamentData(data) {
+    
+    //Joined
+    let tournamentName  = document.getElementById("tournament_name_joinned");
+    let nbrPlayers      = document.getElementById("tournament_number_joined");
+    let admin           = document.getElementById("tournament_admin_joined");
+    tournamentName.textContent  = data.name;
+    nbrPlayers.textContent      = `${data.currentPlayers}/${data.size}`;
+    admin.textContent           = data.admin;
+    tournamentJoined            = data.id;
+
+    //Join
+    let tournamentName2  = document.getElementById("tournament_name_join");
+    let nbrPlayers2      = document.getElementById("tournament_number_join");
+    let admin2           = document.getElementById("tournament_admin_join");
+    tournamentName2.textContent  = data.name;
+    nbrPlayers2.textContent      = `${data.currentPlayers}/${data.size}`;
+    admin2.textContent           = data.admin;
+    tournamentJoined             = data.id;
+}
+
+// Fill Tournament list
+function fillTournaments2(data) {
+    var tournaments = document.getElementById("tournamentList");
+
+    // Remove previous li elements
+    while (tournaments.firstChild)
+        tournaments.removeChild(tournaments.firstChild);
+    
+    console.log(data);
+
+    data.forEach((element) => {
+        var curli = document.createElement("li");
+        curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
+        curli.classList.add("list-group-item");
+        // curli.dataset.tournamentId = element.id;
+        // Click example to join tournament
+        curli.addEventListener('click', function() {
+            var nickname = prompt(`¿Want join to ${element.name} tournament? Introduce your nickname:`);
+            if (nickname !== null && nickname !== "") {
+                //JOIN_TOURNAMENT
+                gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
+                    id: element.id,
+                    nick: nickname,
+                    game: GAMES.PONG
+                })
+                console.log("El usuario confirmó la entrada al torneo.");
+            }
+        });
+
+        // Leave
+        var leaveButton = document.createElement("button");
+        leaveButton.textContent = "Leave";
+        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+        leaveButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+                id: element.id,
+                game: GAMES.PONG
+            })
+        });
+        curli.appendChild(leaveButton);
+        tournaments.appendChild(curli);
+    });
+}
+
+function fillGames(data) {
+    var games = document.getElementById("gameList");
+    if(!games)
+        return;
+    // Remove previous li elements
+    while (games.firstChild)
+        games.removeChild(games.firstChild);
+    
+    data.data.forEach((element) => {
+        var curli = document.createElement("li");
+        curli.textContent = `${element.id}`;
+        curli.classList.add("list-group-item");
+        //Click example to join tournament
+        curli.addEventListener('click', function() {
+            gameSM.send(GAME_TYPES.SPECTATE_GAME, {
+                id: element.id
+            })
+        });
+        
+        // Leave
+        var leaveButton = document.createElement("button");
+        leaveButton.textContent = "Leave";
+        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+        leaveButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
+                id: element.id
+            })
+        });
+        curli.appendChild(leaveButton);
+        games.appendChild(curli);
+    });
+}
+
+////////////////
+// GAME LOGIC //
+////////////////
+
+function InitMatchmaking()
+{
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+}
+
+function InitMatchmakingTournament()
+{
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.TOURNAMENT);
 }
 
 function CancelMatchmaking()
@@ -342,105 +539,6 @@ function getDirectionFromKeyCode(keyCode) {
         default:
             return null;
     }
-}
-
-// Fill Tournament table
-function fillTournaments(data) {
-    console.log(data);
-    var tournaments = document.getElementById("allTournaments-table-body");
-    tournaments.innerHTML = "";
-    data.forEach((element) => {
-        const row = document.createElement("tr");
-        row.addEventListener("click", function() {
-            console.log(element.id);
-            toggleView(tournamentView, false);
-            toggleView(tournamentJoinView, true);
-        });
-        row.innerHTML = `
-            <td>${element.name}</td>
-            <td>${element.currentPlayers}/${element.size}</td>
-        `;
-        tournaments.appendChild(row);
-    });
-}
-
-// Fill Tournament list
-function fillTournaments2(data) {
-    var tournaments = document.getElementById("tournamentList");
-
-    // Remove previous li elements
-    while (tournaments.firstChild)
-        tournaments.removeChild(tournaments.firstChild);
-    
-    console.log(data);
-
-    data.forEach((element) => {
-        var curli = document.createElement("li");
-        curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
-        curli.classList.add("list-group-item");
-        // curli.dataset.tournamentId = element.id;
-        // Click example to join tournament
-        curli.addEventListener('click', function() {
-            var nickname = prompt(`¿Want join to ${element.name} tournament? Introduce your nickname:`);
-            if (nickname !== null && nickname !== "") {
-                //JOIN_TOURNAMENT
-                gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
-                    id: element.id,
-                    nick: nickname,
-                    game: GAMES.PONG
-                })
-                console.log("El usuario confirmó la entrada al torneo.");
-            }
-        });
-
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function(event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
-                id: element.id,
-                game: GAMES.PONG
-            })
-        });
-        curli.appendChild(leaveButton);
-        tournaments.appendChild(curli);
-    });
-}
-
-function fillGames(data) {
-    var games = document.getElementById("gameList");
-    if(!games)
-        return;
-    // Remove previous li elements
-    while (games.firstChild)
-        games.removeChild(games.firstChild);
-    
-    data.data.forEach((element) => {
-        var curli = document.createElement("li");
-        curli.textContent = `${element.id}`;
-        curli.classList.add("list-group-item");
-        //Click example to join tournament
-        curli.addEventListener('click', function() {
-            gameSM.send(GAME_TYPES.SPECTATE_GAME, {
-                id: element.id
-            })
-        });
-        
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function(event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
-                id: element.id
-            })
-        });
-        curli.appendChild(leaveButton);
-        games.appendChild(curli);
-    });
 }
 
 function drawScore(scores) {

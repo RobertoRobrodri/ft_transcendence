@@ -44,11 +44,14 @@ export const GAME_TYPES = {
     COUNTDOWN:              'countdown',
 
     // Tournament
+    TOURNAMENT_CREATED:     'tournament_created',
     CREATE_TOURNAMENT:      'create_tournament',
     JOIN_TOURNAMENT:        'join_tournament',
     LEAVE_TOURNAMENT:       'leave_tournament',
     LIST_TOURNAMENTS:       'list_tournaments',
+    IN_TOURNAMENT:          'in_tournament',
     TOURNAMENT_TABLE:       'tournament_table',
+    TOURNAMENT_PLAYERS:     'tournament_players',
 
     // Game
     LIST_GAMES:             'list_games',
