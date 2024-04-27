@@ -35,6 +35,9 @@ export function loadFriendsPage() {
 async function loadUsersTable() {
 
     const token = sessionStorage.getItem('token')
+    let userTableBody = document.getElementById("user-table-body");
+    if (userTableBody === null)
+        return ;
     try {
         const response = await fetch('/api/user_management/user_list/', {
             method: 'GET',
@@ -49,7 +52,6 @@ async function loadUsersTable() {
         }
         const userInfo = await response.json();
         let friends = userInfo.friends;
-        let userTableBody = document.getElementById("user-table-body");
         userTableBody.innerHTML = "";
 
         friends.forEach(friend => {
