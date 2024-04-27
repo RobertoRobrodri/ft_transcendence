@@ -1,7 +1,7 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayMessage } from "../components/loader.js"
 import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
-import { CHAT_TYPES, GAMES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { CHAT_TYPES, FRIENDS } from '../socket/Constants.js';
 import { connectNotifications } from '../index/index.js';
 
 let NotificationsSM = new NotificationsSocketManager();
@@ -36,7 +36,6 @@ async function loadUsersTable() {
 
     const token = sessionStorage.getItem('token')
     try {
-        // TODO: Cambiar la api por la que obtiene los usuarios
         const response = await fetch('/api/user_management/user_list/', {
             method: 'GET',
             headers: {
@@ -119,6 +118,7 @@ async function sendFriendRequest(e) {
         const data = await response.json();
         notificationDiv.textContent = data.message;
         notificationDiv.className = 'notification success';
+        NotificationsSM.send(FRIENDS.FRIEND_REQUEST_SENT, data.friend_id);
     } catch (error) {
         displayErrorList(error.message, 'FriendRequestForm');
     }
@@ -160,8 +160,13 @@ NotificationsSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
 });
 
 NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
-    console.log("Hola")
+    console.log('User connected')
     loadUsersTable();
+});
+
+NotificationsSM.registerCallback(CHAT_TYPES.FRIEND_REQUEST_SENT,  data => {
+    console.log('Friend request received')
+    console.log(data)
 });
 
 function FriendRequestListener() {

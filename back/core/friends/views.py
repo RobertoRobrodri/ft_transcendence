@@ -30,7 +30,11 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 			return Response({"message": "Friend request already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
 		receiver_user.friend_requests.add(user_sender)
-		return Response({"message": "Friend Request sent"}, status=status.HTTP_200_OK)
+		return Response(
+			{
+				"message": "Friend Request sent",
+				"friend_id": receiver_id,
+				}, status=status.HTTP_200_OK)
 	
 	def destroy(self, request, *args, **kwargs):
 		friend_request_id = kwargs.get('pk')

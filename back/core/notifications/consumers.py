@@ -12,10 +12,12 @@ from asgiref.sync import sync_to_async
 import logging
 logger = logging.getLogger(__name__)
 
-USER_CONNECTED      = 'user_connected'
-USER_DISCONNECTED   = 'user_disconnected'
-USER_LIST           = 'user_list'
-STATUS_CHANNEL      = 'status_channel'
+USER_CONNECTED          = 'user_connected'
+USER_DISCONNECTED       = 'user_disconnected'
+USER_LIST               = 'user_list'
+STATUS_CHANNEL          = 'status_channel'
+FRIEND_REQUEST_SENT     = 'friend_request_sent'
+FRIEND_REQUEST_RECEIVED = 'friend_request_received'
 
 class NotificationsConsumer(AsyncWebsocketConsumer):
     connected_users = {}
@@ -39,6 +41,7 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                     logger.debug('Already connected')
                     return
                 await self.accept()
+                await CustomUser.update_user_on_connect_notifications(user, self.channel_name)
                 await self.channel_layer.group_add(STATUS_CHANNEL, self.channel_name)
                 self.connected_users[self.channel_name] = user
                 # send yourself to all the users
@@ -79,6 +82,8 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                 type = data["type"]
                 if type == USER_LIST:
                     await self.send_user_list()
+                elif type == FRIEND_REQUEST_SENT:
+                    await self.send_notification(user, data)
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
             await self.close(code=4003)
@@ -103,3 +108,11 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                     user_data['image'] = f'data:image/jpeg;base64,{profile_picture_content}'
             user_list.append(user_data)
         return user_list
+
+    async def send_notification(self, user, data):
+        message_data = data["message"]
+        recipient = message_data.get("recipient")
+        if recipient and recipient.isdigit():
+            userChannel = await CustomUser.get_user_by_id(recipient)
+            if(userChannel and recipient != user.id):
+                await send_to_user(self, userChannel.channel_name, FRIEND_REQUEST_RECEIVED, {'id': user.id, 'username': user.username, 'message': "Has sent you a friend request"})

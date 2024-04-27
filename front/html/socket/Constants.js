@@ -61,3 +61,9 @@ export const GAMES = {
     TOURNAMENT: 'Tournament',
     POOL:       'Pool',
 };
+
+export const FRIENDS = {
+    // Friends Notifications
+    FRIEND_REQUEST_SENT:     'friend_request_sent',
+    FRIEND_REQUEST_RECEIVED: 'friend_request_received',
+}
