@@ -69,7 +69,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if self.channel_name != event["channel"]:
             text = event["text"]
             await self.send(text_data=text)
-            
+
     async def connect(self):
         try:
             user = self.scope["user"]
@@ -174,6 +174,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             for participant in participants:
                 if participant['userid'] == userid:
                     participant['channel_name'] = self.channel_name
+                    await self.channel_layer.group_add(tournament_id, self.channel_name)
                     await send_to_me(self, IN_TOURNAMENT, {"game": tournament_info['game_request'], "data": self.getSingleTournament(tournament_id)})
 
     def getTournamentList(self, game_req):
@@ -231,10 +232,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             if tournaments[tournament_id]["adminId"] == user.id:
                 del tournaments[tournament_id]
                 await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
+                # Remove all participants
+                for i, participant in enumerate(participants):
+                    await self.channel_layer.group_discard(tournament_id, participant['channel_name'])
                 return
             # Remove user from tournament participants
             for i, participant in enumerate(participants):
                 if participant['userid'] == user.id:
+                    await self.channel_layer.group_discard(tournament_id, self.channel_name)
                     participants.pop(i)
                     await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
                     return
@@ -284,6 +289,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 'points': 0
             }]
         }
+        # Add to group
+        await self.channel_layer.group_add(tournament_name, self.channel_name)
         tournaments[tournament_name] = tournament_info
         # Send message to chat to anounce tournaments has created
         await send_to_group(self, "general", "general_chat", {
@@ -325,13 +332,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     'winner': False,
                     'points': 0
                 })
+                await self.channel_layer.group_add(tournament_id, self.channel_name)
+                await send_to_me(self, IN_TOURNAMENT, {"game": "Pong", "data": self.getSingleTournament(tournament_id)})
                 current_players += 1
                 if current_players == tournaments[tournament_id]['size']:
                     tournaments[tournament_id]['started'] = True
                     await self.startTournament(tournament_id)
-                    # We can replace to send only information of only 1 tournament instead entire list
+                # We can replace to send only information of only 1 tournament instead entire list
                 await send_to_group(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
-                await send_to_me(self, IN_TOURNAMENT, {"game": "Pong", "data": self.getSingleTournament(tournament_id)})
 
     async def startTournament(self, tournament_id):
         tournament = tournaments[tournament_id]
@@ -343,7 +351,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         tournament['rounds'].append(pairings)
         
         # Send tournament table
-        await send_to_group(self, GENERAL_GAME, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+        await send_to_me(self, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+        await send_to_group_exclude_self(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+        
+        # Force await 7 seconds
+        await asyncio.sleep(7)
 
         for pairing in pairings:
             if len(pairing) == 2:
@@ -360,9 +372,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         tournament = tournaments[tournament_id]
         current_round = tournament['rounds'][-1]  # Get last round
         winners = []
-        
-        # Send tournament table
-        await send_to_group(self, GENERAL_GAME, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
 
         # Verify that each pairing has at least one winner
         if all(any(player['winner'] for player in pairing) for pairing in current_round):
@@ -370,8 +379,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             for pairing in current_round:
                 winner = [player for player in pairing if player['winner']][0]  # Get the first player with winner=True
                 winners.append(winner)
+            # Remove not winners from group
+            for pairing in current_round:
+                for player in pairing:
+                    if not player['winner']:
+                        await self.channel_layer.group_discard(tournament_id, player["channel_name"])
             # If winner have only 1 element, player win!
             if len(winners) == 1:
+                # Remove winners
+                for winner in winners:
+                    await self.channel_layer.group_discard(tournament_id, winner["channel_name"])
+
                 logger.warning(f'final round: {winners[0]}')
                 #save data in blockchain
                 
@@ -383,13 +401,24 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             
             # Set winner to False to next round
             for winner in winners:
+                logger.warning(f"iter: {winner}")
                 winner['winner'] = False
             # Reassign next round players
             participants = winners
+            
+            for participant in participants:
+                participant['points'] = 0
 
-            random.shuffle(participants)
+            # random.shuffle(participants)
             pairings = [participants[i:i+2] for i in range(0, len(participants), 2)]
             tournament['rounds'].append(pairings)
+
+            # Send tournament table
+            await send_to_group(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+            
+            # Force await 7 seconds
+            await asyncio.sleep(7)
+
             for pairing in pairings:
                 if len(pairing) == 2:
                     room_name = f'room_{hashlib.sha256(str(int(time.time())).encode()).hexdigest()}'
@@ -410,13 +439,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             return
         tournament_id = alldata.get("id")
         tournament = tournaments[tournament_id]
-        await send_to_group(self, GENERAL_GAME, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+        # await send_to_group(self, GENERAL_GAME, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+        await send_to_me(self, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
     
     async def get_tournament_players(self, data):
         tournament_id = data.get("message")
         if tournament_id is None:
             return
-        await send_to_group(self, GENERAL_GAME, TOURNAMENT_PLAYERS, tournaments[tournament_id]['participants'])
+        await send_to_me(self, TOURNAMENT_PLAYERS, tournaments[tournament_id]['participants'])
+        # await send_to_group(self, GENERAL_GAME, TOURNAMENT_PLAYERS, tournaments[tournament_id]['participants'])
         
 
     def extract_player_info(self, tournament_id):
