@@ -1,7 +1,6 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
-import { initializeSingleGame, endSingleGame } from "./singlegame.js";
-import { initializeVersusGame, endVersusGame } from "./versusgame.js";
+import { initializeGame, endGame } from "./localGameLogic.js";
 // import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
@@ -94,13 +93,13 @@ function gameEventHandler(e) {
     else if (e.target.matches('#soloGameButton_pong') === true)
     {
         toggleView(localgameView, false);
-        initializeSingleGame();
+        initializeGame();
     }
     // Multijugador local
     else if (e.target.matches('#localMultiplayerButton_pong') === true)
     {
         toggleView(localgameView, false);
-        initializeVersusGame();
+        initializeGame(true);
     }
     else if (e.target.matches('#goBackButton_pong') === true)
     {
@@ -112,9 +111,7 @@ function gameEventHandler(e) {
         // si está conectado el socket, lo desconecta
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
-        endSingleGame();
-        // si está jugando en una partida multijugador local, la termina
-        endVersusGame();
+        endGame();
     }
     
 }

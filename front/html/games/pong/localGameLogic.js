@@ -1,10 +1,5 @@
 
-export function registerSingleGame() {
-    document.getElementById("initsinglegame").addEventListener("click", initializeSingleGame);
-    document.getElementById("endsinglegame").addEventListener("click", endSingleGame);
-}
-
-export function endSingleGame() {
+export function endGame() {
     if (intervalId != null) {
         clearInterval(intervalId);
         intervalId = null;
@@ -38,13 +33,13 @@ let leftPlayerMovement;
 let rightPlayerMovement;
 let leftCollisionX = 22;
 let rightCollisionX = 378;
-let pointsToWin = 6;
+let pointsToWin = 1;
 
-export function initializeSingleGame() {
+export function initializeGame(multiplayer = false) {
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown, multiplayer);
+    window.addEventListener("keyup", handleKeyUp, multiplayer);
     gameState = {
         ball: {
             x: 200,
@@ -65,7 +60,8 @@ export function initializeSingleGame() {
                 nbr: 2,
                 score: 0
             }
-        }
+        },
+        multiplayer: multiplayer
     }
     startGame() 
 }
@@ -80,36 +76,47 @@ function startGame() {
         speed_x: Math.random() < 0.5 ? -3 : 3,
         speed_y: getRandomYSpeed()
     };
+    gameState.players = {
+        left: {
+            paddle_x: 7,
+            paddle_y: 80,
+            nbr: 1,
+            score: 0
+        },
+        right: {
+            paddle_x: 383,
+            paddle_y: 80,
+            nbr: 2,
+            score: 0
+        }
+    }
     console.log("Starting game");
     leftPlayerMovement = 0;
     rightPlayerMovement = 0;
-    intervalId = setInterval(newFrame, 16);
-    // intervalId = setInterval(newFrame, 32); // SLOWMO
+
+    // Delay starting the game interval by 3000 milliseconds
+    setTimeout(() => {
+        intervalId = setInterval(() => {
+            newFrame();
+        }, 16);
+        // intervalId = setInterval(() => newFrame(isMultiplayer), 32); // Uncomment for SLOWMO mode
+    }, 3000);
 }
 
 function newFrame() {
     
     gameState.players.left.paddle_y = Math.min(Math.max(gameState.players.left.paddle_y + leftPlayerMovement, 0), canvasHeight - paddleLenght);
-    gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + decideNextMove(gameState.players.right.paddle_y, gameState.ball), 0), canvasHeight - paddleLenght);;
-    
+    if (gameState.multiplayer === true)
+        gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + rightPlayerMovement, 0), canvasHeight - paddleLenght);
+    else
+        gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + decideNextMove(gameState.players.right.paddle_y, gameState.ball), 0), canvasHeight - paddleLenght);
     detectCollision();
 
     moveBall(gameState.ball);
 
-    console.log(gameState.ball);
+    // console.log(gameState.ball);
 
     updateGame(gameState);
-}
-
-function decideNextMove(paddleY, ball) {
-
-    if (ball.y < paddleY) {
-        return -paddleSpeed;
-    } 
-    if (ball.y - paddleY > paddleLenght) {
-        return paddleSpeed;
-    }
-    return 0;
 }
 
 function detectCollision() {
@@ -128,7 +135,7 @@ function detectCollision() {
     if (ball.x <= leftSize) {
         gameState.players.left.score += 1;
         if (gameState.players.left.score == pointsToWin) {
-            endSingleGame();
+            endGame();
         } else {
             startGame();
         }
@@ -136,7 +143,7 @@ function detectCollision() {
     if (ball.x >= rightSize) {
         gameState.players.right.score += 1;
         if (gameState.players.right.score == pointsToWin) {
-            endSingleGame();
+            endGame();
         } else {
             startGame();
         }
@@ -242,6 +249,12 @@ function handleKeyDown(event) {
             break;
         case 83: // S
             leftPlayerMovement = paddleSpeed;
+            break;
+        case 79: // O
+            rightPlayerMovement = -paddleSpeed;
+            break;
+        case 76: // L
+            rightPlayerMovement = paddleSpeed;
         default:;
     }
 }
@@ -253,6 +266,23 @@ function handleKeyUp(event) {
             break;
         case 83: // S
             leftPlayerMovement = 0;
+            break;
+        case 79: // O
+            rightPlayerMovement = 0;
+            break;
+        case 76: // L
+            rightPlayerMovement = 0;
         default:;
     }
+}
+
+function decideNextMove(paddleY, ball) {
+
+    if (ball.y < paddleY) {
+        return -paddleSpeed;
+    } 
+    if (ball.y - paddleY > paddleLenght) {
+        return paddleSpeed;
+    }
+    return 0;
 }
