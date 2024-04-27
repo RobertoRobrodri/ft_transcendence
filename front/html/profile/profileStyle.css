@@ -1,0 +1,19 @@
+/* Center elements vertically and horizontally */
+.vertical-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* Ensures vertical centering */
+}
+
+/* Style the user photo */
+.userPhoto {
+    width: 150px;
+    height: 150px;
+}
+
+/* Style the QR code */
+.qrcode {
+    width: 35%; /* Adjust the width as per your preference */
+    height: 35%; /* Adjust the height as per your preference */
+}

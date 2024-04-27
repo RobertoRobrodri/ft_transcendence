@@ -10,10 +10,11 @@ from .serializers import UserRegistrationSerializer, \
         TwoFactorAuthObtainPairSerializer
 import requests, os, pyotp
 from django.core.exceptions import ValidationError
-
-from .utils import GenerateQR, generate_random_string,  get_token_with_custom_claim
+import logging
+from .utils import generate_random_string,  get_token_with_custom_claim
 from django.conf import settings
 
+logger = logging.getLogger('mylogger')
 class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = UserRegistrationSerializer
@@ -40,22 +41,20 @@ class UserLoginView(TokenObtainPairView):
     serializer_class = UserTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
+        logger.debug('Processing login request')
         username = request.data.get('username', None)
         password = request.data.get('password', None)
         user = authenticate(username=username, password=password)
         if (user is not None):
             if (user.TwoFactorAuth == True):
-                # Send qr image as base64
-                encoded_qr = GenerateQR(user)
                 verification_serializer = TwoFactorAuthObtainPairSerializer(data=request.data)
                 if (verification_serializer.is_valid()):
                     return Response({
                         # Send a token ONLY for verification
                         'verification_token' : verification_serializer.validated_data.get('access'),
                         'message' : 'Verify Login',
-                        'QR' : encoded_qr,
                     },
-                status=status.HTTP_200_OK)
+                status=status.HTTP_308_PERMANENT_REDIRECT)
             else:
                 # TokenObtainPairSerializer takes care of authentication and generating both tokens
                 login_serializer = self.serializer_class(data=request.data)
@@ -81,7 +80,7 @@ class UserValidateOTPView(generics.GenericAPIView):
         if (user.TwoFactorAuth == True):
             otp = request.data.get('otp', None)
             # Verify
-            totp = pyotp.TOTP(settings.OTP_SECRET_KEY)
+            totp = pyotp.TOTP(user.OTP_SECRET_KEY)
             if totp.verify(otp):
                 user.status = CustomUser.Status.INMENU
                 user.save()
@@ -135,15 +134,12 @@ class User42Callback(generics.GenericAPIView):
             user = CustomUser.objects.filter(external_id=external_id).first()
             if user is not None:
                 if (user.TwoFactorAuth == True):
-                    # Send qr image as base64
-                    encoded_qr = GenerateQR(user)
                     verification_token = get_token_with_custom_claim(user)
                     return Response({
                         # Send a token ONLY for verification
-                        'verification_token' : str(verification_token.access_token),
+                        'verification_token' : str(verification_token),
                         'message' : 'Verify Login',
-                        'QR' : encoded_qr,
-                    },status=status.HTTP_200_OK)
+                    },status=status.HTTP_308_PERMANENT_REDIRECT)
                 else:
                     user.status = CustomUser.Status.INMENU
                     user.save()

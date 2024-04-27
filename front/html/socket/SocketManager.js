@@ -1,26 +1,39 @@
 export class SocketManager {
     constructor(path) {
         this.path = path;
+        this.SOCKETSTATUS = {
+            CONNECTED:           'Connected',
+            ALREADY_CONNECTED:   'Already_Connected'
+        };
+        this.nbrConnection = 0;
     }
-
     connect() {
         // Prevent reconnection on navigation
-        console.error("Se conecta el cokset 1");
         if(this.socket === undefined)
         {
             let token = sessionStorage.getItem('token');
-            this.socket = new WebSocket(`wss://localhost:443/${this.path}/?token=${token}`);
+            let host = window.location.hostname;
+            let socketHost = host === 'localhost' ? 'localhost' : window.location.host;
+            this.socket = new WebSocket(`wss://${socketHost}:443/${this.path}/?token=${token}`);
             this.setupSocketEvents();
+            this.nbrConnection++;
+            return this.SOCKETSTATUS.CONNECTED
+        }else {
+            this.nbrConnection++;
+            return this.SOCKETSTATUS.ALREADY_CONNECTED
         }
     }
 
     disconnect()
     {
-        const code = 3008;
-        const reasson = 'Unexpected';
-        if(this.socket.readyState === WebSocket.OPEN) {
-            this.socket.close(code, reasson);
-            this.socket = undefined;
+        this.nbrConnection--;
+        if(this.nbrConnection == 0) {
+            const code = 3008;
+            const reasson = 'Unexpected';
+            if(this.socket && this.socket.readyState === WebSocket.OPEN) {
+                this.socket.close(code, reasson);
+                this.socket = undefined;
+            }
         }
     }
 

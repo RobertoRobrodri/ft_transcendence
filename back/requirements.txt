@@ -13,6 +13,7 @@ pillow==10.2.0
 requests==2.31.0
 #Monitoring
 django-prometheus==2.3.1
+python-logstash==0.4.8
 #Websockets
 daphne==4.1.0
 channels==4.0.0
@@ -23,3 +24,6 @@ websockets==12.0
 #One Time Password
 pyotp==2.9.0
 qrcode==7.4.2
+#Pool Game
+numpy==1.26.4
+numpy-quaternion==2023.0.0

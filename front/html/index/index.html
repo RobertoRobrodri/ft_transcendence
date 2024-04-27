@@ -1,45 +1,81 @@
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark">
+<!-- <nav class="mshide navbar navbar-expand-lg navbar-dark">
     <a class="navbar-brand">PONG!</a>
     <div class="navbar-collapse justify-content-end">
         <span class="navbar-text user-info" id="user_info">Welcome, {{USERNAME}}!</span>
     </div>
-</nav>
+</nav> -->
 
-<div class="container-fluid">
+<!-- <div class="mshide container-fluid">
     <div class="row">
 
-        <!-- Sidebar -->
         <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div>
+                <button id="initmatchmaking">Matchmaking</button>
+            </div>
+            <br>
+            <div>
+                <button id="initmatchmakingpool">Pool!!</button>
+            </div>
+            <br>
+            <div>
+                <button id="initmatchmakingtournament">Tournament</button>
+            </div>
+            <br>
+            <div>
+                <button id="cancelmatchmaking">Cancel Matchmaking</button>
+            </div>
+            <br>
+            <div>
+                <button id="initsinglegame">Play single game</button>
+            </div>
+            <br>
+            <div>
+                <button id="endsinglegame">End single game</button>
+            </div>
+            <br>
+            <div>
+                <button id="initversusgame">Play versus game</button>
+            </div>
+            <br>
+            <div>
+                <button id="endversusgame">End versus game</button>
+            </div>
+            <br>
             <div>
                 <button id="disconnect">test disconnect socket</button>
             </div>
             <br>
             <div>
-                <button id="Ignore">Ignore</button>
+                <button class="btn btn-primary" id="Ignore">Ignore</button>
             </div>
             <br>
             <div>
-                <button id="Unignore">Unignore</button>
+                <button class="btn btn-primary" id="Unignore">Unignore</button>
             </div>
             <br>
             <div>
-                <button id="ignorelist">Get Ingored List (console log)</button>
+                <button class="btn btn-primary" id="ignorelist">Get Ingored List (console log)</button>
             </div>
             <br>
             <br>
             <div>
-                <input type="text" id="newMessage" placeholder="New General Message">
+                <input type="text" class="form-control" id="newMessage" placeholder="New General Message">
                 <br>
                 <button id="sendMessageBtn">Send</button>
             </div>
             <br>
             <br>
             <div>
+                <button id="insiteToGame">Invite to game</button>
+            </div>
+            <br>
+            <br>
+            <div>
                 <input type="text" id="dstUser" placeholder="Destination user">
                 <br>
-                <input type="text" id="newPrivMessage" placeholder="New Priv Message">
-                <button id="sendPrivMessageBtn">Send</button>
+                <input type="text" class="form-control" id="newPrivMessage" placeholder="New Priv Message">
+                <button class="btn btn-primary" id="sendPrivMessageBtn">Send</button>
             </div>
 
             <h5 class="sidebar-title">Online Users</h5>
@@ -48,45 +84,120 @@
             </div>
         </nav>
 
-        <!-- Main Content -->
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+            
+            <div id='renderView' style='width: 50%; height: 50%;'></div>
+            
+
+            
             <div class="container mt-4">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card p-3 nav-option">
-                            <h5 class="card-title">Play</h5>
-                            <p class="card-text">Start a new game</p>
+                            <h5 class="card-title">Tournament</h5>
+                            <div class="form-group">
+                                <label for="nickname">Nickname:</label>
+                                <input type="text" class="form-control" id="nickname">
+                            </div>
+                            <div class="form-group">
+                                <label for="tournament-name">Tournament Name:</label>
+                                <input type="text" class="form-control" id="tournament-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="number-of-players">Number of Players:</label>
+                                <input type="number" class="form-control" id="number-of-players">
+                            </div>
+                            <button class="btn btn-primary" id="createTournament">Create Tournament</button>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="card p-3 nav-option">
-                            <h5 class="card-title">Settings</h5>
-                            <p class="card-text">Configure your preferences</p>
+                            <h5 class="sidebar-title">Tournament list (Click to join)</h5>
+                            <ul id="tournamentList" class="list-group"></ul>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card p-3">
-                            <h5 class="card-title">Test general messages</h5>
-                            <ul id="general_msg" class="list-group">
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card p-3">
-                            <h5 class="card-title">Test private messages</h5>
-                            <ul id="private_msg" class="list-group">
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card p-3">
-                            <h6 class="card-title">Test chat history (click on other username)</h6>
-                            <ul id="private_msg_history" class="list-group">
-                            </ul>
+                    <div class="col-md-6">
+                        <div class="card p-3 nav-option">
+                            <h5 class="sidebar-title">Game list (Click to spectate)</h5>
+                            <ul id="gameList" class="list-group"></ul>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>            
         </main>
+    </div>
+</div> -->
+
+<div class="container-fluid">
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    Hola
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="desktop mt-5 col-md-12">
+            <div class="icons d-flex align-items-center justify-content-start">
+                <!-- Aplicar la clase text-left a .icons -->
+                <div id="profile" class="icon text-center col-md-1">
+                    <div class="icon-content mt-2">
+                        <img class="profile-ico" src="../assets/personBlue.svg" alt="">
+                        <p class="program_name">Profile</p>
+                    </div>
+                </div>
+                <div id="chat" class="icon text-center col-md-1">
+                    <div class="icon-content mt-2">
+                        <img class="chat-ico" src="../assets/chat.svg" alt="">
+                        <p class="program_name">Chat</p>
+                    </div>
+                </div>
+                <div id="terminal" class="icon text-center col-md-1">
+                    <div class="icon-content mt-2">
+                        <img class="terminal-ico" src="../assets/chat.svg" alt="">
+                        <p class="program_name">Terminal</p>
+                    </div>
+                </div>
+                <div id="game" class="icon text-center col-md-1">
+                    <div class="icon-content mt-2">
+                        <img class="game-ico" src="../assets/pong.svg" alt="">
+                        <p class="program_name">Play!</p>
+                    </div>
+                </div>
+                <div id="pool" class="icon text-center col-md-1">
+                    <div class="icon-content mt-2">
+                        <img class="pool-ico" src="../assets/pong.svg" alt="">
+                        <p class="program_name">Pool!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <img id="draggable" class="draggable" src="../assets/personBlue.svg" alt="Menu"> -->
+    </div>
+    <div class="system-bar fixed-bottom">
+        <div class="current-time" id="current-time"></div>
+        <div class="menu-icon" id="menu-icon">
+            <div class="menuContainer" id="menuContainer">
+                <img id="menuLogo" class="menuLogo" src="../assets/personBlue.svg" alt="Menu">
+            </div>
+        </div>
+    </div>
+
+    <div class="menu" id="menu">
+        <!-- Aquí puedes poner los elementos de tu menú -->
+        <ul>
+            <li><a href="#">Main menu</a></li>
+            <li><a href="#/friends">Friend list</a></li>
+            <li><a href="#/edit-profile">Edit profile</a></li>
+            <!-- <li><p class="usuarios">Usuarios conectados</p></li> -->
+            <li><a class="usuarios" href="">Usuarios conectados</a></li>
+            <li><a href="#">Esta opción ahora si se muestra</a></li>
+        </ul>
     </div>
 </div>

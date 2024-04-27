@@ -7,7 +7,8 @@ services:
     ports:
       - 443:443
     volumes:
-      - profile_pictures:/media
+      - ./front/html:/usr/share/nginx/html/
+      - ./.logs/nginx:/var/log/nginx
     networks:
       - transcendence
     depends_on:
@@ -32,8 +33,12 @@ services:
   db:
     build: ./db/
     container_name: db
+    depends_on:
+      - setup
     volumes:
       - ddbb:/var/lib/postgresql/data
+      - ./.logs/db:/log
+    command: -c 'config_file=/etc/postgresql/postgresql.conf'
     networks:
       - transcendence
     env_file:
@@ -82,9 +87,11 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - ./prometheus/web.yml:/etc/prometheus/web.yml
       - prom_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.config.file=/etc/prometheus/web.yml'
       - '--web.route-prefix=/'
       - '--web.external-url=https://localhost/monitoring/prometheus'
     networks:
@@ -102,10 +109,85 @@ services:
     networks:
       - transcendence
 
+  setup:
+    build: ./setup/
+    container_name: setup
+    volumes:
+      - ./.logs:/var
+    networks:
+      - transcendence
+    depends_on:
+      - elasticsearch
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASS=123456
+      - KIBANA_SYSTEM_PASSWORD=mi_contrasena_kibana_system
 
-# Django dashboard 17658
-# Postgres dashboard 9628
-# Nginx dashboard 12708
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+    container_name: elasticsearch
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - "ES_JAVA_OPTS= -Xms512m -Xmx512m"
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=123456
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./elk-config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - transcendence
+    deploy:
+      resources:
+          limits:
+            cpus: '1'
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.1
+    container_name: logstash
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - ELASTIC_PASSWORD=123456
+      - ELASTIC_USER=elastic
+      - xpack.monitoring.elasticsearch.username=elastic
+      - xpack.monitoring.elasticsearch.password="123456"
+    volumes:
+      - ./elk-config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./.logs:/var/log/services
+    depends_on:
+      - elasticsearch
+    networks:
+      - transcendence
+    deploy:
+      resources:
+          limits:
+            cpus: '1'
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.1
+    container_name: kibana
+    volumes:
+      - ./elk-config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elasticsearch
+      - setup
+    #TODO Secure this credentials, for now development doesnt matter
+    environment:
+      - XPACK_MONITORING_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED=true
+      - XPACK_SECURITY_ENABLED=true
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=mi_contrasena_kibana_system
+    networks:
+      - transcendence
+    deploy:
+      resources:
+          limits:
+            cpus: '1'
+# Django    dashboard    17658
+# Postgres  dashboard  9628
+# Nginx     dashboard     12708
   grafana:
     image: grafana/grafana:10.3.1
     container_name: grafana
@@ -157,3 +239,4 @@ volumes:
   graf_data:
   truffle:
   ganache:
+  elasticsearch_data:

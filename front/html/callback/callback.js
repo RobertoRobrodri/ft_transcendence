@@ -1,3 +1,4 @@
+import { load2FApage } from "../2FA/twoFactorAuthScript.js"
 import { loadMainPage } from "../index/index.js"
 
 async function handleSubmitUpdatedData(e) {
@@ -12,7 +13,7 @@ async function handleSubmitUpdatedData(e) {
       };
       try {
             // TODO probably we need to change localhost to domain
-            const response = await fetch('https://localhost:443/api/user_management/user_update/', {
+            const response = await fetch('api/user_management/user_update/', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,7 +55,7 @@ export async function callback42(e) {
 
     // Make a POST request to your backend with the authorization code
     if (authorizationCode) {
-        const response = await fetch('https://localhost:443/api/pong_auth/42/callback/', {
+        const response = await fetch('api/pong_auth/42/callback/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -63,24 +64,34 @@ export async function callback42(e) {
                 code: authorizationCode,
             }),
         });
-        if (!response.ok && response.status !== 307) {
+        if (!response.ok && response.status !== 307 && response.status !== 308) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        const token = data.token;
-		const refresh = data.refresh;
-        sessionStorage.setItem('token', token);
-		sessionStorage.setItem('refresh', refresh);
         var currentUrl = window.location.href;
         // Remove the query parameters
         var updatedUrl = currentUrl.split('?')[0];
         // Replace the current URL with the updated URL
         window.history.replaceState({}, document.title, updatedUrl);
-        // custom status code for new user
-        if (response.status === 307)
-            load42UserWelcomePage();
+        // 2FA activated
+        if (response.status === 308)
+        {
+            const verification_token = data.verification_token;
+            sessionStorage.setItem('verification_token', verification_token)
+            load2FApage();
+        }
         else
-            loadMainPage();
+        {
+            const token = data.token;
+            const refresh = data.refresh;
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('refresh', refresh);
+            // custom status code for new user
+            if (response.status === 307)
+                load42UserWelcomePage();
+            else
+                loadMainPage();
+        }
     } else {
         console.error('Authorization code not found in the URL.');
     }

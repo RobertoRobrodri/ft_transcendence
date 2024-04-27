@@ -12,15 +12,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-import os, pyotp
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOCKERIZED = os.environ.get('DOCKERIZED', "")
-
-#TODO Crear una única clave y guardarla, podemos pasarla en el .env
-OTP_SECRET_KEY = pyotp.random_base32()
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -36,8 +32,9 @@ DEBUG = True
 #ALLOWED_HOSTS = ['*']
 # Production all containers that should be able to call django endpoints
 ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db']
-# TODO review if all these hosts are necesary to be allowed
 
+MEDIA_ROOT = '/core/media/'
+MEDIA_URL = '/media/'
 
 # Application definition
 
@@ -70,8 +67,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-	'DEFAULT_PERMISSION_CLASSES': [
-		'rest_framework.permissions.IsAuthenticated',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
         'pong_auth.permissions.Verify2FAPermission'
     ]
 }
@@ -114,16 +111,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 ASGI_APPLICATION = "core.asgi.application"
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [('redis', 6379)],
-            "capacity": 1500,
-        },
-    },
-}
 
 if DOCKERIZED == "true":
     CHANNEL_LAYERS = {
@@ -232,20 +219,23 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'filters': ['require_debug_true'],
         },
+        'logstash': {
+            'level': 'DEBUG',
+            'class': 'logstash.TCPLogstashHandler',
+            'host': 'logstash',
+            'port': 5000,
+            'version': 1,
+            'message_type': 'logstash',
+            'fqdn': False,
+            'tags': ['django'],
+        },
     },
     'loggers': {
         'mylogger': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'handlers': ['console', 'logstash'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
             'propagate': True,
         },
     },
 }
 # CORS_ORIGIN_ALLOW_ALL = True
-
-# Channel Layers
-CHANNEL_LAYERS = { 
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }   
-}

@@ -1,0 +1,99 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #28292d;
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Altura del 100% de la ventana */
+    cursor: url('../assets/cursor3.svg'), auto !important;
+    background-image: url('../assets/fondo.png');
+    user-select: none;
+    backdrop-filter: blur(25px);
+}
+
+/* Estilo de los textos comunes */
+.commonText {
+    color: #fff;
+}
+/* Barra de abajo de la página */
+.system-bar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Estilo para la hora dentro de la barra del sistema */
+.current-time {
+    float: right;
+    color: #45f3ff;
+}
+
+/* Estilo para el icono del menu de la pagina */
+.menuLogo {
+    /* float: left; */
+    width: 25px;
+    height: 25px;
+}
+
+/* Estilo para el contenedor del menu */
+.menuContainer {
+    width: 100px; /* Ancho deseado */
+    height: 30px; /* Alto deseado */
+    padding-left: 5px; /* Espaciado interno para el contenido dentro del contenedor */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Sombra para efecto de elevación */
+}
+
+/* Estilo para el desplegable */
+.menu {
+    display: none;
+    flex-direction: column;
+    justify-content: flex-end; /* Alinea los elementos al final del eje principal (abajo) */
+    position: fixed;
+    bottom: 50px; /* Pegado al borde superior de la barra de inicio */
+    left: 0;
+    background-color: #333;
+    color: #fff;
+    max-height: 80vh; /* Ajusta la altura máxima según necesites */
+    overflow-y: auto;
+	z-index: 9999; /* Se superpone por encima de todo */
+}
+
+/* Estilo para los input del formulario */
+input {
+    background-color: transparent !important;
+}
+
+.menu ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.menu ul li {
+    padding: 10px;
+}
+
+.menu ul li a {
+    color: #45f3ff;
+    text-decoration: none;
+}
+
+/* Estilo del boton final */
+.btn-save {
+    background-color: transparent;
+    border: #45f3ff 1px solid;
+    color: #45f3ff;
+    /* background-color: #5678EF; */
+}
+
+.btn-save:hover {
+    background-color: #45f3ff;
+    color: #28292d;
+}
+
+/* Estilo de la tabla de usuarios */
+.user-table-container {
+    max-height: 50vh; /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */
+    overflow-y: auto; /* Agrega scroll vertical si es necesario */
+}

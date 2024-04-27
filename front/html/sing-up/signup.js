@@ -8,13 +8,15 @@ async function handleSubmitRegister(e) {
     // Get the input values
     const username = document.querySelector('#new_username').value;
     const password = document.querySelector('#new_password').value;
+    const password_2 = document.querySelector('#new_password_2').value;
 
     const loginData = {
         username: username,
         password: password,
+        password_2: password_2,
     };
     try {
-        const response = await fetch('https://localhost:443/api/pong_auth/register/', {
+        const response = await fetch('api/pong_auth/register/', {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
@@ -30,7 +32,7 @@ async function handleSubmitRegister(e) {
         const refresh = data.refresh
         sessionStorage.setItem('token', token);
         sessionStorage.setItem('refresh', refresh);
-        console.log(data);
+        //console.log(data);
         loadMainPage();
     }
     catch (error) {

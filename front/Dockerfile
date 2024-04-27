@@ -2,7 +2,7 @@ FROM nginx:stable-bullseye-perl
 
 COPY ./default.conf /etc/nginx/conf.d/default.conf
 
-COPY ./html/ /usr/share/nginx/html/
+# COPY ./html/ /usr/share/nginx/html/
 
 # TODO Review this cert creation in case we set a domain
 RUN openssl req -x509 -nodes -days 365 -newkey \
