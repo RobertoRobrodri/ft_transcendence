@@ -2,6 +2,7 @@ import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeSingleGame, endSingleGame } from "./singlegame.js";
 import { initializeVersusGame, endVersusGame } from "./versusgame.js";
+import { sleep } from "../../components/utils.js";
 // import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
@@ -19,7 +20,7 @@ let score = [0, 0];
 let gameSM = new GameSocketManager();
 
 let optionsView, matchmakingView, localgameView, onlineMenuView,
-    tournamentView, tournamentJoinView, tournamentReadyView;
+    tournamentView, tournamentJoinView, tournamentReadyView, canvasDivView;
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -31,6 +32,7 @@ export function init(customData = null) {
     tournamentView = document.getElementById("tournament_menu");
     tournamentJoinView = document.getElementById("tournament_join");
     tournamentReadyView = document.getElementById("tournament_ready");
+    canvasDivView = document.getElementById("canvasDiv");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
@@ -115,6 +117,7 @@ function gameEventHandler(e) {
     else if (e.target.matches('#soloGameButton_pong') === true)
     {
         toggleView(localgameView, false);
+        toggleView(canvasDivView, true);
         initializeSingleGame();
     }
     // Multijugador local
@@ -167,6 +170,7 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
     
 });
 
+
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if(data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
@@ -175,17 +179,22 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
 });
 
 // MATCHMAKING
+// TODO Aqui oculto la tabla del emparejamiento
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
+
     if(data.game == GAMES.PONG) {
-        isPlaying = true;
-        toggleView(matchmakingView, false);
-        toggleView(onlineMenuView, false);
-        toggleView(tournamentView, false);
-        toggleView(optionsView, false);
-        toggleView(tournamentReadyView, false);
-        toggleView(tournamentJoinView, false);
-        toggleView(localgameView, false);
-        gameSM.send(GAME_TYPES.PLAYER_READY);
+        sleep(7000).then(() => {
+            isPlaying = true;
+            toggleView(matchmakingView, false);
+            toggleView(onlineMenuView, false);
+            toggleView(tournamentView, false);
+            toggleView(optionsView, false);
+            toggleView(tournamentReadyView, false);
+            toggleView(tournamentJoinView, false);
+            toggleView(localgameView, false);
+            toggleView(canvasDivView, true);
+            gameSM.send(GAME_TYPES.PLAYER_READY);
+        });
     }
 });
 
@@ -223,6 +232,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         score = [0, 0];
         audio.play();
         //gameSM.disconnect();
+        toggleView(canvasDivView, false);
         toggleView(optionsView, true);
     }
 });
@@ -255,7 +265,6 @@ gameSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
 
 gameSM.registerCallback(GAME_TYPES.USERS_PLAYING, data => {
     if (data.game == GAMES.PONG) {
-        //retrieve a list of users playing
     }
 });
 
@@ -281,8 +290,9 @@ gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
     }
 });
 
+// TODO, muestro la tabla de los emparejamientos
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
-    console.log(`tournament data table: ${data}`)
+    console.log(data);
 });
 
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
@@ -293,10 +303,12 @@ gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
 // TOURNAMENT LOGIC //
 //////////////////////
 
+// Llamando esta funcion se obtienen el emparejamiento del torneo
 function requestTournamentTable(tournamentID) {
     gameSM.send(GAME_TYPES.TOURNAMENT_TABLE, tournamentID);
 }
 
+// Llamando esta funcion se obtienen los jugadores de un torneo
 function requestTournamentPlayers(tournamentID) {
     gameSM.send(GAME_TYPES.TOURNAMENT_PLAYERS, tournamentID);
 }
@@ -341,6 +353,7 @@ function fillTournamentsList(data) {
         toggleView(tournamentJoinView, false);
         toggleView(tournamentReadyView, false);
     }
+    // TODO Cambiar tambien en la tabla de waiting fot the tournament
 }
 
 function fillTournamentData(data) {

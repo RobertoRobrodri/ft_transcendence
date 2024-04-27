@@ -41,7 +41,7 @@
 
 <div class="tournament_ready mshide" id="tournament_ready">
 	<div class="col-md-12 mt-5 text-center">
-		<h2>Tournament</h2>
+		<h2>Waiting for the tournament...</h2>
 		<div class="col-md-7 mx-auto text-center">
 			<table class="table table-dark">
 				<tr>
@@ -58,7 +58,7 @@
 				</tr>
 			</table>
 		</div>
-		<div class="tournament-table-container">
+		<!-- <div class="tournament-table-container">
 			<table class="table table-dark">
 				<thead>
 					<tr>
@@ -68,7 +68,7 @@
 				<tbody id="tournament-players-body">
 				</tbody>
 			</table>
-		</div>
+		</div> -->
 		<div class="col-md-12 text-left">
 			<button type="button" class="game-button-back mr-5" id="leaveTournament">Leave Tournament</button>
 		</div>
@@ -175,4 +175,7 @@
 		<button class="game-button-back" id="goBackButton_pong">Go back</button>
 	</div>
 </div>
-<canvas id="pongCanvas" width="400" height="200"></canvas>
+
+<div class="mshide" id="canvasDiv">
+	<canvas class="mshide" id="pongCanvas" width="400" height="200"></canvas>
+</div>
