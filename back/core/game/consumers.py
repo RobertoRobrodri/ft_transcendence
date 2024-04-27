@@ -384,24 +384,22 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 for player in pairing:
                     if not player['winner']:
                         await self.channel_layer.group_discard(tournament_id, player["channel_name"])
-            # If winner have only 1 element, player win!
-            if len(winners) == 1:
-                # Remove winners
-                for winner in winners:
-                    await self.channel_layer.group_discard(tournament_id, winner["channel_name"])
+            # # If winner have only 1 element, player win!
+            # if len(winners) == 1:
+                
+            #     # Remove winners
+            #     for winner in winners:
+            #         await self.channel_layer.group_discard(tournament_id, winner["channel_name"])
 
-                logger.warning(f'final round: {winners[0]}')
-                #save data in blockchain
+            #     logger.warning(f'final round: {winners[0]}')
+            #     #save data in blockchain
                 
-                #send winner to other players
-                
-                # Remove from tournament
-                del tournaments[tournament_id]
-                return
+            #     # Remove from tournament
+            #     del tournaments[tournament_id]
+            #     return
             
             # Set winner to False to next round
             for winner in winners:
-                logger.warning(f"iter: {winner}")
                 winner['winner'] = False
             # Reassign next round players
             participants = winners
@@ -415,7 +413,19 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
             # Send tournament table
             await send_to_group(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
-            
+            # If winner have only 1 element, player win!
+            if len(winners) == 1:
+                
+                # Remove winners
+                for winner in winners:
+                    await self.channel_layer.group_discard(tournament_id, winner["channel_name"])
+
+                logger.warning(f'final round: {winners[0]}')
+                #save data in blockchain
+                
+                # Remove from tournament
+                del tournaments[tournament_id]
+                return
             # Force await 7 seconds
             await asyncio.sleep(7)
 
