@@ -1,3 +1,4 @@
+import { PongAI } from './PongAI.js';
 
 export function endGame() {
     if (intervalId != null) {
@@ -33,8 +34,9 @@ let leftPlayerMovement;
 let rightPlayerMovement;
 let leftCollisionX = 22;
 let rightCollisionX = 378;
-let pointsToWin = 1;
+let pointsToWin = 6;
 
+const ai = new PongAI(true);
 export function initializeGame(multiplayer = false) {
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
@@ -76,20 +78,10 @@ function startGame() {
         speed_x: Math.random() < 0.5 ? -3 : 3,
         speed_y: getRandomYSpeed()
     };
-    gameState.players = {
-        left: {
-            paddle_x: 7,
-            paddle_y: 80,
-            nbr: 1,
-            score: 0
-        },
-        right: {
-            paddle_x: 383,
-            paddle_y: 80,
-            nbr: 2,
-            score: 0
-        }
-    }
+    gameState.players.left.paddle_x = 7;
+    gameState.players.left.paddle_y = 80;
+    gameState.players.right.paddle_x = 383;
+    gameState.players.right.paddle_y = 80;
     console.log("Starting game");
     leftPlayerMovement = 0;
     rightPlayerMovement = 0;
@@ -108,8 +100,11 @@ function newFrame() {
     gameState.players.left.paddle_y = Math.min(Math.max(gameState.players.left.paddle_y + leftPlayerMovement, 0), canvasHeight - paddleLenght);
     if (gameState.multiplayer === true)
         gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + rightPlayerMovement, 0), canvasHeight - paddleLenght);
-    else
-        gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + decideNextMove(gameState.players.right.paddle_y, gameState.ball), 0), canvasHeight - paddleLenght);
+    else {
+        // gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + decideNextMove(gameState.players.right.paddle_y, gameState.ball), 0), canvasHeight - paddleLenght);
+        let aiMove = ai.process(gameState.ball.x, gameState.ball.y, gameState.players.right.paddle_y, paddleLenght, canvasHeight, canvasWidth, borderThickness, ballRadius);
+        gameState.players.right.paddle_y = Math.min(Math.max(gameState.players.right.paddle_y + aiMove * paddleSpeed, 0), canvasHeight - paddleLenght);
+    }
     detectCollision();
 
     moveBall(gameState.ball);
