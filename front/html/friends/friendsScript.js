@@ -1,7 +1,10 @@
 import { renewJWT } from "../components/updatejwt.js"
-import { displayErrorList } from "../components/loader.js"
+import { displayErrorList, displayMessage } from "../components/loader.js"
+import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
+import { CHAT_TYPES, GAMES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { connectNotifications } from '../index/index.js';
 
-
+let NotificationsSM = new NotificationsSocketManager();
 
 export function loadFriendsPage() {
 
@@ -24,9 +27,9 @@ export function loadFriendsPage() {
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
+    connectNotifications();
     loadUsersTable();
     FriendRequestListener();
-
 }
 
 async function loadUsersTable() {
@@ -82,34 +85,44 @@ async function loadUsersTable() {
 }
 
 async function sendFriendRequest(e) {
-    const token = sessionStorage.getItem('token')
-    if (e.target.matches('#FriendRequestForm') === false)
+    const token = sessionStorage.getItem('token');
+    if (!e.target.matches('#FriendRequestForm'))
         return;
-    e.preventDefault()
+    e.preventDefault();
+
     // Get the input values
     const new_friend = {
         receiver: document.querySelector('#new_friend').value,
-    }
+    };
+
     try {
         const response = await fetch('/api/friends/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-            }, body: JSON.stringify(new_friend),
-        })
+            },
+            body: JSON.stringify(new_friend),
+        });
+
+        const notificationDiv = document.getElementById('friendRequestNotification');
+        notificationDiv.style.display = 'block'; // Make the notification visible
+
         if (!response.ok) {
             const error = await response.json();
+            notificationDiv.textContent = 'Error: ' + error.message;
+            notificationDiv.className = 'notification error';
+            console.log(error, error.message);
             throw new Error(JSON.stringify(error));
         }
+        
         const data = await response.json();
-        console.log(data);
-    }
-    catch (error) {
-        displayErrorList(JSON.parse(error.message), 'FriendRequestForm');
+        notificationDiv.textContent = data.message;
+        notificationDiv.className = 'notification success';
+    } catch (error) {
+        displayErrorList(error.message, 'FriendRequestForm');
     }
 }
-
 
 async function HandleFriendRequest(e) {
     const token = sessionStorage.getItem('token');
@@ -141,6 +154,15 @@ async function HandleFriendRequest(e) {
         console.log(error)
     }
 }
+
+NotificationsSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
+    loadUsersTable();
+});
+
+NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
+    console.log("Hola")
+    loadUsersTable();
+});
 
 function FriendRequestListener() {
     document.getElementById('root').addEventListener('submit', sendFriendRequest);

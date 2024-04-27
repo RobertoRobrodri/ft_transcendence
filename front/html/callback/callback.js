@@ -26,7 +26,7 @@ async function handleSubmitUpdatedData(e) {
         loadMainPage();
         } catch (error) {
             console.error('Error:', error.message);
-            displayError(error.message, 'small', 'SelectUsernameForm');
+            displayMessage(error.message, 'small', 'SelectUsernameForm');
         }
 }
 

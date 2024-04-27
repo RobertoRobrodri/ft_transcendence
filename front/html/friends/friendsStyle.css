@@ -97,3 +97,20 @@ input {
     max-height: 50vh; /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */
     overflow-y: auto; /* Agrega scroll vertical si es necesario */
 }
+
+.notification {
+    margin-top: 20px;
+    padding: 10px;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    display: none; /* Hidden by default */
+}
+
+.success {
+    background-color: green;
+}
+
+.error {
+    background-color: red;
+}

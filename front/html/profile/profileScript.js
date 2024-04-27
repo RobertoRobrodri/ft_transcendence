@@ -1,10 +1,10 @@
 import { renewJWT } from "../components/updatejwt.js"
-import { displayErrorList, displayError } from "../components/loader.js"
+import { displayErrorList, displayMessage } from "../components/loader.js"
+import { connectNotifications } from "../index/index.js"
 
 export function init(customData = null) {
     loadUserInfo(customData);
 }
-
 // window.addEventListener('beforeunload', function(event) {
 //     console.log('La página está a punto de descargarse.');
 // });
@@ -71,6 +71,7 @@ export function loadEditProfilePage() {
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
+        connectNotifications();
         editProfileListener();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
@@ -111,6 +112,8 @@ async function update2FA()
         throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
+    console.log(data.message);
+    displayMessage(data.message, 'small', 'activateTwoFactorAuthForm', 'green');
     if (response.status === 307)
     {
         document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qr;
@@ -118,7 +121,7 @@ async function update2FA()
         $('#twoFactorAuthModal').modal('show');
     }
     } catch (error) {
-        displayError(error.message, 'small', 'activateTwoFactorAuthForm');
+        displayMessage(error.message, 'small', 'activateTwoFactorAuthForm');
     }
 }
 
@@ -135,7 +138,7 @@ async function updateProfile() {
                 throw new Error('Image too large!');
             formData.append('profile_picture', file);
         } catch(error) {
-            displayError(error.message, 'small', 'editProfileForm')
+            displayMessage(error.message, 'small', 'editProfileForm')
         }
     }
     try {
@@ -153,6 +156,7 @@ async function updateProfile() {
     }
     const data = await response.json();
     console.log(data)
+    displayMessage(data.message, 'small', 'editProfileForm', 'green');
     } catch (error) {
         console.log(error)
         displayErrorList(JSON.parse(error.message), 'editProfileForm');
@@ -184,7 +188,7 @@ async function updatePassword() {
         throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
-    console.log(data)
+    displayMessage(data.message, 'small', 'changePasswordForm', 'green');
     } catch (error) {
         displayErrorList(JSON.parse(error.message), 'changePasswordForm');
     }
@@ -194,6 +198,7 @@ async function TwoFactorAuthConfirmOTPUpdate() {
     // Get the input values
     const token = sessionStorage.getItem('token')
     const userOTP = document.querySelector('#OTP').value;
+    const otpMessageDiv = document.getElementById('otpMessage');
     const UserData = {
         otp: userOTP,
       };
@@ -213,7 +218,7 @@ async function TwoFactorAuthConfirmOTPUpdate() {
         console.log(response)
         } catch (error) {
             console.error('Error:', error.message);
-            displayError(error.message, 'small', 'confirmOTP');
+            displayMessage(error.message, 'small', 'confirmOTP');
         }
 }
 
