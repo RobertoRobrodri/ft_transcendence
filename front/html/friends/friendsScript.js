@@ -114,7 +114,7 @@ async function sendFriendRequest(e) {
 async function HandleFriendRequest(e) {
     const token = sessionStorage.getItem('token');
     let target = e.target.id.split('_');
-    if (target[0] !== 'DECLINE' || target[0] !== 'ACCEPT')
+    if (target[0] !== 'DECLINE' && target[0] !== 'ACCEPT')
         return ;
     let id = target[1];
     const FriendData = {
