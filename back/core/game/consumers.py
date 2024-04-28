@@ -154,16 +154,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     ## TOURNAMENT FUNCTIONS ##
     ##########################
     
-    # Expected imput
-    # tournament_obj = {
-    #     "tournamentId": 0,
-    #     "players": ["Player1", "Player2"],
-    #     "matches": [
-    #         {"id": 1, "playerIds": [1, 2], "score": [0, 0], "date": 1638316800},
-    #         {"id": 2, "playerIds": [3, 4], "score": [0, 0], "date": 1638403200}
-    #     ]
-    # }
-    
     async def restoreTournament(self, user):
         userid = user.id
         for tournament_id, tournament_info in tournaments.items():
@@ -385,10 +375,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
         # Verify that each pairing has at least one winner
         if all(any(player['winner'] for player in pairing) for pairing in current_round):
+
             # Get the winners of the last round
             for pairing in current_round:
                 winner = [player for player in pairing if player['winner']][0]  # Get the first player with winner=True
                 winners.append(winner)
+
             # Remove not winners from group
             for pairing in current_round:
                 for player in pairing:
@@ -396,10 +388,16 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                         await self.channel_layer.group_discard(tournament_id, player["channel_name"])
 
             # Set winner to False to next round
+            # for winner in winners:
+            #     winner['winner'] = False
+            
+            # Reassign next round players with points reset to 0
+            participants = []
             for winner in winners:
-                winner['winner'] = False
-            # Reassign next round players
-            participants = winners
+                new_player = winner.copy()
+                new_player['points'] = 0
+                new_player['winner'] = False
+                participants.append(new_player)
             
             for participant in participants:
                 participant['points'] = 0
@@ -411,13 +409,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             # Send tournament table
             await send_to_group(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
             # If winner have only 1 element, player win!
-            if len(winners) == 1:
+            if len(participants) == 1:
                 
                 # Remove winners
-                for winner in winners:
+                for winner in participants:
                     await self.channel_layer.group_discard(tournament_id, winner["channel_name"])
 
-                logger.warning(f'final round: {winners[0]}')
+                logger.warning(f'final round: {participants[0]}')
                 #save data in blockchain
                 view = ContractPutView()
                 await view._add_tournament(tournament_id, self.extract_player_info(tournament_id))
@@ -662,4 +660,3 @@ def get_game_id(userid):
         if any(player['userid'] == userid for player in game["instance"].players.values()):
             return game_id
     return None
-
