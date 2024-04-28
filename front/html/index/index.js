@@ -357,25 +357,6 @@ function makeDraggable(element, elementClick) {
 export function connectNotifications() {
     if(NotificationsSM.connect() == NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED) {
         // NotificationsSM.send(CHAT_TYPES.USER_LIST);
+        console.log(NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED);
     }
 }
-
-NotificationsSM.registerCallback(SOCKET.CONNECTED, event => {
-    // Request all connected users
-    // NotificationsSM.send(CHAT_TYPES.USER_LIST);
-});
-
-NotificationsSM.registerCallback(CHAT_TYPES.USER_LIST, userList => {
-    // userList.forEach((user) => {
-    //     addSingleUser(user, 'user-table-body');
-    // });
-});
-
-// NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
-//     console.log("Entro")
-//     // addSingleUser(user, 'user-table-body');
-// });
-
-// NotificationsSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
-//     // removeSingleUser(user, 'user-table-body');
-// });

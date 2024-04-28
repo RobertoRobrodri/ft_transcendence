@@ -120,6 +120,7 @@ async function sendFriendRequest(e) {
         const data = await response.json();
         notificationDiv.textContent = data.message;
         notificationDiv.className = 'notification success';
+        console.log(data)
         NotificationsSM.send(FRIENDS.FRIEND_REQUEST_SENT, data.friend_id);
     } catch (error) {
         displayErrorList(error.message, 'FriendRequestForm');
@@ -149,7 +150,7 @@ async function HandleFriendRequest(e) {
         }
         const data = await response.json();
         console.log(data);
-        loadFriendsPage();
+        loadUsersTable();
     }
     catch (error) {
         // displayErrorList(JSON.parse(error.message), 'FriendRequestForm');
@@ -157,16 +158,16 @@ async function HandleFriendRequest(e) {
     }
 }
 
-NotificationsSM.registerCallback(CHAT_TYPES.USER_DISCONNECTED, user => {
+NotificationsSM.registerCallback(FRIENDS.STATUS_DISCONNECTED, user => {
     loadUsersTable();
 });
 
-NotificationsSM.registerCallback(CHAT_TYPES.USER_CONNECTED, user => {
+NotificationsSM.registerCallback(FRIENDS.STATUS_CONNECTED, user => {
     console.log('User connected')
     loadUsersTable();
 });
 
-NotificationsSM.registerCallback(CHAT_TYPES.FRIEND_REQUEST_SENT,  data => {
+NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_SENT,  data => {
     console.log('Friend request received')
     console.log(data)
 });

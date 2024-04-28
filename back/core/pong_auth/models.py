@@ -89,16 +89,9 @@ class CustomUser(AbstractUser):
 
     @classmethod
     @database_sync_to_async
-    def update_user_on_connect_notifications(cls, user, channel_name):
-        user.notifications_channel_name = channel_name
-        user.connected = True
-        user.save()
-
-
-    @classmethod
-    @database_sync_to_async
-    def update_user_on_connect_to_site(cls, user):
+    def update_user_on_connect_to_site(cls, user, nt_channel_name):
         user.status = CustomUser.Status.INMENU
+        user.notifications_channel_name = nt_channel_name
         user.save()
 
     @classmethod

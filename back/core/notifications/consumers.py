@@ -12,9 +12,9 @@ from asgiref.sync import sync_to_async
 import logging
 logger = logging.getLogger(__name__)
 
-USER_CONNECTED          = 'user_connected'
-USER_DISCONNECTED       = 'user_disconnected'
-USER_LIST               = 'user_list'
+STATUS_CONNECTED        = 'status_connected'
+STATUS_DISCONNECTED     = 'status_disconnected'
+STATUS_USER_LIST        = 'status_user_list'
 STATUS_CHANNEL          = 'status_channel'
 FRIEND_REQUEST_SENT     = 'friend_request_sent'
 FRIEND_REQUEST_RECEIVED = 'friend_request_received'
@@ -41,7 +41,6 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                     logger.debug('Already connected')
                     return
                 await self.accept()
-                await CustomUser.update_user_on_connect_notifications(user, self.channel_name)
                 await self.channel_layer.group_add(STATUS_CHANNEL, self.channel_name)
                 self.connected_users[self.channel_name] = user
                 # send yourself to all the users
@@ -51,8 +50,8 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                         with open(user.profile_picture.path, "rb") as image_file:
                             profile_picture_content = base64.b64encode(image_file.read()).decode('utf-8')
                             profile_picture_url = f'data:image/jpeg;base64,{profile_picture_content}'
-                await CustomUser.update_user_on_connect_to_site(user)
-                await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_CONNECTED, {'id': user.id, 'username': user.username, 'image': profile_picture_url})
+                await CustomUser.update_user_on_connect_to_site(user, self.channel_name)
+                await send_to_group_exclude_self(self, STATUS_CHANNEL, STATUS_CONNECTED, {'id': user.id, 'username': user.username, 'image': profile_picture_url})
 
         except ExpiredSignatureError as e:
             logger.warning(f'ExpiredSignatureError: {e}')
@@ -68,7 +67,7 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                 if self.channel_name in self.connected_users:
                     del self.connected_users[self.channel_name]
                 await CustomUser.update_user_on_disconnect_from_site(user)
-                await send_to_group_exclude_self(self, STATUS_CHANNEL, USER_DISCONNECTED, {'id': user.id, 'username': user.username})
+                await send_to_group_exclude_self(self, STATUS_CHANNEL, STATUS_DISCONNECTED, {'id': user.id, 'username': user.username})
                 await self.channel_layer.group_discard(STATUS_CHANNEL, self.channel_name)
                 
         except Exception as e:
@@ -80,9 +79,10 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
             if user.is_authenticated and not user.is_anonymous:
                 data = json.loads(text_data)
                 type = data["type"]
-                if type == USER_LIST:
+                if type == STATUS_USER_LIST:
                     await self.send_user_list()
                 elif type == FRIEND_REQUEST_SENT:
+                    logger.debug('FRIEND REQUEST' + FRIEND_REQUEST_SENT)
                     await self.send_notification(user, data)
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
@@ -91,7 +91,7 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
     async def send_user_list(self):
         # Send the whole list
         user_list = self.get_user_list()
-        await send_to_me(self, USER_LIST, user_list)
+        await send_to_me(self, STATUS_USER_LIST, user_list)
     
     def get_user_list(self):
         user_list = []
