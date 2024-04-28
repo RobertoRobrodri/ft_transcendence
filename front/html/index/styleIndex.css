@@ -117,8 +117,8 @@ main {
 }
 
 #chat {
-    left: 38px;
-    top: 200px;
+    left: 188px;
+    top: 50px;
 }
 
 /* #terminal {
@@ -127,13 +127,13 @@ main {
 } */
 
 #game {
-    left: 38px;
-    top: 500px;
+    left: 338px;
+    top: 50px;
 }
 
 #pool {
-    left: 38px;
-    top: 350px;
+    left: 488px;
+    top: 50px;
 }
 
 /* Estilo de los programas */
