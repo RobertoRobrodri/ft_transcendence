@@ -33,10 +33,9 @@ export function loadFriendsPage() {
 }
 
 async function loadUsersTable() {
-
     const token = sessionStorage.getItem('token')
-    let userTableBody = document.getElementById("user-table-body");
-    if (userTableBody === null)
+    let { hash } = location;
+    if (hash !== '#/friends')
         return ;
     try {
         const response = await fetch('/api/user_management/user_list/', {
@@ -46,12 +45,13 @@ async function loadUsersTable() {
                 'Authorization': `Bearer ${token}`,
             }
         }
-        );
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+    );
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
         const userInfo = await response.json();
         let friends = userInfo.friends;
+        let userTableBody = document.getElementById("user-table-body");
         userTableBody.innerHTML = "";
 
         friends.forEach(friend => {
@@ -121,7 +121,7 @@ async function sendFriendRequest(e) {
         notificationDiv.textContent = data.message;
         notificationDiv.className = 'notification success';
         console.log(data)
-        NotificationsSM.send(FRIENDS.FRIEND_REQUEST_SENT, data.friend_id);
+        NotificationsSM.send(FRIENDS.FRIEND_REQUEST_SENT, data.friend_id );
     } catch (error) {
         displayErrorList(error.message, 'FriendRequestForm');
     }
@@ -163,14 +163,22 @@ NotificationsSM.registerCallback(FRIENDS.STATUS_DISCONNECTED, user => {
 });
 
 NotificationsSM.registerCallback(FRIENDS.STATUS_CONNECTED, user => {
-    console.log('User connected')
     loadUsersTable();
 });
 
-NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_SENT,  data => {
-    console.log('Friend request received')
-    console.log(data)
+NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_RECEIVED,  data => {
+    showNotification(data);
+    loadUsersTable();
 });
+
+export async function showNotification(data) {
+    let notification = document.getElementById("myPopup");
+    notification.classList.toggle("show");
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 10000);
+}  
 
 function FriendRequestListener() {
     document.getElementById('root').addEventListener('submit', sendFriendRequest);

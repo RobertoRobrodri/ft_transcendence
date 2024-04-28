@@ -82,7 +82,6 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                 if type == STATUS_USER_LIST:
                     await self.send_user_list()
                 elif type == FRIEND_REQUEST_SENT:
-                    logger.debug('FRIEND REQUEST' + FRIEND_REQUEST_SENT)
                     await self.send_notification(user, data)
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
@@ -110,9 +109,12 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
         return user_list
 
     async def send_notification(self, user, data):
-        message_data = data["message"]
-        recipient = message_data.get("recipient")
-        if recipient and recipient.isdigit():
-            userChannel = await CustomUser.get_user_by_id(recipient)
-            if(userChannel and recipient != user.id):
-                await send_to_user(self, userChannel.channel_name, FRIEND_REQUEST_RECEIVED, {'id': user.id, 'username': user.username, 'message': "Has sent you a friend request"})
+        friend_id = data["message"]  # Asumimos que data ya contiene friend_id directamente
+        if friend_id:  # Aseguramos que friend_id es un entero
+            userChannel = await CustomUser.get_user_by_id(friend_id)  # Obtenemos el canal del usuario destinatario
+            if userChannel and friend_id != user.id:  # Aseguramos que no se esté enviando a sí mismo
+                await send_to_user(self, userChannel.notifications_channel_name, FRIEND_REQUEST_RECEIVED, {
+                    'id': user.id,
+                    'username': user.username,
+                    'message': "Has sent you a friend request"
+                })
