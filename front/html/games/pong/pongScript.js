@@ -78,6 +78,8 @@ function gameEventHandler(e) {
         let nickname = document.getElementById("tournament-nickname").value;
         if (nickname !== null && nickname !== "") {
             //JOIN_TOURNAMENT
+
+            toggleView(tournamentJoinView, false);
             gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
                 id: tournamentJoined,
                 nick: nickname,
@@ -86,7 +88,6 @@ function gameEventHandler(e) {
         }
         // Comprobamos si el nickname es valido
         // Llamamos a la funcion para entrar a un torneo
-        // toggleView(tournamentJoinView, false);
         // toggleView(tournamentView, false);
         // toggleView(tournamentReadyView, true);
     }
@@ -411,50 +412,50 @@ function fillTournamentData(data) {
     tournamentJoined = data.id;
 }
 
-// Fill Tournament list
-function fillTournaments2(data) {
-    var tournaments = document.getElementById("tournamentList");
+// // Fill Tournament list
+// function fillTournaments2(data) {
+//     var tournaments = document.getElementById("tournamentList");
 
-    // Remove previous li elements
-    while (tournaments.firstChild)
-        tournaments.removeChild(tournaments.firstChild);
+//     // Remove previous li elements
+//     while (tournaments.firstChild)
+//         tournaments.removeChild(tournaments.firstChild);
 
-    console.log(data);
+//     console.log(data);
 
-    data.forEach((element) => {
-        var curli = document.createElement("li");
-        curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
-        curli.classList.add("list-group-item");
-        // curli.dataset.tournamentId = element.id;
-        // Click example to join tournament
-        curli.addEventListener('click', function () {
-            var nickname = prompt(`¿Want join to ${element.name} tournament? Introduce your nickname:`);
-            if (nickname !== null && nickname !== "") {
-                //JOIN_TOURNAMENT
-                gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
-                    id: element.id,
-                    nick: nickname,
-                    game: GAMES.PONG
-                })
-                console.log("El usuario confirmó la entrada al torneo.");
-            }
-        });
+//     data.forEach((element) => {
+//         var curli = document.createElement("li");
+//         curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
+//         curli.classList.add("list-group-item");
+//         // curli.dataset.tournamentId = element.id;
+//         // Click example to join tournament
+//         curli.addEventListener('click', function () {
+//             var nickname = prompt(`¿Want join to ${element.name} tournament? Introduce your nickname:`);
+//             if (nickname !== null && nickname !== "") {
+//                 //JOIN_TOURNAMENT
+//                 gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
+//                     id: element.id,
+//                     nick: nickname,
+//                     game: GAMES.PONG
+//                 })
+//                 console.log("El usuario confirmó la entrada al torneo.");
+//             }
+//         });
 
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function (event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
-                id: element.id,
-                game: GAMES.PONG
-            })
-        });
-        curli.appendChild(leaveButton);
-        tournaments.appendChild(curli);
-    });
-}
+//         // Leave
+//         var leaveButton = document.createElement("button");
+//         leaveButton.textContent = "Leave";
+//         leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+//         leaveButton.addEventListener('click', function (event) {
+//             event.stopPropagation();
+//             gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+//                 id: element.id,
+//                 game: GAMES.PONG
+//             })
+//         });
+//         curli.appendChild(leaveButton);
+//         tournaments.appendChild(curli);
+//     });
+// }
 
 function fillGames(data) {
     var games = document.getElementById("gameList");
