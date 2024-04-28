@@ -1,5 +1,6 @@
 import { load2FApage } from "../2FA/twoFactorAuthScript.js"
 import { loadMainPage } from "../index/index.js"
+import { checkLoginStatus } from "../login/login.js"
 
 async function handleSubmitUpdatedData(e) {
     if (e.target.matches('#SelectUsernameForm') === false)
@@ -49,10 +50,12 @@ function load42UserWelcomePage() {
     });
 }
 
-export async function callback42(e) {
+export async function callback42() {
     const urlParams = new URLSearchParams(window.location.search);
     const authorizationCode = urlParams.get('code');
 
+    if (checkLoginStatus() === true)
+        return ;
     // Make a POST request to your backend with the authorization code
     if (authorizationCode) {
         const response = await fetch('api/pong_auth/42/callback/', {
@@ -93,6 +96,6 @@ export async function callback42(e) {
                 loadMainPage();
         }
     } else {
-        console.error('Authorization code not found in the URL.');
+        console.warn('42 authorization code not found in the URL.');
     }
 }

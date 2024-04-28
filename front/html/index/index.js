@@ -357,6 +357,5 @@ function makeDraggable(element, elementClick) {
 export function connectNotifications() {
     if(NotificationsSM.connect() == NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED) {
         // NotificationsSM.send(CHAT_TYPES.USER_LIST);
-        console.log(NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED);
     }
 }
