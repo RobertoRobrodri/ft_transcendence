@@ -4,17 +4,15 @@ import asyncio
 import hashlib
 import random
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from django.contrib.auth.models import User
 from pong_auth.models import CustomUser
 from .models import Game
 from core.socket import *
 from jwt import ExpiredSignatureError
 from .PongGame import PongGame
 from .pool.PoolGame import PoolGame
-from .MatchmakingQueue import MatchmakingQueue
 from .game_state import games, tournaments, available_games, matchmaking_queue
+from blockchain.views import ContractPutView
+from blockchain.models import Participant
 
 import logging
 logger = logging.getLogger(__name__)
@@ -78,7 +76,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     await self.close(code=4001)
                     logger.debug('Already connected')
                     return
-                logger.debug('Connect')
                 self.connected_users[user.id] = self.channel_name
                 await self.channel_layer.group_add(GENERAL_GAME, self.channel_name)
                 await self.accept()
@@ -255,10 +252,19 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         game_id = get_game_id(user.id)
         if game_id is not None:
             return
-        tournament_name = f'room_{hashlib.sha256(str(user.id).encode()).hexdigest()}'
-        # Check if user have a tournament
-        if tournament_name in tournaments:
-            return
+        
+        # tournament_name = f'room_{hashlib.sha256(str(user.id).encode()).hexdigest()}'
+        # # Check if user have a tournament
+        # if tournament_name in tournaments:
+        #     return
+        tournament_name = f'room_{hashlib.sha256(str(int(time.time())).encode()).hexdigest()}'
+        # Check if user are already on any torunament
+        for _,tournament in tournaments.items():
+            participants = tournament.get('participants', [])
+            for participant in participants:
+                if participant['userid'] == user.id:
+                    return
+                
         # get rcv info
         game_req        = alldata.get("game")
         nickname        = alldata.get("nickname")
@@ -344,6 +350,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     async def startTournament(self, tournament_id):
         tournament = tournaments[tournament_id]
         participants = tournament['participants']
+
+        # Save torunament model
+        user_ids = [participant['userid'] for participant in participants]
+        await Participant.register_participants_in_tournament(user_ids, tournament_id, tournament['name'])
+
         random.shuffle(participants)
         pairings = [participants[i:i+2] for i in range(0, len(participants), 2)]
         if 'rounds' not in tournament:
@@ -353,7 +364,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         # Send tournament table
         await send_to_me(self, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
         await send_to_group_exclude_self(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
-        
         # Force await 7 seconds
         await asyncio.sleep(7)
 
@@ -384,20 +394,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 for player in pairing:
                     if not player['winner']:
                         await self.channel_layer.group_discard(tournament_id, player["channel_name"])
-            # # If winner have only 1 element, player win!
-            # if len(winners) == 1:
-                
-            #     # Remove winners
-            #     for winner in winners:
-            #         await self.channel_layer.group_discard(tournament_id, winner["channel_name"])
 
-            #     logger.warning(f'final round: {winners[0]}')
-            #     #save data in blockchain
-                
-            #     # Remove from tournament
-            #     del tournaments[tournament_id]
-            #     return
-            
             # Set winner to False to next round
             for winner in winners:
                 winner['winner'] = False
@@ -422,6 +419,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
                 logger.warning(f'final round: {winners[0]}')
                 #save data in blockchain
+                view = ContractPutView()
+                await view._add_tournament(tournament_id, self.extract_player_info(tournament_id))
                 
                 # Remove from tournament
                 del tournaments[tournament_id]

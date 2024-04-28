@@ -47,6 +47,8 @@ services:
   redis:
     image: "redis:7.2.3-alpine"
     container_name: "redis"
+    networks:
+      - transcendence
     command: ["redis-server", "--bind", "redis", "--port", "6379"]
   
 # Blockchain

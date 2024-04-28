@@ -38,7 +38,7 @@ class PongGame:
         self.max_ball_speed     = 6   # Base ball speed
         self.paddle_speed       = 2   # Speed of paddles
 
-        self.points_to_win      = 6
+        self.points_to_win      = 1
         ######
         self.game_id = game_id
         self.players = {}
@@ -65,6 +65,12 @@ class PongGame:
         except asyncio.TimeoutError:
             self.running = False
             del games[self.game_id]
+            # if are in tournament, not ready players lose
+            if self.tournament_id is not None:
+                await self.set_game_tournament_points()
+                await self.set_winner_leave_tournament()
+                await self.consumer.sendlistGamesToAll("Pong")
+
             logger.warning("Players are not ready after 30 seconds. Leaving game.")
             return
             
@@ -85,7 +91,7 @@ class PongGame:
         while True:
             await send_to_group(self.consumer, self.game_id, COUNTDOWN, {"counter": i})
             i -= 1
-            if i > 0:
+            if i < 0:
                 return
             await asyncio.sleep(1)
 
@@ -345,6 +351,25 @@ class PongGame:
     
     async def set_winner_tournament(self, players_list, winner):
         if self.tournament_id is not None:
+            winner_id = players_list[winner]['userid']  # Obtener el ID del ganador
+            for idx, participants in enumerate(tournaments[self.tournament_id]['rounds'][-1]):
+                for idx2, p in enumerate(participants):# for participant in participants:
+                    if p['userid'] == winner_id:
+                        tournaments[self.tournament_id]["rounds"][-1][idx][idx2]['winner'] = True
+                        break
+            await self.consumer.start_next_round(self.tournament_id)
+    
+    async def set_winner_leave_tournament(self):
+        players_list = list(self.players.values())
+        if self.tournament_id is not None:
+            winner = None
+            if players_list[0]["ready"]:
+                winner = 0
+            if players_list[1]["ready"]:
+                winner = 1
+            if winner == None:
+                await self.consumer.start_next_round(self.tournament_id)
+                return
             winner_id = players_list[winner]['userid']  # Obtener el ID del ganador
             for idx, participants in enumerate(tournaments[self.tournament_id]['rounds'][-1]):
                 for idx2, p in enumerate(participants):# for participant in participants:

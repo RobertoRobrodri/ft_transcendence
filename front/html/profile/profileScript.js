@@ -3,6 +3,7 @@ import { displayErrorList, displayError } from "../components/loader.js"
 
 export function init(customData = null) {
     loadUserInfo(customData);
+    getTournaments();
 }
 
 // window.addEventListener('beforeunload', function(event) {
@@ -46,6 +47,59 @@ export async function loadUserInfo(customData = null) {
         }
         user_info.innerHTML = user_updated;
         user_info.classList.remove("mshide");
+    }
+    catch (error) {
+        console.error('Error:', error.message);
+        // Token error, try update jwt
+        renewJWT();
+    }
+}
+
+// Funcion para obtener una lista de todos los torneos que se ha participado, retorna nombre del torneo y el id
+export async function getTournaments() {
+    const token = sessionStorage.getItem('token')
+    try {
+        let url = 'api/blockchain/getTournaments/';
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }}
+        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        //al hacer click en un torneo, se solicita la tabla enviando el id del torneo, ejemplo de solicitud:
+        getTournamentTable(data['tournaments_participated'][0]['id'])
+
+    }
+    catch (error) {
+        console.error('Error:', error.message);
+        // Token error, try update jwt
+        renewJWT();
+    }
+}
+
+export async function getTournamentTable(tournament_id) {
+    // Esta funcion retorna la tabla amacenada en la blockchain del id del torneo especificado
+    const token = sessionStorage.getItem('token')
+    try {
+        let url = `api/blockchain/getTournamentTable/?tournament_id=${tournament_id}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }}
+        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data)
     }
     catch (error) {
         console.error('Error:', error.message);
