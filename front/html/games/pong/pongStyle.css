@@ -21,6 +21,14 @@
     transform: scale(1.05); /* Scale button slightly on hover */
 }
 
+.score {
+    width: 25%;
+
+}
+.line {
+    border-color: #ffffff;
+}
+
 /* Button Styles */
 .game-button-back {
     background-color: transparent;
