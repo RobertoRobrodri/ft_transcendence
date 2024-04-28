@@ -1,4 +1,5 @@
 import { renewJWT } from "../components/updatejwt.js"
+import { showNotification } from "../components/loader.js";
 import { displayErrorList, displayMessage } from "../components/loader.js"
 import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
 import { CHAT_TYPES, FRIENDS } from '../socket/Constants.js';
@@ -170,15 +171,6 @@ NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_RECEIVED,  data => {
     showNotification(data);
     loadUsersTable();
 });
-
-export async function showNotification(data) {
-    let notification = document.getElementById("myPopup");
-    notification.classList.toggle("show");
-
-    setTimeout(() => {
-        notification.classList.remove("show");
-    }, 10000);
-}  
 
 function FriendRequestListener() {
     document.getElementById('root').addEventListener('submit', sendFriendRequest);

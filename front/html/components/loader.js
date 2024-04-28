@@ -53,3 +53,13 @@ export function displayLoginOrMenu() {
     else
         loadLoginPage();
 }
+
+export async function showNotification(data) {
+    let notification = document.getElementById("myPopup");
+    notification.innerHTML = data.username + " " + data.message;
+    notification.classList.toggle("show");
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 10000);
+}  
