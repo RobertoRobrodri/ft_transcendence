@@ -81,11 +81,11 @@ class PongGame:
             await asyncio.sleep(1 / 60)
     
     async def countdown(self):
-        i = 0
+        i = self.sleep_match
         while True:
             await send_to_group(self.consumer, self.game_id, COUNTDOWN, {"counter": i})
-            i += 1
-            if i >= self.sleep_match:
+            i -= 1
+            if i > 0:
                 return
             await asyncio.sleep(1)
 
