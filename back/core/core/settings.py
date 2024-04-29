@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'channels',
     'chat',
     'blockchain'
+    'notifications',
 ]
 
 REST_FRAMEWORK = {

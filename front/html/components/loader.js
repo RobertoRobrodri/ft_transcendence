@@ -9,10 +9,10 @@ export function loadingAnimation(ruta) {
     // return $loader;
 }
 
-export function displayError(error, type, id) {
+export function displayMessage(msg, type, id, color='red') {
     const errorElement = document.createElement(type);
-    (type === "ul") ? errorElement.innerHTML = error : errorElement.textContent = error;
-    errorElement.style.color = 'red';
+    (type === "ul") ? errorElement.innerHTML = error : errorElement.textContent = msg;
+    errorElement.style.color = color;
     const errorContainer = document.getElementById(id);
     // Remove existing error messages of the same type
     const existingErrors = errorContainer.querySelectorAll(type);
@@ -43,7 +43,7 @@ export function displayErrorList(errorData, id) {
     processErrors(errorData.error);
     if (errorMessagesList.length > 0) {
         const errorMessage = errorMessagesList.join('');
-        displayError(errorMessage, 'ul', id);
+        displayMessage(errorMessage, 'ul', id);
     }
 }
 
@@ -53,3 +53,13 @@ export function displayLoginOrMenu() {
     else
         loadLoginPage();
 }
+
+export async function showNotification(data) {
+    let notification = document.getElementById("myPopup");
+    notification.innerHTML = data.username + " " + data.message;
+    notification.classList.toggle("show");
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 10000);
+}  

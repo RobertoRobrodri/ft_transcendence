@@ -12,21 +12,23 @@ class CustomUser(AbstractUser):
         INMENU = "inmenu"
         INGAME = "ingame"
         INQUEU = "inqueu"
+        OFFLINE = "offline"
 
-    wins                = models.IntegerField(default=0)
-    losses              = models.IntegerField(default=0)
-    status              = models.CharField(max_length=9, choices=Status, default=Status.INMENU)
-    connected           = models.BooleanField(default=False)
-    channel_name        = models.CharField(max_length=255, blank=True, null=True)
-    ignored_users       = models.ManyToManyField('self', blank=True, symmetrical=False, related_name='ignored')
-    # Used for 42 Auth
-    external_id         = models.IntegerField(null=True, blank=True)
-    profile_picture     = models.ImageField(upload_to='', null=True, blank=True)
-    friends             = models.ManyToManyField('self', blank=True)
-    # 2FA
-    TwoFactorAuth       = models.BooleanField(default=False)
-    OTP_SECRET_KEY      = models.CharField(max_length = 200, blank=True, null=True)
-    friend_requests     = models.ManyToManyField('self', symmetrical=False, related_name='friend_requests_received')
+    wins                        = models.IntegerField(default=0)
+    losses                      = models.IntegerField(default=0)
+    status                      = models.CharField(max_length=9, choices=Status, default=Status.INMENU)
+    connected                   = models.BooleanField(default=False)
+    channel_name                = models.CharField(max_length=255, blank=True, null=True)
+    notifications_channel_name  = models.CharField(max_length=255, blank=True, null=True)
+    ignored_users               = models.ManyToManyField('self', blank=True, symmetrical=False, related_name='ignored')
+    # Used for 42 Auth      
+    external_id                 = models.IntegerField(null=True, blank=True)
+    profile_picture             = models.ImageField(upload_to='', null=True, blank=True)
+    friends                     = models.ManyToManyField('self', blank=True)
+    # 2FA       
+    TwoFactorAuth               = models.BooleanField(default=False)
+    OTP_SECRET_KEY              = models.CharField(max_length = 200, blank=True, null=True)
+    friend_requests             = models.ManyToManyField('self', symmetrical=False, related_name='friend_requests_received')
     #TODO Historial should be a table of tournaments
     #history
 
@@ -87,8 +89,21 @@ class CustomUser(AbstractUser):
 
     @classmethod
     @database_sync_to_async
+    def update_user_on_connect_to_site(cls, user, nt_channel_name):
+        user.status = CustomUser.Status.INMENU
+        user.notifications_channel_name = nt_channel_name
+        user.save()
+
+    @classmethod
+    @database_sync_to_async
     def update_user_on_disconnect(cls, user):
         user.connected = False
+        user.save()
+
+    @classmethod
+    @database_sync_to_async
+    def update_user_on_disconnect_from_site(cls, user):
+        user.status = CustomUser.Status.OFFLINE
         user.save()
     
     @classmethod

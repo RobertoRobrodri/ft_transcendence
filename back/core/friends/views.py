@@ -1,6 +1,7 @@
 from rest_framework import generics, status
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from pong_auth.models import CustomUser
 from .serializers import FriendRequestSerializer
 from django.db.models import Q
@@ -30,21 +31,38 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 			return Response({"message": "Friend request already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
 		receiver_user.friend_requests.add(user_sender)
-		return Response({"message": "Friend Request sent"}, status=status.HTTP_200_OK)
+		return Response(
+			{
+				"message": "Friend Request sent",
+				"friend_id": receiver_id,
+				}, status=status.HTTP_200_OK)
 	
 	def destroy(self, request, *args, **kwargs):
 		friend_request_id = kwargs.get('pk')
 		action = request.data.get('action', None)
 		try:
-			user_receiver = request.user.friend_requests_received.get(pk=friend_request_id)
+			user_receiver = request.user.friend_requests.get(pk=friend_request_id)
 			if action == 'ACCEPT':
 				request.user.friends.add(user_receiver)
-				user_receiver.friends.add(request.user)
-				request.user.friend_requests_received.remove(user_receiver)
+				request.user.friend_requests.remove(user_receiver)
 				return Response({"message": "Friend Request Accepted"}, status=status.HTTP_200_OK)
 			elif action == 'DECLINE':
-				request.user.friend_requests_received.remove(user_receiver)
+				request.user.friend_requests.remove(user_receiver)
 				return Response({"message": "Friend Request declined"}, status=status.HTTP_200_OK)
 		except CustomUser.DoesNotExist:
 			return Response({"message": "No such friend request"}, status=status.HTTP_400_BAD_REQUEST)
 		return Response({"message": "Action Required"}, status=status.HTTP_400_BAD_REQUEST)
+	
+	@action(detail=True, methods=['delete'])
+	def delete_friend(self, request, *args, **kwargs):
+		unfriend_id = kwargs.get('pk')
+		user = request.user
+		try:
+			unfriend = user.friends.get(pk=unfriend_id)
+			user.friends.remove(unfriend)
+		except CustomUser.DoesNotExist:
+			return Response({"message": "No such friend"}, status=status.HTTP_400_BAD_REQUEST)
+		return Response({
+			'id' : unfriend.username,
+			"message": "Deleted from your friend list",
+		}, status=status.HTTP_200_OK)

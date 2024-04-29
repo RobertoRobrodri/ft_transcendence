@@ -330,7 +330,7 @@ function clearUnreadCount(itemId) {
 }
 
 // Add new item to chat
-function addSingleUser(user, list = "chatList") {
+export function addSingleUser(user, list = "chatList") {
     const id = list + "_" + user.id;
     const exist = document.getElementById(id);
     if(exist)
@@ -360,7 +360,7 @@ function removeAllUsers(list = "chatList") {
 }
 
 // Remove item from chat
-function removeSingleUser(user, list = 'chatList') {
+export function removeSingleUser(user, list = 'chatList') {
     const userListElement = document.getElementById(list);
     const listItem = document.getElementById(list + "_" + user.id);
     if (listItem)

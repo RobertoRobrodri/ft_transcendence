@@ -102,7 +102,7 @@ class UserLogoutView(generics.GenericAPIView):
         user = request.user
         # Front has to delete the access token!!!
         RefreshToken.for_user(user)
-        user.status = CustomUser.Status.INMENU
+        user.status = CustomUser.Status.OFFLINE
         user.save()
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
 
