@@ -1,4 +1,4 @@
-import { displayError } from "../components/loader.js"
+import { displayMessage } from "../components/loader.js"
 import { loadMainPage } from "../index/index.js"
 import { load2FApage } from "../2FA/twoFactorAuthScript.js"
 
@@ -51,7 +51,7 @@ async function handleSubmitLogin (e) {
     }
     } catch (error) {
         console.error('Error:', error.message);
-        displayError(error.message, 'small', 'loginForm');
+        displayMessage(error.message, 'small', 'loginForm');
     }
 }
 

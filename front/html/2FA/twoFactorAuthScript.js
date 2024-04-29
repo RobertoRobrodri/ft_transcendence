@@ -1,5 +1,5 @@
 import { loadMainPage } from "../index/index.js"
-import { displayError } from "../components/loader.js"
+import { displayMessage } from "../components/loader.js"
 
 async function handleSubmitOTP(e) {
     if (e.target.matches('#SendOTPForm') === false)
@@ -32,7 +32,7 @@ async function handleSubmitOTP(e) {
         loadMainPage();
         } catch (error) {
             console.error('Error:', error.message);
-            displayError(error.message, 'small', 'SendOTPForm');
+            displayMessage(error.message, 'small', 'SendOTPForm');
         }
 }
 

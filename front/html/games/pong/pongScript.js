@@ -1,7 +1,6 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
-import { initializeSingleGame, endSingleGame } from "./singlegame.js";
-import { initializeVersusGame, endVersusGame } from "./versusgame.js";
+import { initializeGame, endGame } from "./localGameLogic.js";
 import { sleep } from "../../components/utils.js";
 // import { renewJWT } from "../components/updatejwt.js";
 
@@ -25,7 +24,7 @@ let optionsView, matchmakingView, localgameView, onlineMenuView,
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
-
+    document.getElementById('root').addEventListener('mouseover', showDescription);
     optionsView = document.getElementById("game_options_pong");
     matchmakingView = document.getElementById("matchmaking_pong");
     localgameView = document.getElementById("local_game_options_pong");
@@ -115,26 +114,38 @@ function gameEventHandler(e) {
     else if (e.target.matches('#soloGameButton_pong') === true) {
         toggleView(localgameView, false);
         toggleView(canvasDivView, true);
-        initializeSingleGame();
+        initializeGame();
     }
     // Multijugador local
     else if (e.target.matches('#localMultiplayerButton_pong') === true) {
         toggleView(localgameView, false);
-        initializeVersusGame();
+        toggleView(canvasDivView, true);
+        initializeGame(true);
     }
     else if (e.target.matches('#goBackButton_pong') === true) {
         toggleView(optionsView, true);
         toggleView(localgameView, false);
+        toggleView(onlineMenuView, false);
     }
     else if (e.target.matches('#red-myWindowGame') === true) {
         // si está conectado el socket, lo desconecta
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
-        endSingleGame();
-        // si está jugando en una partida multijugador local, la termina
-        endVersusGame();
+        endGame();
     }
+}
 
+function showDescription(e) {
+    let description = document.getElementById("description");
+    if (e.target.matches('#localGameButton_pong') === true) {
+        description.innerText = " Play against AI or multiplayer in the same keyboard \n First to score 6 points \n -- Player 1 controls -- \n Paddle Up = W \n Paddle Down = S \n -- Player 2 controls -- \n Paddle Up = O \n Paddle Down = L \n"
+    }
+    else if (e.target.matches('#onlineGameMenu_pong') === true) {
+        description.innerText = "Enter a game against a random opponent.\n This game will count for your stats \n -- Player controls -- \n Paddle Up = ↑ \n Paddle Down = ↓"
+    }
+    else if (e.target.matches('#tournamentButton_pong') === true) {
+        description.innerText = "Enter a tournament \n multiple players will take \nturns playing against each other \n -- Player controls -- \n Paddle Up = ↑ \n Paddle Down = ↓"
+    }
 }
 
 export function toggleView(view, visible = true) {
@@ -586,7 +597,7 @@ function getDirectionFromKeyCode(keyCode) {
     }
 }
 
-function drawScore(scores) {
+export function drawScore(scores) {
     // Set font style
     ctx.font = "20px Arial";
     ctx.fillStyle = "#ffffff";

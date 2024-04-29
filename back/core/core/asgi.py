@@ -19,7 +19,8 @@ django_asgi_app = get_asgi_application()
 from .JWTAuthMiddlewareStack import JWTAuthMiddlewareStack
 from game.routing import websocket_game
 from chat.routing import websocket_chat
-all_websocket_routes = websocket_game + websocket_chat
+from notifications.routing import websocket_notifications
+all_websocket_routes = websocket_game + websocket_chat + websocket_notifications
 
 application = ProtocolTypeRouter(
     {
