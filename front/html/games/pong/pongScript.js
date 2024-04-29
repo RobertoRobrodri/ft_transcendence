@@ -585,7 +585,7 @@ function getDirectionFromKeyCode(keyCode) {
     }
 }
 
-function drawScore(scores) {
+export function drawScore(scores) {
     // Set font style
     ctx.font = "20px Arial";
     ctx.fillStyle = "#ffffff";

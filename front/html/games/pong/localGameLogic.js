@@ -1,4 +1,5 @@
 import { PongAI } from './PongAI.js';
+import { drawScore } from './pongScript.js';
 
 export function endGame() {
     if (intervalId != null) {
@@ -15,6 +16,7 @@ let canvas;
 let ctx;
 let gameState;
 
+let score = [0, 0];
 let paddleWidth = 10;
 let paddleLenght = 40;
 let paddleMargin = 2;
@@ -26,7 +28,7 @@ let sleepMatch = 3;
 let sleep = 1;
 let incBallSpeed = 1;
 let maxBallSpeed = 6;
-let paddleSpeed = 1;
+let paddleSpeed = 2;
 
 const degToRad = Math.PI / 180;
 let intervalId = null;
@@ -83,9 +85,10 @@ function startGame() {
     gameState.players.right.paddle_x = 383;
     gameState.players.right.paddle_y = 80;
     console.log("Starting game");
+    score = [gameState.players.right.score, gameState.players.left.score];
     leftPlayerMovement = 0;
     rightPlayerMovement = 0;
-
+    updateGame(gameState);
     // Delay starting the game interval by 3000 milliseconds
     setTimeout(() => {
         intervalId = setInterval(() => {
@@ -159,6 +162,7 @@ function checkPaddleCollision(ball, paddle) {
     let paddleTop = paddleY;
     let paddleBottom = paddleY + paddleLenght;
 
+    console.log(ball.speed_x)
     if (playerNbr == 1 && ball.speed_x > 0) {
         return ;
     } else if (playerNbr == 2 && ball.speed_x < 0) {
@@ -210,7 +214,8 @@ function updateGame(gameState) {
     // Black background
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    // Draw Score
+    drawScore(score);
 	// Draw paddles
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];
