@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     'game',
     'channels',
     'chat',
-    'blockchain'
+    'blockchain',
     'notifications',
 ]
 
