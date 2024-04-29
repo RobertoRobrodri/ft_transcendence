@@ -1,13 +1,48 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayMessage } from "../components/loader.js"
 import { connectNotifications } from "../index/index.js"
+import {toggleView} from "../games/pong/pongScript.js"
+
+let editProfileView, setMFAView, changePasswordView,
+    profileOptionsView;
+
+export function initDivs() {
+    editProfileView = document.getElementById('edit_profile');
+    setMFAView = document.getElementById('set_MFA');
+    changePasswordView = document.getElementById('change_password');
+    profileOptionsView = document.getElementById('profileOptions');
+    document.getElementById('root').addEventListener('click', gameEventHandler);
+}
 
 export function init(customData = null) {
     loadUserInfo(customData);
+    
 }
 // window.addEventListener('beforeunload', function(event) {
 //     console.log('La página está a punto de descargarse.');
 // });
+
+
+function gameEventHandler(e) {
+    if (e.target.matches('#editProfile') === true) {
+        toggleView(editProfileView, true);
+        toggleView(profileOptionsView, false);
+    }
+    else if (e.target.matches('#setMFA') === true) {
+        toggleView(setMFAView, true);
+        toggleView(profileOptionsView, false);
+    }
+    else if (e.target.matches('#backToEditProfile') === true) {
+        toggleView(editProfileView, false);
+        toggleView(setMFAView, false);
+        toggleView(changePasswordView, false);
+        toggleView(profileOptionsView, true);
+    }
+    else if (e.target.matches('#changePassword') === true) {
+        toggleView(changePasswordView, true);
+        toggleView(profileOptionsView, false);
+    }
+};
 
 export async function loadUserInfo(customData = null) {
     const token = sessionStorage.getItem('token')
@@ -64,14 +99,17 @@ export function loadEditProfilePage() {
     let loginPage = document.getElementById("root");
     Promise.all([
         fetch('./profile/editProfile.html').then(response => response.text()),
-        fetch('./profile/editProfileStyle.css').then(response => response.text())
-    ]).then(([html, css]) => {
+        fetch('./profile/editProfileStyle.css').then(response => response.text()),
+        import('./profileScript.js').then(module => module)
+    ]).then(([html, css, javascript]) => {
         window.location.hash = '#/edit-profile';
         loginPage.innerHTML = html;
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
         connectNotifications();
+
+        javascript.initDivs();
         editProfileListener();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);

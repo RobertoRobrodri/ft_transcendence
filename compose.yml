@@ -127,6 +127,7 @@ services:
       - ./.logs:/var/log/services
     depends_on:
       - elasticsearch
+      - setup
     networks:
       - transcendence
     deploy:

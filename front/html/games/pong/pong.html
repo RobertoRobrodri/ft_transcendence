@@ -41,7 +41,7 @@
 
 <div class="tournament_ready mshide" id="tournament_ready">
 	<div class="col-md-12 mt-5 text-center">
-		<h2>Tournament</h2>
+		<h2>Waiting for the tournament...</h2>
 		<div class="col-md-7 mx-auto text-center">
 			<table class="table table-dark">
 				<tr>
@@ -50,7 +50,7 @@
 				</tr>
 				<tr>
 					<th class="text-right"><b>Number of players: </b></th>
-					<td id="tournament_number_joined text">1/10</td>
+					<td id="tournament_number_joined">1/10</td>
 				</tr>
 				<tr>
 					<th class="text-right"><b>Admin: </b></th>
@@ -58,7 +58,7 @@
 				</tr>
 			</table>
 		</div>
-		<div class="tournament-table-container">
+		<!-- <div class="tournament-table-container">
 			<table class="table table-dark">
 				<thead>
 					<tr>
@@ -68,7 +68,7 @@
 				<tbody id="tournament-players-body">
 				</tbody>
 			</table>
-		</div>
+		</div> -->
 		<div class="col-md-12 text-left">
 			<button type="button" class="game-button-back mr-5" id="leaveTournament">Leave Tournament</button>
 		</div>
@@ -86,7 +86,7 @@
 				</tr>
 				<tr>
 					<th class="text-right"><b>Number of players: </b></th>
-					<td id="tournament_number_join text">1/10</td>
+					<td id="tournament_number_join">1/10</td>
 				</tr>
 				<tr>
 					<th class="text-right"><b>Admin: </b></th>
@@ -97,7 +97,7 @@
 
 		<div class="col-md-12 mt-5 text-center">
 			<div class="col-auto">
-				<input type="text" class="form-control" id="tournament-nickname" placeholder="Nickname" required>
+				<input type="text" autocomplete="off" class="form-control" id="tournament-nickname" placeholder="Nickname" required>
 			</div>
 			<div class="col-md-12 mt-2">
 				<button type="button" class="game-button-back mr-5" id="backToTournaments">Back</button>
@@ -128,10 +128,10 @@
 		<div class="tournament-form-container d-flex justify-content-center">
 			<div id="myForm" class="row g-3 align-items-center">
 				<div class="col-auto">
-					<input type="text" class="form-control" id="nickname" placeholder="Nickname" required>
+					<input type="text" autocomplete="off" class="form-control" id="nickname" placeholder="Nickname" required>
 				</div>
 				<div class="col-auto">
-					<input type="text" class="form-control" id="tournament-name" placeholder="Tournament name" required>
+					<input type="text" autocomplete="off" class="form-control" id="tournament-name" placeholder="Tournament name" required>
 				</div>
 				<div class="col-auto">
 					<input type="number" class="form-control" id="number-of-players" placeholder="Players" required>
@@ -145,15 +145,18 @@
 	</div>
 </div>
 
+<div class="emparejamiento mshide" id="emparejamiento">
+	<div class="col-md-12 mt-5 text-center">
+		<h2>Matchs</h2>
+	</div>
+	<div class="results" id="results">
+
+	</div>
+</div>
+
 <div class="online_menu mshide" id="online_menu_pong">
 	<div class="vertical-center text-center">
 		<button class="game-button" id="onlineGameButton_pong">New Game</button>
-	</div>
-	<div class="scrollable-list">
-		<ul>
-			<li>Elemento 1</li>
-			<li>Elemento 2</li>
-		</ul>
 	</div>
 </div>
 
@@ -175,4 +178,7 @@
 		<button class="game-button-back" id="goBackButton_pong">Go back</button>
 	</div>
 </div>
-<canvas id="pongCanvas" width="400" height="200"></canvas>
+
+<div class="mshide" id="canvasDiv">
+	<canvas class="mshide" id="pongCanvas" width="400" height="200"></canvas>
+</div>

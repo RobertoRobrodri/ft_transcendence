@@ -1,11 +1,16 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
-import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
+import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
+import { sleep } from "../../components/utils.js";
 // import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
 // Global vars //
 /////////////////
+let isPlaying = false;
+let myUserId = null;
+let myUsername = null;
+let tournamentJoined = null;
 let canvas;
 let ctx;
 let score = [0, 0];
@@ -14,7 +19,8 @@ let score = [0, 0];
 let gameSM = new GameSocketManager();
 
 let optionsView, matchmakingView, localgameView, onlineMenuView,
-    tournamentView, tournamentJoinView, tournamentReadyView;
+    tournamentView, tournamentJoinView, tournamentReadyView,
+    emparejamientoView, canvasDivView, resultadosView;
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -26,6 +32,9 @@ export function init(customData = null) {
     tournamentView = document.getElementById("tournament_menu");
     tournamentJoinView = document.getElementById("tournament_join");
     tournamentReadyView = document.getElementById("tournament_ready");
+    canvasDivView = document.getElementById("canvasDiv");
+    emparejamientoView = document.getElementById("emparejamiento");
+    resultadosView = document.getElementById("results");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
 
@@ -38,45 +47,58 @@ async function setTournaments() {
 
 function gameEventHandler(e) {
     // multiplayer
-    if (e.target.matches('#onlineGameMenu_pong') === true)
-    {
+    if (e.target.matches('#onlineGameMenu_pong') === true) {
         gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG);
         toggleView(optionsView, false);
         toggleView(onlineMenuView, true);
     }
-    else if (e.target.matches('#tournamentButton_pong') === true)
-    {
+    else if (e.target.matches('#tournamentButton_pong') === true) {
         toggleView(optionsView, false);
         toggleView(tournamentView, true);
         setTournaments();
     }
-    else if (e.target.matches('#backToTournaments') === true)
-    {
+    else if (e.target.matches('#backToTournaments') === true) {
+        tournamentJoined = null;
         toggleView(tournamentJoinView, false);
         toggleView(tournamentView, true);
     }
     else if (e.target.matches('#leaveTournament') === true) {
         // Llamamos a la funcion para salir de un torneo
+        gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+            id: tournamentJoined,
+            game: GAMES.PONG
+        })
+        tournamentJoined = null;
+        toggleView(tournamentJoinView, false);
         toggleView(tournamentReadyView, false);
-        toggleView(tournamentJoinView, true);
+        toggleView(tournamentView, true);
     }
     else if (e.target.matches('#joinTournament') === true) {
+        let nickname = document.getElementById("tournament-nickname").value;
+        if (nickname !== null && nickname !== "") {
+            //JOIN_TOURNAMENT
+
+            toggleView(tournamentJoinView, false);
+            gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
+                id: tournamentJoined,
+                nick: nickname,
+                game: GAMES.PONG
+            })
+        }
         // Comprobamos si el nickname es valido
         // Llamamos a la funcion para entrar a un torneo
-        toggleView(tournamentJoinView, false);
-        toggleView(tournamentReadyView, true);
+        // toggleView(tournamentView, false);
+        // toggleView(tournamentReadyView, true);
     }
     else if (e.target.matches('#createTournament') === true) {
         CreateTournament();
     }
-    else if (e.target.matches('#onlineGameButton_pong') === true)
-    {
+    else if (e.target.matches('#onlineGameButton_pong') === true) {
         toggleView(onlineMenuView, false);
         toggleView(matchmakingView, true);
         InitMatchmaking();
     }
-    else if (e.target.matches('#cancelMatchmakingButton_pong') === true)
-    {
+    else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
         toggleView(matchmakingView, false);
         toggleView(onlineMenuView, false);
         toggleView(tournamentView, false);
@@ -84,39 +106,36 @@ function gameEventHandler(e) {
         CancelMatchmaking();
     }
     // juego local
-    else if (e.target.matches('#localGameButton_pong') === true)
-    {
+    else if (e.target.matches('#localGameButton_pong') === true) {
         toggleView(optionsView, false);
         toggleView(localgameView, true);
     }
     // 1 jugador
-    else if (e.target.matches('#soloGameButton_pong') === true)
-    {
+    else if (e.target.matches('#soloGameButton_pong') === true) {
         toggleView(localgameView, false);
+        toggleView(canvasDivView, true);
         initializeGame();
     }
     // Multijugador local
-    else if (e.target.matches('#localMultiplayerButton_pong') === true)
-    {
+    else if (e.target.matches('#localMultiplayerButton_pong') === true) {
         toggleView(localgameView, false);
+        toggleView(canvasDivView, true);
         initializeGame(true);
     }
-    else if (e.target.matches('#goBackButton_pong') === true)
-    {
+    else if (e.target.matches('#goBackButton_pong') === true) {
         toggleView(optionsView, true);
         toggleView(localgameView, false);
     }
-    else if (e.target.matches('#red-myWindowGame') === true)
-    {
+    else if (e.target.matches('#red-myWindowGame') === true) {
         // si está conectado el socket, lo desconecta
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
         endGame();
     }
-    
+
 }
 
-function toggleView(view, visible = true) {
+export function toggleView(view, visible = true) {
     if (visible)
         view.classList.remove("mshide");
     else
@@ -135,38 +154,47 @@ gameSM.registerCallback(SOCKET.CONNECTED, event => {
 
 // Callback socket disconnected
 gameSM.registerCallback(SOCKET.DISCONNECTED, event => {
-    
+
 });
 
 // Callback socket error
 gameSM.registerCallback(SOCKET.ERROR, event => {
-    
+
 });
 
+
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
-    if(data.game == GAMES.PONG) {
+    if (data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
         toggleView(optionsView, false);
     }
 });
 
 // MATCHMAKING
+// TODO Aqui oculto la tabla del emparejamiento
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
-    //Game matched! game started
-    // send ready request after open game, message to ask about ready etc
-    // Hide matchmaking elements
-    if(data.game == GAMES.PONG) {
+
+    if (data.game == GAMES.PONG) {
+        isPlaying = true;
         toggleView(matchmakingView, false);
+        toggleView(onlineMenuView, false);
+        toggleView(tournamentView, false);
+        toggleView(optionsView, false);
+        toggleView(tournamentReadyView, false);
+        toggleView(tournamentJoinView, false);
+        toggleView(localgameView, false);
+        toggleView(canvasDivView, true);
+        toggleView(emparejamientoView, false);
         gameSM.send(GAME_TYPES.PLAYER_READY);
     }
 });
 
 gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
-    
+
 });
 
 gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
-    if(data.game == GAMES.PONG) {
+    if (data.game == GAMES.PONG) {
         toggleView(matchmakingView, true);
         toggleView(optionsView, false);
     }
@@ -189,12 +217,15 @@ gameSM.registerCallback(GAME_TYPES.PADDLE_COLLISON, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
-    if(data.game == GAMES.PONG) {
+    if (data.game == GAMES.PONG) {
+        isPlaying = false;
         const audio = new Audio("assets/game/sounds/chipi-chapa.mp3");
         score = [0, 0];
         audio.play();
         //gameSM.disconnect();
+        toggleView(canvasDivView, false);
         toggleView(optionsView, true);
+        toggleView(emparejamientoView, false);
     }
 });
 
@@ -204,47 +235,119 @@ gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
-    if(data.game == GAMES.PONG) {
-        fillTournaments(data.data);
+    if (data.game == GAMES.PONG) {
+        fillTournamentsList(data.data);
     }
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
-    if(data.game == GAMES.PONG) {
+    if (data.game == GAMES.PONG) {
         fillGames(data);
     }
 });
 
 gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
     console.log(`game start in: ${data.counter}`)
+    // gameSM.send(GAME_TYPES.PLAYER_READY);
+
 });
 
-gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
-    console.log(`tournament data table: ${data}`)
+gameSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
+    myUserId = data.id;
+    myUsername = data.username;
 });
 
 gameSM.registerCallback(GAME_TYPES.USERS_PLAYING, data => {
     if (data.game == GAMES.PONG) {
-
     }
 });
 
-////////////////
-// GAME LOGIC //
-////////////////
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_CREATED, data => {
+    if (data.game == GAMES.PONG) {
+        if (data.data.adminId == myUserId) {
+            fillTournamentData(data.data)
+            toggleView(tournamentView, false);
+            toggleView(tournamentReadyView, true);
+        }
+    }
+});
 
-function InitMatchmaking()
-{
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
+    if (data.game == GAMES.PONG) {
+        if (isPlaying)
+            return;
+        //el usuario está en un torneo
+        console.log(data.data)
+        fillTournamentData(data.data)
+        toggleView(optionsView, false);
+        toggleView(tournamentReadyView, true);
+    }
+});
+
+function setMatchmaking(data) {
+    console.log(data);
+    resultadosView.innerHTML = "";
+    resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
+    let tabla = "";
+    let player1 = "";
+    let player1Points = 0;
+    for (let ronda of data.data) {
+        console.log("________________________")
+        for (let jugadores of ronda) {
+            if (jugadores[1]) {
+                player1 = jugadores[1].nickname;
+                player1Points = jugadores[1].points;
+            }
+            else {
+                player1 = "Bye";
+                player1Points = 0;
+            }
+            tabla = `<table class='table table-dark'> \
+                            <tbody>\
+                                <tr>\
+                                    <td class='text-left score'>${jugadores[0].nickname}</td>\
+                                    <td class='text-center score'>${jugadores[0].points}</td>\
+                                    <td class='text-center score'>${player1Points}</td>\
+                                    <td class='text-right' score>${player1}</td>\
+                                </tr>\
+                            </tbody>\
+                        </table>`;
+            resultadosView.innerHTML = resultadosView.innerHTML + tabla; 
+        }
+        resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
+    }
+    toggleView(optionsView, false);
+    toggleView(tournamentJoinView, false);
+    toggleView(tournamentReadyView, false);
+    toggleView(emparejamientoView, true);
 }
 
-function InitMatchmakingTournament()
-{
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.TOURNAMENT);
+// TODO, muestro la tabla de los emparejamientos
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
+    console.log("tournament table");
+    setMatchmaking(data);
+    // console.log(data);
+});
+
+gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
+    console.log(`tournament players: ${data}`)
+});
+
+//////////////////////
+// TOURNAMENT LOGIC //
+//////////////////////
+
+// Llamando esta funcion se obtienen el emparejamiento del torneo
+function requestTournamentTable(tournamentID) {
+    gameSM.send(GAME_TYPES.TOURNAMENT_TABLE, tournamentID);
 }
 
-function CreateTournament()
-{
+// Llamando esta funcion se obtienen los jugadores de un torneo
+function requestTournamentPlayers(tournamentID) {
+    gameSM.send(GAME_TYPES.TOURNAMENT_PLAYERS, tournamentID);
+}
+
+function CreateTournament() {
     var customUsername = document.getElementById("nickname").value;
     var tournamentName = document.getElementById("tournament-name").value;
     var playerSize = document.getElementById("number-of-players").value;
@@ -254,17 +357,157 @@ function CreateTournament()
         size: playerSize,
         tournament_name: tournamentName
     });
-    // Ahora cambiamos la vista a la del torneo
 }
 
-function CancelMatchmaking()
-{
+// Fill Tournament table
+function fillTournamentsList(data) {
+    var tournaments = document.getElementById("allTournaments-table-body");
+    tournaments.innerHTML = "";
+    let currentTournamentExist = false;
+    data.forEach((element) => {
+        if (!currentTournamentExist && element.id == tournamentJoined) {
+            currentTournamentExist = true;
+        }
+        const row = document.createElement("tr");
+        row.addEventListener("click", function () {
+            // Fill tournament_name_join data:
+            toggleView(tournamentView, false);
+            toggleView(tournamentJoinView, true);
+            fillTournamentData(element);
+        });
+        row.innerHTML = `
+            <td>${element.name}</td>
+            <td>${element.currentPlayers}/${element.size}</td>
+        `;
+        tournaments.appendChild(row);
+    });
+    if (!currentTournamentExist && tournamentJoined != null && !isPlaying) {
+        // toggleView(tournamentView, true);
+        toggleView(tournamentJoinView, false);
+        toggleView(tournamentReadyView, false);
+    }
+    // TODO Cambiar tambien en la tabla de waiting fot the tournament
+}
+
+function fillTournamentData(data) {
+
+    //Joined
+    let tournamentName = document.getElementById("tournament_name_joinned");
+    let nbrPlayers = document.getElementById("tournament_number_joined");
+    let admin = document.getElementById("tournament_admin_joined");
+    tournamentName.textContent = data.name;
+    nbrPlayers.textContent = `${data.currentPlayers}/${data.size}`;
+    admin.textContent = data.admin;
+    tournamentJoined = data.id;
+
+    //Join
+    let tournamentName2 = document.getElementById("tournament_name_join");
+    let nbrPlayers2 = document.getElementById("tournament_number_join");
+    let admin2 = document.getElementById("tournament_admin_join");
+    tournamentName2.textContent = data.name;
+    nbrPlayers2.textContent = `${data.currentPlayers}/${data.size}`;
+    admin2.textContent = data.admin;
+    tournamentJoined = data.id;
+}
+
+// // Fill Tournament list
+// function fillTournaments2(data) {
+//     var tournaments = document.getElementById("tournamentList");
+
+//     // Remove previous li elements
+//     while (tournaments.firstChild)
+//         tournaments.removeChild(tournaments.firstChild);
+
+//     console.log(data);
+
+//     data.forEach((element) => {
+//         var curli = document.createElement("li");
+//         curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
+//         curli.classList.add("list-group-item");
+//         // curli.dataset.tournamentId = element.id;
+//         // Click example to join tournament
+//         curli.addEventListener('click', function () {
+//             var nickname = prompt(`¿Want join to ${element.name} tournament? Introduce your nickname:`);
+//             if (nickname !== null && nickname !== "") {
+//                 //JOIN_TOURNAMENT
+//                 gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
+//                     id: element.id,
+//                     nick: nickname,
+//                     game: GAMES.PONG
+//                 })
+//                 console.log("El usuario confirmó la entrada al torneo.");
+//             }
+//         });
+
+//         // Leave
+//         var leaveButton = document.createElement("button");
+//         leaveButton.textContent = "Leave";
+//         leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+//         leaveButton.addEventListener('click', function (event) {
+//             event.stopPropagation();
+//             gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
+//                 id: element.id,
+//                 game: GAMES.PONG
+//             })
+//         });
+//         curli.appendChild(leaveButton);
+//         tournaments.appendChild(curli);
+//     });
+// }
+
+function fillGames(data) {
+    var games = document.getElementById("gameList");
+    if (!games)
+        return;
+    // Remove previous li elements
+    while (games.firstChild)
+        games.removeChild(games.firstChild);
+
+    data.data.forEach((element) => {
+        var curli = document.createElement("li");
+        curli.textContent = `${element.id}`;
+        curli.classList.add("list-group-item");
+        //Click example to join tournament
+        curli.addEventListener('click', function () {
+            gameSM.send(GAME_TYPES.SPECTATE_GAME, {
+                id: element.id
+            })
+        });
+
+        // Leave
+        var leaveButton = document.createElement("button");
+        leaveButton.textContent = "Leave";
+        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+        leaveButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
+                id: element.id
+            })
+        });
+        curli.appendChild(leaveButton);
+        games.appendChild(curli);
+    });
+}
+
+////////////////
+// GAME LOGIC //
+////////////////
+
+function InitMatchmaking() {
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+}
+
+function InitMatchmakingTournament() {
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.TOURNAMENT);
+}
+
+function CancelMatchmaking() {
     gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
 }
 
 function updateGame(gameState) {
     // This prevents an error when reloading the page where it cannot find the canvas
-    
+
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -321,7 +564,7 @@ function handleKeyUp(event) {
 function sendDirectionToServer() {
     if (direction) {
         // Send direction
-        gameSM.send(GAME_TYPES.ACTION,  {"game" : GAMES.PONG, "action": direction })
+        gameSM.send(GAME_TYPES.ACTION, { "game": GAMES.PONG, "action": direction })
         // Schedule the next update while the key is pressed
         requestAnimationFrame(sendDirectionToServer);
     } else {
@@ -339,105 +582,6 @@ function getDirectionFromKeyCode(keyCode) {
         default:
             return null;
     }
-}
-
-// Fill Tournament table
-function fillTournaments(data) {
-    console.log(data);
-    var tournaments = document.getElementById("allTournaments-table-body");
-    tournaments.innerHTML = "";
-    data.forEach((element) => {
-        const row = document.createElement("tr");
-        row.addEventListener("click", function() {
-            console.log(element.id);
-            toggleView(tournamentView, false);
-            toggleView(tournamentJoinView, true);
-        });
-        row.innerHTML = `
-            <td>${element.name}</td>
-            <td>${element.currentPlayers}/${element.size}</td>
-        `;
-        tournaments.appendChild(row);
-    });
-}
-
-// Fill Tournament list
-function fillTournaments2(data) {
-    var tournaments = document.getElementById("tournamentList");
-
-    // Remove previous li elements
-    while (tournaments.firstChild)
-        tournaments.removeChild(tournaments.firstChild);
-    
-    console.log(data);
-
-    data.forEach((element) => {
-        var curli = document.createElement("li");
-        curli.textContent = `${element.name} (${element.currentPlayers}/${element.size})`;
-        curli.classList.add("list-group-item");
-        // curli.dataset.tournamentId = element.id;
-        // Click example to join tournament
-        curli.addEventListener('click', function() {
-            var nickname = prompt(`¿Want join to ${element.name} tournament? Introduce your nickname:`);
-            if (nickname !== null && nickname !== "") {
-                //JOIN_TOURNAMENT
-                gameSM.send(GAME_TYPES.JOIN_TOURNAMENT, {
-                    id: element.id,
-                    nick: nickname,
-                    game: GAMES.PONG
-                })
-                console.log("El usuario confirmó la entrada al torneo.");
-            }
-        });
-
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function(event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_TOURNAMENT, {
-                id: element.id,
-                game: GAMES.PONG
-            })
-        });
-        curli.appendChild(leaveButton);
-        tournaments.appendChild(curli);
-    });
-}
-
-function fillGames(data) {
-    var games = document.getElementById("gameList");
-    if(!games)
-        return;
-    // Remove previous li elements
-    while (games.firstChild)
-        games.removeChild(games.firstChild);
-    
-    data.data.forEach((element) => {
-        var curli = document.createElement("li");
-        curli.textContent = `${element.id}`;
-        curli.classList.add("list-group-item");
-        //Click example to join tournament
-        curli.addEventListener('click', function() {
-            gameSM.send(GAME_TYPES.SPECTATE_GAME, {
-                id: element.id
-            })
-        });
-        
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function(event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
-                id: element.id
-            })
-        });
-        curli.appendChild(leaveButton);
-        games.appendChild(curli);
-    });
 }
 
 function drawScore(scores) {
