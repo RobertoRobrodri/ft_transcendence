@@ -368,6 +368,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         # Send tournament table
         await send_to_me(self, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
         await send_to_group_exclude_self(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+        
         # Force await 7 seconds
         await asyncio.sleep(7)
 
@@ -393,7 +394,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             for pairing in current_round:
                 winner = [player for player in pairing if player['winner']][0]  # Get the first player with winner=True
                 winners.append(winner)
-
+                
             # Remove not winners from group
             for pairing in current_round:
                 for player in pairing:
@@ -432,9 +433,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 view = ContractPutView()
                 await view._add_tournament(tournament_id, self.extract_player_info(tournament_id))
                 
-                # Remove from tournament
-                del tournaments[tournament_id]
-                return
+            #     # Remove from tournament
+            #     del tournaments[tournament_id]
+            #     return
             
             # Notify tournament start
             await self.send_round_to_chat(pairings, tournament)

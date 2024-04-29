@@ -47,8 +47,6 @@ main {
 
 .form-control:hover {
     border-color: #45f3ff;
-    /* border-color: transparent; */
-    /* border: none; */
 }
 
 /* Clase para eliminar objetos */

@@ -98,15 +98,15 @@ main {
 }
 
 .game-ico {
-    height: 70px;
-    width: 70px;
+    height: 60px;
+    width: 60px;
     left: 38px;
     top: 160px;
 }
 
 .pool-ico {
-    height: 70px;
-    width: 70px;
+    height: 60px;
+    width: 60px;
     left: 38px;
     top: 200px;
 }
@@ -117,23 +117,23 @@ main {
 }
 
 #chat {
-    left: 38px;
-    top: 200px;
+    left: 188px;
+    top: 50px;
 }
 
-#terminal {
+/* #terminal {
     left: 38px;
     top: 350px;
-}
+} */
 
 #game {
-    left: 38px;
-    top: 500px;
+    left: 338px;
+    top: 50px;
 }
 
 #pool {
-    left: 38px;
-    top: 650px;
+    left: 488px;
+    top: 50px;
 }
 
 /* Estilo de los programas */
