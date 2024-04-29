@@ -26,7 +26,6 @@ class ContractView(generics.GenericAPIView):
             for network in contract_json["networks"]:
                 contract_address = contract_json["networks"][network]["address"]
             # contract_address = contract_json["networks"]["5777"]["address"]
-            logger.warning(f"django contract address: {contract_address}")
             contract = ContractView.w3.eth.contract(address=contract_address, abi=contract_abi)
             return contract
 

@@ -17,12 +17,8 @@ from blockchain.models import Participant
 import logging
 logger = logging.getLogger(__name__)
 
-# tournaments = {}
-# games = {} # Store games
-# available_games = ["Pong", "Tournament"]
 matchmaking_lock = asyncio.Lock()
 join_tournament_lock = asyncio.Lock()
-# matchmaking_queue = MatchmakingQueue()
 
 # CHANNEL
 MATCHMAKING_C = 'matchmaking_group'
@@ -293,8 +289,23 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             "message": f'New {game_req} tournament created!\nMax players {size}',
             "sender_name": "Admin"
         })
+
         await send_to_me(self, TOURNAMENT_CREATED, {"game": game_req, "data": self.getSingleTournament(tournament_name)})
         await send_to_group_exclude_self(self, GENERAL_GAME, LIST_TOURNAMENTS, self.getTournamentList(game_req))
+
+    async def send_round_to_chat(self, pairings, tournament): #channel_name, message
+        for pairing in pairings:
+            if len(pairing) == 2:
+                for r in pairing:
+                    await send_to_group(self, hashlib.sha256(str(r['userid']).encode('utf-8')).hexdigest(), "general_chat", {
+                        "message": f'Your game in the {tournament["name"]} tournament is going to begin',
+                        "sender_name": "Admin"
+                    })
+            else:
+                await send_to_group(self, hashlib.sha256(str(pairing[0]['userid']).encode('utf-8')).hexdigest(), "general_chat", {
+                    "message": f'Due to an odd number of participants, you automatically advance to the next round in the {tournament["name"]} tournament, stay tuned to play the next round!',
+                    "sender_name": "Admin"
+                })
 
     async def joinTournament(self, user, data):
         alldata = data.get("message")
@@ -350,7 +361,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if 'rounds' not in tournament:
             tournament['rounds'] = []
         tournament['rounds'].append(pairings)
-        
+
+        # Notify tournament start
+        await self.send_round_to_chat(pairings, tournament)
+
         # Send tournament table
         await send_to_me(self, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
         await send_to_group_exclude_self(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
@@ -366,7 +380,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             else:
                 participants_index = participants.index(pairing[0])
                 participants[participants_index]['winner'] = True
-
     
     async def start_next_round(self, tournament_id):
         tournament = tournaments[tournament_id]
@@ -415,7 +428,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 for winner in participants:
                     await self.channel_layer.group_discard(tournament_id, winner["channel_name"])
 
-                logger.warning(f'final round: {participants[0]}')
                 #save data in blockchain
                 view = ContractPutView()
                 await view._add_tournament(tournament_id, self.extract_player_info(tournament_id))
@@ -423,6 +435,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 # Remove from tournament
                 del tournaments[tournament_id]
                 return
+            
+            # Notify tournament start
+            await self.send_round_to_chat(pairings, tournament)
+
             # Force await 7 seconds
             await asyncio.sleep(7)
 
@@ -432,7 +448,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     for r in pairing:
                         userchannel = self.get_tournament_channel(tournament_id, r['userid'])
                         await self.channel_layer.group_add(room_name, userchannel)
-                    
                     await self.start_game(pairing, room_name, tournament['game_request'], tournament_id)
                 else:
                     participants_index = participants.index(pairing[0])
