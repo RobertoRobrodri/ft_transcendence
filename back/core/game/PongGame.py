@@ -81,11 +81,11 @@ class PongGame:
             await asyncio.sleep(1 / 60)
     
     async def countdown(self):
-        i = 0
+        i = self.sleep_match
         while True:
             await send_to_group(self.consumer, self.game_id, COUNTDOWN, {"counter": i})
-            i += 1
-            if i >= self.sleep_match:
+            i -= 1
+            if i > 0:
                 return
             await asyncio.sleep(1)
 
@@ -111,14 +111,14 @@ class PongGame:
     
     async def checkEndGame(self, players_list, winner):
         if self.scores[0] == self.points_to_win or self.scores[1] == self.points_to_win:
+            self.running = False
+            del games[self.game_id]
             await self.send_game_end()
             if self.tournament_id is None:
                 await self.save_game_result(players_list, winner)
             else:
                 await self.set_game_tournament_points()
                 await self.set_winner_tournament(players_list, winner)
-            self.running = False
-            del games[self.game_id]
             await self.consumer.sendlistGamesToAll("Pong")
     
     async def reset_game(self, winner):

@@ -1,7 +1,15 @@
+// import { scrollVentana } from "../../components/utils";
 
 export function registerSingleGame() {
     document.getElementById("initsinglegame").addEventListener("click", initializeSingleGame);
     document.getElementById("endsinglegame").addEventListener("click", endSingleGame);
+}
+
+function toggleView(view, visible = true) {
+    if (visible)
+        view.classList.remove("mshide");
+    else
+        view.classList.add("mshide");
 }
 
 export function endSingleGame() {
@@ -114,6 +122,8 @@ function decideNextMove(paddleY, ball) {
 
 function detectCollision() {
     let ball = gameState.ball;
+    let canvasDivView = document.getElementById("canvasDiv");
+    let optionsView = document.getElementById("game_options_pong");
 
     let leftSize = 0 + borderThickness + ballRadius;
     let rightSize = canvasWidth - borderThickness - ballRadius;
@@ -128,6 +138,8 @@ function detectCollision() {
     if (ball.x <= leftSize) {
         gameState.players.left.score += 1;
         if (gameState.players.left.score == pointsToWin) {
+            toggleView(canvasDivView, false);
+            toggleView(optionsView, true);
             endSingleGame();
         } else {
             startGame();
@@ -136,6 +148,8 @@ function detectCollision() {
     if (ball.x >= rightSize) {
         gameState.players.right.score += 1;
         if (gameState.players.right.score == pointsToWin) {
+            toggleView(canvasDivView, false);
+            toggleView(optionsView, true);
             endSingleGame();
         } else {
             startGame();

@@ -141,6 +141,9 @@ function setWindowContent(uniqueId, customData = null) {
         var cssUrl = '../games/pool/poolStyle.css';
         var scriptUrl = '../games/pool/poolScript.js';
     }
+    else {
+        return;
+    }
     // console.log(uniqueId);
     let window = document.getElementById(uniqueId + "-content");
     Promise.all([
