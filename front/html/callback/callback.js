@@ -96,6 +96,6 @@ export async function callback42() {
                 loadMainPage();
         }
     } else {
-        console.warn('42 authorization code not found in the URL.');
+        //console.error('Authorization code not found in the URL.');
     }
 }

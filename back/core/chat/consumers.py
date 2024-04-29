@@ -34,7 +34,6 @@ GAME_REQUEST        = 'game_request'
 ACCEPT_GAME         = 'accept_game'
 REJECT_GAME         = 'reject_game'
 
-logger = logging.getLogger('mylogger')
 class ChatConsumer(AsyncWebsocketConsumer):
     
     # Base function to send message to all in group
