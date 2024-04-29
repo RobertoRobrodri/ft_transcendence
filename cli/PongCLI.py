@@ -11,9 +11,10 @@ urllib3.disable_warnings()
 class PongCLI:
     def __init__(self):
         self.token = None
-        self.loguinUrl = 'https://localhost/api/pong_auth/login/'
-        self.loguin2fa = 'https://localhost/api/pong_auth/verify_otp/'
-        self.socketUrl = 'wss://localhost:443/ws/game/?token='
+        self.registerUrl = 'https://localhost/api/pong_auth/register/'
+        self.loguinUrl   = 'https://localhost/api/pong_auth/login/'
+        self.loguin2fa   = 'https://localhost/api/pong_auth/verify_otp/'
+        self.socketUrl   = 'wss://localhost:443/ws/game/?token='
 
         # SOCKET EVENTS
         self.INITMATCHMAKING = 'init_matchmaking'
@@ -40,11 +41,60 @@ class PongCLI:
         self.input_queue = queue.Queue()
     
     def welcome_message(self):
-        print("¡Welcome to PONG CLI!")
+        title = """
+████████ ██████   █████  ███    ██ ███████  ██████ ███████ ███    ██ ██████  ███████ ███    ██  ██████ ███████      ██████ ██      ██ 
+   ██    ██   ██ ██   ██ ████   ██ ██      ██      ██      ████   ██ ██   ██ ██      ████   ██ ██      ██          ██      ██      ██ 
+   ██    ██████  ███████ ██ ██  ██ ███████ ██      █████   ██ ██  ██ ██   ██ █████   ██ ██  ██ ██      █████       ██      ██      ██ 
+   ██    ██   ██ ██   ██ ██  ██ ██      ██ ██      ██      ██  ██ ██ ██   ██ ██      ██  ██ ██ ██      ██          ██      ██      ██ 
+   ██    ██   ██ ██   ██ ██   ████ ███████  ██████ ███████ ██   ████ ██████  ███████ ██   ████  ██████ ███████      ██████ ███████ ██ 
+   """
+        print(title)
     
+    def menu(self):
+        while True:
+            print("Enter number of your choice:")
+            print("1: Login.")
+            print("2: Register.")
+            print("3: Exit.")
+            choice = input("")
+            if choice == "1":
+                self.login()
+                self.startGame()
+                break
+            elif choice == "2":
+                self.register()
+                self.startGame()
+                break
+            elif choice == "3":
+                print("Exiting...")
+                break
+            else:
+                print("Invalid choice. Please enter a valid option.")
+
+    def register(self):
+        username       = input("Enter your username: ")
+        password       = input("Enter your password: ")
+        repeatPassword = input("Repeat your password: ")
+
+        if password != repeatPassword:
+            print(f"Password not match.")
+            self.register()
+        try:
+            register_data = {"username": username, "password": password, "password_2": repeatPassword}
+            response = requests.post(self.registerUrl, json=register_data, verify=False)
+            if response.status_code == 200:
+                self.token = response.json()["token"]
+                print(f"Welcome {username}.")
+            else:
+                print("Register failed. Please choose other username.")
+                self.register()
+        except requests.RequestException as e:
+            print("Connection error:", e)
+
     def login(self):
-        username = 'imurugar' #input("Enter your username: ")
-        password = 'imurugar' #input("Enter your password: ")
+
+        username = input("Enter your username: ")
+        password = input("Enter your password: ")
         login_data = {"username": username, "password": password}
         
         try:
@@ -203,10 +253,7 @@ class PongCLI:
                 elif key == ord('s') or key == ord('S'):
                     self.send(ws, self.ACTION, {"game": "Pong", "action": "3"})
 
-
-
 if __name__ == "__main__":
     cli = PongCLI()
     cli.welcome_message()
-    cli.login()
-    cli.startGame()
+    cli.menu()
