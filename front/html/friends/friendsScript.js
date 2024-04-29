@@ -60,6 +60,7 @@ async function loadUsersTable() {
             row.innerHTML = `
                     <td>${friend.username}</td>
                     <td>${friend.status}</td>
+                    <button type="button" class="btn btn-danger" id=DELETE_${friend.id}>Delete</button>
             `;
             userTableBody.appendChild(row);
         });
@@ -71,7 +72,7 @@ async function loadUsersTable() {
         requests.forEach(request => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${request.id}
+                <td>
                     <button type="button" class="btn btn-success" id=ACCEPT_${request.id}>Accept</button>
                     <button type="button" class="btn btn-danger" id=DECLINE_${request.id}>Decline</button>
                 </td>
@@ -128,14 +129,10 @@ async function sendFriendRequest(e) {
     }
 }
 
-async function HandleFriendRequest(e) {
+async function HandleFriendRequest(action, id) {
     const token = sessionStorage.getItem('token');
-    let target = e.target.id.split('_');
-    if (target[0] !== 'DECLINE' && target[0] !== 'ACCEPT')
-        return ;
-    let id = target[1];
     const FriendData = {
-        action: target[0],
+        action: action,
     };
     try {
         const response = await fetch(`/api/friends/${id}/`, {
@@ -152,13 +149,45 @@ async function HandleFriendRequest(e) {
         const data = await response.json();
         console.log(data);
         loadUsersTable();
-        let action = target[0] === 'DECLINE' ? FRIENDS.FRIEND_REQUEST_DECLINED : FRIENDS.FRIEND_REQUEST_ACCEPTED;
-        NotificationsSM.send(action, id);
+        let nt_action = action === 'DECLINE' ? FRIENDS.FRIEND_REQUEST_DECLINED : FRIENDS.FRIEND_REQUEST_ACCEPTED;
+        NotificationsSM.send(nt_action, id);
     }
     catch (error) {
         // displayErrorList(JSON.parse(error.message), 'FriendRequestForm');
         console.log(error)
     }
+}
+
+async function DeleteFriend(id) {
+    const token = sessionStorage.getItem('token');
+    try {
+        const response = await fetch(`/api/friends/${id}/delete_friend/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        })
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(JSON.stringify(error));
+        }
+        const data = await response.json();
+        console.log(data);
+        loadUsersTable();
+    }
+    catch (error) {
+        // displayErrorList(JSON.parse(error.message), 'FriendRequestForm');
+        console.log(error)
+    }
+}
+
+function HandleClickEvent(e) {
+    let target = e.target.id.split('_');
+    if (target[0] === 'DECLINE' || target[0] === 'ACCEPT')
+        HandleFriendRequest(target[0], target[1]) ;
+    else if (target[0] === 'DELETE')
+        DeleteFriend(target[1])
 }
 
 NotificationsSM.registerCallback(FRIENDS.STATUS_DISCONNECTED, user => {
@@ -185,5 +214,5 @@ NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_DECLINED,  data => {
 
 function FriendRequestListener() {
     document.getElementById('root').addEventListener('submit', sendFriendRequest);
-    document.getElementById('root').addEventListener('click', HandleFriendRequest);
+    document.getElementById('root').addEventListener('click', HandleClickEvent);
 }
