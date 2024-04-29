@@ -19,23 +19,18 @@ let gameState;
 let score = [0, 0];
 let paddleWidth = 10;
 let paddleLenght = 40;
-let paddleMargin = 2;
 let canvasWidth = 400;
 let canvasHeight = 200;
 let ballRadius = 5;
 let borderThickness = 5;
-let sleepMatch = 3;
-let sleep = 1;
 let incBallSpeed = 1;
-let maxBallSpeed = 6;
+let maxBallSpeed = 5;
 let paddleSpeed = 2;
 
 const degToRad = Math.PI / 180;
 let intervalId = null;
 let leftPlayerMovement;
 let rightPlayerMovement;
-let leftCollisionX = 22;
-let rightCollisionX = 378;
 let pointsToWin = 6;
 
 const ai = new PongAI(true);
@@ -168,7 +163,7 @@ function checkPaddleCollision(ball, paddle) {
     } else if (playerNbr == 2 && ball.speed_x < 0) {
         return ;
     }
-
+    
     if (playerNbr == 1 && ball.x < paddleRight) {
         return ;
     } else if (playerNbr == 2 && ball.x > paddleLeft) {

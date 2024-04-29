@@ -138,15 +138,13 @@ function gameEventHandler(e) {
 function showDescription(e) {
     let description = document.getElementById("description");
     if (e.target.matches('#localGameButton_pong') === true) {
-        description.innerText = " -- Player 1 controls -- \n Paddle Up = W \n Paddle Down = S \n -- Player 2 controls -- \n Paddle Up = O \n Paddle Down = L \n"
+        description.innerText = " Play against AI or multiplayer in the same keyboard \n First to score 6 points \n -- Player 1 controls -- \n Paddle Up = W \n Paddle Down = S \n -- Player 2 controls -- \n Paddle Up = O \n Paddle Down = L \n"
     }
     else if (e.target.matches('#onlineGameMenu_pong') === true) {
         description.innerText = "Enter a game against a random opponent.\n This game will count for your stats \n -- Player controls -- \n Paddle Up = ↑ \n Paddle Down = ↓"
     }
     else if (e.target.matches('#tournamentButton_pong') === true) {
-        description.innerText = "Enter a tournament \n where multiple players will can take \nturns playing against each other \n -- Player controls -- \n Paddle Up = ↑ \n Paddle Down = ↓"
-    } else {
-        description.innerText = "";
+        description.innerText = "Enter a tournament \n multiple players will take \nturns playing against each other \n -- Player controls -- \n Paddle Up = ↑ \n Paddle Down = ↓"
     }
 }
 
