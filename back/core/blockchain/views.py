@@ -72,7 +72,7 @@ class ContractGetListView(generics.GenericAPIView):
             tournaments_participated = Participant.get_tournaments_by_participant(user.id)
             return JsonResponse({'tournaments_participated': tournaments_participated})
         except Exception as e:
-            logger.error(f"Error processing GET request: {e}")
+            # logger.error(f"Error processing GET request: {e}")
             return JsonResponse({}, status=401)
         
 # class ContractPutView(generics.GenericAPIView):

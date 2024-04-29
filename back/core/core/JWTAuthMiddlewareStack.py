@@ -20,7 +20,7 @@ class JWTAuthMiddleware:
     async def __call__(self, scope, receive, send):
         close_old_connections()
         try:
-            if scope["path"] == '/ws/game/' or scope["path"] == '/ws/chat/':
+            if scope["path"] == '/ws/game/' or scope["path"] == '/ws/chat/' or scope["path"] == '/ws/notifications/':
                 if(jwt_token_list := parse_qs(scope["query_string"].decode("utf8")).get('token', None)):
                     jwt_token = jwt_token_list[0]
                     jwt_payload = self.get_payload(jwt_token)
