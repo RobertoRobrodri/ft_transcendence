@@ -152,6 +152,8 @@ async function HandleFriendRequest(e) {
         const data = await response.json();
         console.log(data);
         loadUsersTable();
+        let action = target[0] === 'DECLINE' ? FRIENDS.FRIEND_REQUEST_DECLINED : FRIENDS.FRIEND_REQUEST_ACCEPTED;
+        NotificationsSM.send(action, id);
     }
     catch (error) {
         // displayErrorList(JSON.parse(error.message), 'FriendRequestForm');
@@ -170,6 +172,15 @@ NotificationsSM.registerCallback(FRIENDS.STATUS_CONNECTED, user => {
 NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_RECEIVED,  data => {
     showNotification(data);
     loadUsersTable();
+});
+
+NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_ACCEPTED,  data => {
+    showNotification(data);
+    loadUsersTable();
+});
+
+NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_DECLINED,  data => {
+    showNotification(data);
 });
 
 function FriendRequestListener() {

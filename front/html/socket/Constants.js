@@ -69,6 +69,8 @@ export const FRIENDS = {
     // Friends Notifications
     FRIEND_REQUEST_SENT:     'friend_request_sent',
     FRIEND_REQUEST_RECEIVED: 'friend_request_received',
+    FRIEND_REQUEST_ACCEPTED: 'friend_request_accepted',
+    FRIEND_REQUEST_DECLINED: 'friend_request_declined',
     STATUS_CONNECTED:        'status_connected',
     STATUS_DISCONNECTED:     'status_disconnected',
     STATUS_USER_LIST:        'status_user_list',

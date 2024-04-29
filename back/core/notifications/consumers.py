@@ -18,6 +18,8 @@ STATUS_USER_LIST        = 'status_user_list'
 STATUS_CHANNEL          = 'status_channel'
 FRIEND_REQUEST_SENT     = 'friend_request_sent'
 FRIEND_REQUEST_RECEIVED = 'friend_request_received'
+FRIEND_REQUEST_ACCEPTED = 'friend_request_accepted'
+FRIEND_REQUEST_DECLINED = 'friend_request_declined'
 
 class NotificationsConsumer(AsyncWebsocketConsumer):
     connected_users = {}
@@ -82,7 +84,11 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
                 if type == STATUS_USER_LIST:
                     await self.send_user_list()
                 elif type == FRIEND_REQUEST_SENT:
-                    await self.send_notification(user, data)
+                    await self.send_notification(user, data, FRIEND_REQUEST_RECEIVED, "has sent you a friend request")
+                elif type == FRIEND_REQUEST_ACCEPTED:
+                    await self.send_notification(user, data, FRIEND_REQUEST_ACCEPTED, "has accepted your friend request")
+                elif type == FRIEND_REQUEST_DECLINED:
+                    await self.send_notification(user, data, FRIEND_REQUEST_DECLINED, "has declined your friend request")
         except Exception as e:
             logger.warning(f'Exception in receive: {e}')
             await self.close(code=4003)
@@ -108,13 +114,13 @@ class NotificationsConsumer(AsyncWebsocketConsumer):
             user_list.append(user_data)
         return user_list
 
-    async def send_notification(self, user, data):
+    async def send_notification(self, user, data, code, msg):
         friend_id = data["message"]  # Asumimos que data ya contiene friend_id directamente
-        if friend_id:  # Aseguramos que friend_id es un entero
+        if friend_id:
             userChannel = await CustomUser.get_user_by_id(friend_id)  # Obtenemos el canal del usuario destinatario
             if userChannel and friend_id != user.id:  # Aseguramos que no se esté enviando a sí mismo
-                await send_to_user(self, userChannel.notifications_channel_name, FRIEND_REQUEST_RECEIVED, {
+                await send_to_user(self, userChannel.notifications_channel_name, code, {
                     'id': user.id,
                     'username': user.username,
-                    'message': "Has sent you a friend request"
+                    'message': msg,
                 })

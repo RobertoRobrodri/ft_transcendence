@@ -125,6 +125,7 @@ function gameEventHandler(e) {
     else if (e.target.matches('#goBackButton_pong') === true) {
         toggleView(optionsView, true);
         toggleView(localgameView, false);
+        toggleView(onlineMenuView, false);
     }
     else if (e.target.matches('#red-myWindowGame') === true) {
         // si está conectado el socket, lo desconecta
