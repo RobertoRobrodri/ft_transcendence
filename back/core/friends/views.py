@@ -1,6 +1,7 @@
 from rest_framework import generics, status
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from pong_auth.models import CustomUser
 from .serializers import FriendRequestSerializer
 from django.db.models import Q
@@ -43,7 +44,6 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 			user_receiver = request.user.friend_requests.get(pk=friend_request_id)
 			if action == 'ACCEPT':
 				request.user.friends.add(user_receiver)
-				user_receiver.friends.add(request.user)
 				request.user.friend_requests.remove(user_receiver)
 				return Response({"message": "Friend Request Accepted"}, status=status.HTTP_200_OK)
 			elif action == 'DECLINE':
@@ -52,3 +52,17 @@ class FriendRequestViewset(viewsets.GenericViewSet):
 		except CustomUser.DoesNotExist:
 			return Response({"message": "No such friend request"}, status=status.HTTP_400_BAD_REQUEST)
 		return Response({"message": "Action Required"}, status=status.HTTP_400_BAD_REQUEST)
+	
+	@action(detail=True, methods=['delete'])
+	def delete_friend(self, request, *args, **kwargs):
+		unfriend_id = kwargs.get('pk')
+		user = request.user
+		try:
+			unfriend = user.friends.get(pk=unfriend_id)
+			user.friends.remove(unfriend)
+		except CustomUser.DoesNotExist:
+			return Response({"message": "No such friend"}, status=status.HTTP_400_BAD_REQUEST)
+		return Response({
+			'id' : unfriend.username,
+			"message": "Deleted from your friend list",
+		}, status=status.HTTP_200_OK)
