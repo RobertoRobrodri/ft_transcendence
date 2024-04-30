@@ -1,11 +1,15 @@
 import { PongAI } from './PongAI.js';
-import { drawScore } from './pongScript.js';
+import { drawScore, toggleView } from './pongScript.js';
 
-export function endGame() {
+export function endGame(closed = false) {
     if (intervalId != null) {
         clearInterval(intervalId);
         intervalId = null;
-
+        if (closed === false)
+        {
+            toggleView(canvasDivView, false)
+            toggleView(optionsView, true)
+        }
     }
 }
 
@@ -38,8 +42,11 @@ let pointsToWin = 6;
 var renderer, scene, camera, pointLight, spotLight;
 var ball, paddle1, paddle2;
 
+// Toggle view
+let optionsView , canvasDivView;
 const ai = new PongAI(true);
 export function initializeGame(multiplayer = false, realAI = true, use3D = false) {
+    canvasDivView = use3D === true ? document.getElementById("canvas3DDiv") : document.getElementById("canvasDiv");
     if (!use3D) {
         canvas = document.getElementById("pongCanvas");
         ctx = canvas.getContext("2d");
@@ -74,6 +81,7 @@ export function initializeGame(multiplayer = false, realAI = true, use3D = false
         realAI: realAI,
         use3D: use3D
     }
+    optionsView = document.getElementById("game_options_pong");
     startGame() 
 }
 
@@ -372,7 +380,7 @@ function handleKeyUp(event) {
 				leftPlayerMovement = 0;
 				break;
 			case 79: // O
-				leftPlayerMovement = 0;
+				rightPlayerMovement = 0;
 				break;
 			case 76: // L
 				rightPlayerMovement = 0;
