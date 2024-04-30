@@ -1,7 +1,7 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
-import { sleep } from "../../components/utils.js";
+//import { sleep } from "../../components/utils.js";
 // import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
@@ -20,7 +20,8 @@ let gameSM = new GameSocketManager();
 
 let optionsView, matchmakingView, localgameView, onlineMenuView,
     tournamentView, tournamentJoinView, tournamentReadyView,
-    emparejamientoView, canvasDivView, resultadosView;
+    emparejamientoView, canvasDivView, resultadosView,
+    canvas3DDivView;
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -33,6 +34,7 @@ export function init(customData = null) {
     tournamentJoinView = document.getElementById("tournament_join");
     tournamentReadyView = document.getElementById("tournament_ready");
     canvasDivView = document.getElementById("canvasDiv");
+    canvas3DDivView = document.getElementById("canvas3DDiv");
     emparejamientoView = document.getElementById("emparejamiento");
     resultadosView = document.getElementById("results");
     canvas = document.getElementById("pongCanvas");
@@ -105,17 +107,30 @@ function gameEventHandler(e) {
         toggleView(optionsView, true);
         CancelMatchmaking();
     }
-    // juego local
+    // juego local (2 players)
     else if (e.target.matches('#localGameButton_pong') === true) {
         toggleView(optionsView, false);
         toggleView(localgameView, true);
     }
-    // 1 jugador
+    // 1 jugador (with Neural network)
     else if (e.target.matches('#soloGameButton_pong') === true) {
         toggleView(localgameView, false);
         toggleView(canvasDivView, true);
         initializeGame();
     }
+    // 1 jugador (With Algorithm)
+    else if (e.target.matches('#soloGameButtonAlgo_pong') === true) {
+        toggleView(localgameView, false);
+        toggleView(canvasDivView, true);
+        initializeGame(false, false)
+    }
+    // 3D
+    else if (e.target.matches('#soloGameButton3D_pong') === true) {
+        toggleView(localgameView, false);
+        toggleView(canvas3DDivView, true);
+        initializeGame(false, true, true)
+    }
+
     // Multijugador local
     else if (e.target.matches('#localMultiplayerButton_pong') === true) {
         toggleView(localgameView, false);
@@ -131,7 +146,7 @@ function gameEventHandler(e) {
         // si está conectado el socket, lo desconecta
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
-        endGame();
+        endGame(true);
     }
 }
 

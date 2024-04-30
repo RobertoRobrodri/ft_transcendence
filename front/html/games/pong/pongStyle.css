@@ -108,6 +108,16 @@ h2 {
 	height: 350px;
 }
 
+#pong3DCanvas {
+    display: block;
+    margin: 50px auto;
+	align-content: center;
+    border-radius: 10px;
+	width: 700px;
+	height: 350px;
+}
+
+
 /* Estilo de tabla de torneos */
 .tournament-table-container {
     max-height: 20vh; /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */

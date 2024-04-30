@@ -34,7 +34,6 @@ GAME_REQUEST        = 'game_request'
 ACCEPT_GAME         = 'accept_game'
 REJECT_GAME         = 'reject_game'
 
-logger = logging.getLogger('mylogger')
 class ChatConsumer(AsyncWebsocketConsumer):
     
     # Base function to send message to all in group
@@ -65,6 +64,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     await CustomUser.update_user_on_connect(user, self.channel_name)
                     # Add user to `{general_chat}` room
                     await self.channel_layer.group_add(GENERAL_CHANNEL, self.channel_name)
+                    await self.channel_layer.group_add(hashlib.sha256(str(user.id).encode('utf-8')).hexdigest(), self.channel_name)
                     profile_picture_url = ''
                     if user.profile_picture:
                         # Open the profile picture file, read its content, and encode it in base64
@@ -88,6 +88,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await CustomUser.update_user_on_disconnect(user)
                 await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_DISCONNECTED, {'id': user.id, 'username': user.username})
                 await self.channel_layer.group_discard(GENERAL_CHANNEL, self.channel_name)
+                await self.channel_layer.group_discard(hashlib.sha256(str(user.id).encode('utf-8')).hexdigest(), self.channel_name)
                 
                 
         except Exception as e:
