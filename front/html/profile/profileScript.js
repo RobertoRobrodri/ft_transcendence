@@ -64,9 +64,10 @@ export async function loadUserInfo(customData = null) {
         let user_info = document.getElementById("user_info");
         let default_picture = './assets/gigachad.jpg'
         let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, data.username);
-        user_updated = user_updated.replace(/{{WINS}}/g, data.wins);
-        user_updated = user_updated.replace(/{{LOSSES}}/g, data.losses);
-        user_updated = user_updated.replace(/{{STATUS}}/g, data.status);
+        user_updated = user_updated.replace(/{{WINS_PONG}}/g, data.wins);
+        user_updated = user_updated.replace(/{{LOSSES_PONG}}/g, data.losses);
+        user_updated = user_updated.replace(/{{WINS_POOL}}/g, data.wins_pool);
+        user_updated = user_updated.replace(/{{LOSSES_POOL}}/g, data.losses_pool);
         if (data.profile_picture != null)
             user_updated = user_updated.replace(default_picture, 'data:image/png;base64,' + data.profile_picture);
         if (data.qr != null)
@@ -83,7 +84,6 @@ export async function loadUserInfo(customData = null) {
         user_info.classList.remove("mshide");
     }
     catch (error) {
-        console.error('Error:', error.message);
         // Token error, try update jwt
         renewJWT();
     }
@@ -111,7 +111,6 @@ export async function getTournaments() {
 
     }
     catch (error) {
-        console.error('Error:', error.message);
         // Token error, try update jwt
         renewJWT();
     }
