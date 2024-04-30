@@ -20,6 +20,7 @@ class CustomUser(AbstractUser):
     elo                         = models.IntegerField(default=1000)
     wins_pool                   = models.IntegerField(default=0)
     losses_pool                 = models.IntegerField(default=0)
+    elo_pool                    = models.IntegerField(default=1000)
     status                      = models.CharField(max_length=9, choices=Status, default=Status.INMENU)
     connected                   = models.BooleanField(default=False)
     channel_name                = models.CharField(max_length=255, blank=True, null=True)
@@ -178,12 +179,18 @@ class CustomUser(AbstractUser):
     
     @classmethod
     @database_sync_to_async
-    def user_win_pool(cls, user):
+    def user_win_pool(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
         user.wins_pool += 1
+        user.elo_pool = new_elo
         user.save()
     
     @classmethod
     @database_sync_to_async
-    def user_lose_pool(cls, user):
+    def user_lose_pool(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
         user.losses_pool += 1
+        user.elo_pool = new_elo
         user.save()

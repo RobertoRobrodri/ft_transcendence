@@ -269,6 +269,7 @@ gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
+    console.log(data)
     if (data.game == GAMES.PONG) {
         fillGames(data);
     }

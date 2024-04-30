@@ -267,9 +267,9 @@ class PoolGame:
         # Add match to db
         await Game.store_match(user1, user2, winner, self.scores)
         # Increment win in 1
-        await CustomUser.user_win_pool(winner)
+        await CustomUser.user_win_pool(winner, winner.elo_pool, loser.elo_pool, 1)
         # Increment loss in 1
-        await CustomUser.user_lose_pool(loser)
+        await CustomUser.user_lose_pool(loser, loser.elo_pool, winner.elo_pool, 0)
         # Stop game
         self.loop.running = False
         self.running = False
