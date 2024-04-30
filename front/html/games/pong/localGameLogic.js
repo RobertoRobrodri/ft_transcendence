@@ -380,7 +380,7 @@ function handleKeyUp(event) {
 				leftPlayerMovement = 0;
 				break;
 			case 79: // O
-				leftPlayerMovement = 0;
+				rightPlayerMovement = 0;
 				break;
 			case 76: // L
 				rightPlayerMovement = 0;
