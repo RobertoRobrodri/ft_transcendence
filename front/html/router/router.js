@@ -25,7 +25,6 @@ export function router() {
     else {
         displayLoginOrMenu();
     }
-
     if(!menuLoaded) {
         menuLoaded = true;
         document.getElementById('root').addEventListener('click', configureMenu);

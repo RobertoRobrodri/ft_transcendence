@@ -82,4 +82,4 @@ class UserListSerializer(serializers.ModelSerializer):
     friend_requests = FriendRequestSerializer(many=True, read_only=True)
     class Meta:
         model = CustomUser
-        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth', 'wins', 'losses', 'friends', 'friend_requests')
+        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth', 'wins', 'losses', 'wins_pool', 'losses_pool','friends', 'friend_requests')

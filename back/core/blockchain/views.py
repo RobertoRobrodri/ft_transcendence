@@ -62,7 +62,7 @@ class ContractGetTableView(generics.GenericAPIView):
             tournament = self._get_tournament(tournament_id)
             return JsonResponse({'tournament': tournament})
         except Exception as e:
-            return JsonResponse({}, status=401)
+            return JsonResponse({}, status=204)
         
 class ContractGetListView(generics.GenericAPIView):
 
@@ -73,47 +73,4 @@ class ContractGetListView(generics.GenericAPIView):
             return JsonResponse({'tournaments_participated': tournaments_participated})
         except Exception as e:
             # logger.error(f"Error processing GET request: {e}")
-            return JsonResponse({}, status=401)
-        
-# class ContractPutView(generics.GenericAPIView):
-
-#     @staticmethod
-#     def _add_tournament(tournament):
-#         contract = ContractView._get_contract()
-#         sender_address = ContractView.w3.eth.accounts[0]
-#         try:
-#             tx_hash = contract.functions.addTournament(tournament).transact({'from': sender_address})
-#             ContractView.w3.eth.wait_for_transaction_receipt(tx_hash)
-#             logger.warning(contract.functions.getTournament().call())
-#         except Exception as e:
-#             logger.error(f"Error adding tournament: {e}")
-
-#     def post(self, request, *args, **kwargs):
-#         try:
-#             json_string = request.body.decode('utf-8').split("&")[0]
-#             json_string = json_string.strip("b'\"").replace("\\", "")
-#             tournament_dict = json.loads(json_string)
-#             self._add_tournament(tournament_dict)
-#             return HttpResponse('')
-#         except Exception as e:
-#             logger.error(f"Error processing POST request: {e}")
-#             return HttpResponse(status=500)
-
-# class ContractGetView(generics.GenericAPIView):
-
-#     def _get_tournaments(self):
-#         contract = ContractView._get_contract()
-#         try:
-#             tournaments = contract.functions.getTournaments().call()
-#             return tournaments
-#         except Exception as e:
-#             logger.error(f"Error getting tournaments: {e}")
-#             return []
-
-#     def get(self, request, *args, **kwargs):
-#         try:
-#             tournaments = self._get_tournaments()
-#             return JsonResponse({'tournaments': tournaments})
-#         except Exception as e:
-#             logger.error(f"Error processing GET request: {e}")
-#             return JsonResponse({'error': 'Internal Server Error'}, status=500)
+            return JsonResponse({}, status=204)
