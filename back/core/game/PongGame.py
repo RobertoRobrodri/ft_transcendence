@@ -38,7 +38,7 @@ class PongGame:
         self.max_ball_speed     = 6   # Base ball speed
         self.paddle_speed       = 2   # Speed of paddles
 
-        self.points_to_win      = 1
+        self.points_to_win      = 6
         ######
         self.game_id = game_id
         self.players = {}

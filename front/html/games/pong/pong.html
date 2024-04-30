@@ -165,21 +165,34 @@
 	<div class="col-md-12 mt-5 text-center">
 		<h2>Local Game</h2>
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-6">
 		<div class="vertical-center text-center">
 			<button class="game-button" id="localMultiplayerButton_pong">Local Multiplayer</button>
 		</div>
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-6">
 		<div class="vertical-center text-center">
-			<button class="game-button" id="soloGameButton_pong">VS IA</button>
+			<button class="game-button" id="soloGameButton_pong">VS Neural network</button>
 		</div>
 	</div>
-	<div class="col-md-12 mt-5 text-center">
+	<div class="col-md-6">
+		<div class="vertical-center text-center">
+			<button class="game-button" id="soloGameButtonAlgo_pong">VS Algorithm</button>
+		</div>
+	</div><div class="col-md-6">
+		<div class="vertical-center text-center">
+			<button class="game-button" id="soloGameButton3D_pong">3D pay to win</button>
+		</div>
+	</div><div class="col-md-12 mt-5 text-center">
 		<button class="game-button-back" id="goBackButton_pong">Go back</button>
 	</div>
 </div>
 
 <div class="mshide" id="canvasDiv">
-	<canvas class="mshide" id="pongCanvas" width="400" height="200"></canvas>
+	<canvas id="pongCanvas" width="400" height="200"></canvas>
 </div>
+
+<div class="mshide" id="canvas3DDiv">
+	<canvas id="pong3DCanvas" width="400" height="200"></canvas>
+</div>
+<!-- <div class="mshide" id='canvas3DDiv'></div> -->
