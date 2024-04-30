@@ -146,7 +146,7 @@ function gameEventHandler(e) {
         // si está conectado el socket, lo desconecta
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
-        endGame();
+        endGame(true);
     }
 }
 
