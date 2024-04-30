@@ -19,6 +19,7 @@ services:
     container_name: django
     volumes:
       - profile_pictures:/core/media
+      - truffle:/core/contract/build/contracts
     # Please only access directly to django if you want to go admin or swagger dashboard 
     ports:
       - 8000:8000
@@ -28,6 +29,7 @@ services:
       - .env
     depends_on:
       - db
+      - redis
 
   db:
     build: ./db/
@@ -46,7 +48,38 @@ services:
   redis:
     image: "redis:7.2.3-alpine"
     container_name: "redis"
+    networks:
+      - transcendence
     command: ["redis-server", "--bind", "redis", "--port", "6379"]
+  
+# Blockchain
+  ganache:
+    image: trufflesuite/ganache-cli:latest
+    container_name: ganache
+    volumes:
+      - ganache:/ganache_data
+    expose:
+      - 8545
+    networks:
+      - transcendence
+    entrypoint:
+      - node
+      - /app/ganache-core.docker.cli.js
+      - --deterministic                  # Always use same address and keys
+      - --db=/ganache_data               # Store data to connect previous contract
+      - --mnemonic                       # Seed
+      - 'desert whisper reunion modify taxi energy update mention awful foam achieve visa'
+      - --networkId                      # Ganache network id
+      - '5777'
+
+  contract-deployer:
+    image: contract-deployer:latest
+    container_name: contract-deployer
+    build: ./blockchain
+    depends_on:
+      - ganache
+    volumes:
+      - truffle:/core/contract/build/contracts
     networks:
       - transcendence
       
@@ -208,4 +241,6 @@ volumes:
   profile_pictures:
   prom_data:
   graf_data:
+  truffle:
+  ganache:
   elasticsearch_data:
