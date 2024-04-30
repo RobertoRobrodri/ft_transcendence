@@ -29,8 +29,8 @@ python PongCLI.py
 ```
 
 ## Game Controls
-- **W / w:** Move the paddle up.
-- **S / s:** Move the paddle down.
+- **w:** Move the paddle up.
+- **s:** Move the paddle down.
 - **Enter:** Confirm selections and advance through menus.
 
 ## Dependencies
