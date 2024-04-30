@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from channels.db import database_sync_to_async
+from game.elo import expected, elo
 import base64
 
 # Create your models here.
@@ -16,6 +17,7 @@ class CustomUser(AbstractUser):
 
     wins                        = models.IntegerField(default=0)
     losses                      = models.IntegerField(default=0)
+    elo                         = models.IntegerField(default=1000)
     status                      = models.CharField(max_length=9, choices=Status, default=Status.INMENU)
     connected                   = models.BooleanField(default=False)
     channel_name                = models.CharField(max_length=255, blank=True, null=True)
@@ -156,12 +158,18 @@ class CustomUser(AbstractUser):
     
     @classmethod
     @database_sync_to_async
-    def user_win(cls, user):
+    def user_win(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
         user.wins += 1
+        user.elo = new_elo
         user.save()
     
     @classmethod
     @database_sync_to_async
-    def user_lose(cls, user):
+    def user_lose(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
         user.losses += 1
+        user.elo = new_elo
         user.save()

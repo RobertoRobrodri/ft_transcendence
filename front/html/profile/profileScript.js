@@ -67,6 +67,7 @@ export async function loadUserInfo(customData = null) {
         user_updated = user_updated.replace(/{{WINS}}/g, data.wins);
         user_updated = user_updated.replace(/{{LOSSES}}/g, data.losses);
         user_updated = user_updated.replace(/{{STATUS}}/g, data.status);
+        user_updated = user_updated.replace(/{{POINTS}}/g, data.elo);
         if (data.profile_picture != null)
             user_updated = user_updated.replace(default_picture, 'data:image/png;base64,' + data.profile_picture);
         if (data.qr != null)
