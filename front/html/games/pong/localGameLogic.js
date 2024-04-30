@@ -36,7 +36,7 @@ const degToRad = Math.PI / 180;
 let intervalId = null;
 let leftPlayerMovement;
 let rightPlayerMovement;
-let pointsToWin = 1;
+let pointsToWin = 6;
 
 // 3D objects in scene
 var renderer, scene, camera, pointLight, spotLight;
