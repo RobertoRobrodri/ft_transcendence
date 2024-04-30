@@ -15,7 +15,12 @@ export function init(customData = null)
     matchmakingView = document.getElementById("matchmaking_pool");
     uiView          = document.getElementById("ui");
 
-    gameSM.connect();
+    if (gameSM.connect() == gameSM.SOCKETSTATUS.CONNECTED)
+    {
+        setTimeout(function() {
+            gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.POOL);
+        }, 200);
+    }
 }
 
 function poolEventHandler(e) {
@@ -120,9 +125,9 @@ gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
+    console.log("games: " + data)
     if(data.game == GAMES.POOL) {
-        //fillGames(data);
-        console.log("games: " + data)
+        fillGamesPool(data);
     }
 });
 
@@ -244,4 +249,44 @@ function resetUI() {
     document.querySelector('.top-left').textContent = '';
     document.querySelector('.image-row').innerHTML = '';
     document.querySelector('.image-row-2').innerHTML = '';
+}
+
+function fillGamesPool(data) {
+    var games = document.getElementById("gameList");
+    if (!games)
+        return;
+    // let div = gameType === "pong" ? canvasDivView = document.getElementById("canvasDiv") : document.getElementById("renderView");
+    // Remove previous li elements
+    while (games.firstChild)
+        games.removeChild(games.firstChild);
+
+    data.data.forEach((element) => {
+        var curli = document.createElement("li");
+        // curli.textContent = `${element.id}`;
+        // curli.classList.add("list-group-item");
+        var joinButton = document.createElement("button");
+        joinButton.textContent = "View";
+        joinButton.classList.add("btn", "btn-success", "btn-sm", "ml-2");
+        joinButton.addEventListener('click', function () {
+            gameSM.send(GAME_TYPES.SPECTATE_GAME, {
+                id: element.id
+            })
+            if (POOL == null)
+                POOL = new Main(document.getElementById('renderView'), gameSM);
+        });
+        curli.appendChild(joinButton);
+        // Leave
+        var leaveButton = document.createElement("button");
+        leaveButton.textContent = "Leave";
+        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+        leaveButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
+                id: element.id
+            })
+            resetThreejs();
+        });
+        curli.appendChild(leaveButton);
+        games.appendChild(curli);
+    });
 }

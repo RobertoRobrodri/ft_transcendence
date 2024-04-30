@@ -1,8 +1,6 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
-//import { sleep } from "../../components/utils.js";
-// import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
 // Global vars //
@@ -488,21 +486,26 @@ function fillGames(data) {
     var games = document.getElementById("gameList");
     if (!games)
         return;
+    // let div = gameType === "pong" ? canvasDivView = document.getElementById("canvasDiv") : document.getElementById("renderView");
     // Remove previous li elements
     while (games.firstChild)
         games.removeChild(games.firstChild);
 
     data.data.forEach((element) => {
         var curli = document.createElement("li");
-        curli.textContent = `${element.id}`;
-        curli.classList.add("list-group-item");
-        //Click example to join tournament
-        curli.addEventListener('click', function () {
+        // curli.textContent = `${element.id}`;
+        // curli.classList.add("list-group-item");
+        var joinButton = document.createElement("button");
+        joinButton.textContent = "View";
+        joinButton.classList.add("btn", "btn-success", "btn-sm", "ml-2");
+        joinButton.addEventListener('click', function () {
             gameSM.send(GAME_TYPES.SPECTATE_GAME, {
                 id: element.id
             })
+            toggleView(canvasDivView, true);
+            // toggleView(onlineMenuView, false);
         });
-
+        curli.appendChild(joinButton);
         // Leave
         var leaveButton = document.createElement("button");
         leaveButton.textContent = "Leave";
@@ -512,6 +515,8 @@ function fillGames(data) {
             gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
                 id: element.id
             })
+            toggleView(canvasDivView, false);
+            // toggleView(onlineMenuView, true);
         });
         curli.appendChild(leaveButton);
         games.appendChild(curli);
