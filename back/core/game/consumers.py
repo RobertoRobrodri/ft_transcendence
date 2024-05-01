@@ -635,8 +635,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         game_list = []
         for game_id, game_info in games.items():
             if game_info['game'] == game_req:
+                player_usernames = [player['username'] for player in games[game_id]["instance"].players.values()]
                 game_summary = {
-                    'id': game_id
+                    'id': game_id,
+                    'players': player_usernames
                 }
                 game_list.append(game_summary)
         return {'game': game_req, 'data': game_list}

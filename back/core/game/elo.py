@@ -1,5 +1,5 @@
 # Adjustment factor
-K = 32
+K = 42
 
 def expected(elo_player_1, elo_player_2):
     return 1 / (1 + 10 ** ((elo_player_2 - elo_player_1) / 400))

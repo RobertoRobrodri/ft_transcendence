@@ -249,6 +249,9 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         score = [0, 0];
         audio.play();
         //gameSM.disconnect();
+        let leaveButton = document.getElementById("leaveButton-spectator")
+        if (leaveButton)
+            leaveButton.remove();
         toggleView(canvasDivView, false);
         toggleView(optionsView, true);
         toggleView(emparejamientoView, false);
@@ -493,8 +496,8 @@ function fillGames(data) {
 
     data.data.forEach((element) => {
         var curli = document.createElement("li");
-        // curli.textContent = `${element.id}`;
-        // curli.classList.add("list-group-item");
+        curli.textContent = `${element.players[0]} vs ${element.players[1]}`;
+        curli.classList.add("list-group-item");
         var joinButton = document.createElement("button");
         joinButton.textContent = "View";
         joinButton.classList.add("btn", "btn-success", "btn-sm", "ml-2");
@@ -503,22 +506,24 @@ function fillGames(data) {
                 id: element.id
             })
             toggleView(canvasDivView, true);
-            // toggleView(onlineMenuView, false);
+            toggleView(onlineMenuView, false);
+            // Leave
+            var leaveButton = document.createElement("button");
+            leaveButton.textContent = "Leave";
+            leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+            leaveButton.id = "leaveButton-spectator"
+            leaveButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
+                    id: element.id
+                })
+                leaveButton.remove();
+                toggleView(canvasDivView, false);
+                toggleView(onlineMenuView, true);
+            });
+            canvasDivView.appendChild(leaveButton);
         });
         curli.appendChild(joinButton);
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function (event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
-                id: element.id
-            })
-            toggleView(canvasDivView, false);
-            // toggleView(onlineMenuView, true);
-        });
-        curli.appendChild(leaveButton);
         games.appendChild(curli);
     });
 }

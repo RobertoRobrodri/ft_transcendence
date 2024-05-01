@@ -137,3 +137,23 @@ h2 {
     background-color: #4CAF50;
     transition: width 0.1s ease;
   }
+
+  /* Style for the list of matches */
+#gameList {
+    list-style-type: none;
+    padding: 0;
+}
+
+/* Style for each match item */
+#gameList li {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    background-color: black;
+    display: flex;
+    align-items: center;
+}
+/* Margin style for buttons */
+.ml-2 {
+    margin-left: 5px;
+}
