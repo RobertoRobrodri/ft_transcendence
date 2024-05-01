@@ -2,6 +2,10 @@ import { PongAI } from './PongAI.js';
 import { drawScore, toggleView } from './pongScript.js';
 
 export function endGame(closed = false) {
+    if (timeOutId != null) {
+        clearTimeout(timeOutId);
+        timeOutId = null;
+    }
     if (intervalId != null) {
         clearInterval(intervalId);
         intervalId = null;
@@ -34,6 +38,7 @@ let paddleSpeed = 2;
 
 const degToRad = Math.PI / 180;
 let intervalId = null;
+let timeOutId = null;
 let leftPlayerMovement;
 let rightPlayerMovement;
 let pointsToWin = 6;
@@ -88,6 +93,7 @@ export function initializeGame(multiplayer = false, realAI = true, use3D = false
 function startGame() {
     if (intervalId != null) {
         clearInterval(intervalId);
+        intervalId = null;
     }
     gameState.ball = {
         x: 200,
@@ -104,7 +110,7 @@ function startGame() {
     rightPlayerMovement = 0;
     updateGame(gameState);
     // Delay starting the game interval by 3000 milliseconds
-    setTimeout(() => {
+    timeOutId = setTimeout(() => {
         intervalId = setInterval(() => {
             newFrame();
         }, 16);
