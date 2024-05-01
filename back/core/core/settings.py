@@ -56,10 +56,11 @@ INSTALLED_APPS = [
     'pong_auth',
     'user_management',
     'friends',
-    'tournaments',
     'game',
     'channels',
-    'chat'
+    'chat',
+    'blockchain',
+    'notifications',
 ]
 
 REST_FRAMEWORK = {

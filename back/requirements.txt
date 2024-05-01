@@ -18,6 +18,9 @@ python-logstash==0.4.8
 daphne==4.1.0
 channels==4.0.0
 channels-redis==4.1.0
+#Blockchain
+web3==6.11.3
+websockets==12.0
 #One Time Password
 pyotp==2.9.0
 qrcode==7.4.2

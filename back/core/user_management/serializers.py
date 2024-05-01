@@ -51,6 +51,8 @@ class UserUpdatePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"password": "Password fields didn't match."})
         if not check_password(attrs['old_password'], user.password):
             raise serializers.ValidationError({"password": "Old password didn't match"})
+        if attrs['new_password'] == attrs['old_password']:
+            raise serializers.ValidationError({"password": "New password is the same!"})
         return attrs
 
     def validate_new_password(self, value):
@@ -80,4 +82,4 @@ class UserListSerializer(serializers.ModelSerializer):
     friend_requests = FriendRequestSerializer(many=True, read_only=True)
     class Meta:
         model = CustomUser
-        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth', 'wins', 'losses', 'friends', 'friend_requests')
+        fields = ('username', 'status', 'profile_picture', 'TwoFactorAuth', 'wins', 'losses', 'wins_pool', 'losses_pool','friends', 'friend_requests')

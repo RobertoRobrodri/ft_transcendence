@@ -1,5 +1,7 @@
 import { renewJWT } from "../components/updatejwt.js"
-import { displayErrorList, displayError } from "../components/loader.js"
+// import { displayErrorList, displayError } from "../components/loader.js"
+import { displayErrorList, displayMessage } from "../components/loader.js"
+import { connectNotifications } from "../index/index.js"
 import {toggleView} from "../games/pong/pongScript.js"
 
 let editProfileView, setMFAView, changePasswordView,
@@ -15,9 +17,8 @@ export function initDivs() {
 
 export function init(customData = null) {
     loadUserInfo(customData);
-    
+    getTournaments();
 }
-
 // window.addEventListener('beforeunload', function(event) {
 //     console.log('La página está a punto de descargarse.');
 // });
@@ -64,9 +65,10 @@ export async function loadUserInfo(customData = null) {
         let user_info = document.getElementById("user_info");
         let default_picture = './assets/gigachad.jpg'
         let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, data.username);
-        user_updated = user_updated.replace(/{{WINS}}/g, data.wins);
-        user_updated = user_updated.replace(/{{LOSSES}}/g, data.losses);
-        user_updated = user_updated.replace(/{{STATUS}}/g, data.status);
+        user_updated = user_updated.replace(/{{WINS_PONG}}/g, data.wins);
+        user_updated = user_updated.replace(/{{LOSSES_PONG}}/g, data.losses);
+        user_updated = user_updated.replace(/{{WINS_POOL}}/g, data.wins_pool);
+        user_updated = user_updated.replace(/{{LOSSES_POOL}}/g, data.losses_pool);
         if (data.profile_picture != null)
             user_updated = user_updated.replace(default_picture, 'data:image/png;base64,' + data.profile_picture);
         if (data.qr != null)
@@ -81,6 +83,57 @@ export async function loadUserInfo(customData = null) {
         }
         user_info.innerHTML = user_updated;
         user_info.classList.remove("mshide");
+    }
+    catch (error) {
+        // Token error, try update jwt
+        renewJWT();
+    }
+}
+
+// Funcion para obtener una lista de todos los torneos que se ha participado, retorna nombre del torneo y el id
+export async function getTournaments() {
+    const token = sessionStorage.getItem('token')
+    try {
+        let url = 'api/blockchain/getTournaments/';
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }}
+        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        //al hacer click en un torneo, se solicita la tabla enviando el id del torneo, ejemplo de solicitud:
+        getTournamentTable(data['tournaments_participated'][0]['id'])
+
+    }
+    catch (error) {
+        // Token error, try update jwt
+        renewJWT();
+    }
+}
+
+export async function getTournamentTable(tournament_id) {
+    // Esta funcion retorna la tabla amacenada en la blockchain del id del torneo especificado
+    const token = sessionStorage.getItem('token')
+    try {
+        let url = `api/blockchain/getTournamentTable/?tournament_id=${tournament_id}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }}
+        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data)
     }
     catch (error) {
         console.error('Error:', error.message);
@@ -107,6 +160,7 @@ export function loadEditProfilePage() {
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
+        connectNotifications();
 
         javascript.initDivs();
         editProfileListener();
@@ -149,6 +203,8 @@ async function update2FA()
         throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
+    console.log(data.message);
+    displayMessage(data.message, 'small', 'activateTwoFactorAuthForm', 'green');
     if (response.status === 307)
     {
         document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qr;
@@ -156,7 +212,7 @@ async function update2FA()
         $('#twoFactorAuthModal').modal('show');
     }
     } catch (error) {
-        displayError(error.message, 'small', 'activateTwoFactorAuthForm');
+        displayMessage(error.message, 'small', 'activateTwoFactorAuthForm');
     }
 }
 
@@ -173,7 +229,7 @@ async function updateProfile() {
                 throw new Error('Image too large!');
             formData.append('profile_picture', file);
         } catch(error) {
-            displayError(error.message, 'small', 'editProfileForm')
+            displayMessage(error.message, 'small', 'editProfileForm')
         }
     }
     try {
@@ -191,6 +247,7 @@ async function updateProfile() {
     }
     const data = await response.json();
     console.log(data)
+    displayMessage(data.message, 'small', 'editProfileForm', 'green');
     } catch (error) {
         console.log(error)
         displayErrorList(JSON.parse(error.message), 'editProfileForm');
@@ -222,7 +279,7 @@ async function updatePassword() {
         throw new Error(JSON.stringify(error));
     }
     const data = await response.json();
-    console.log(data)
+    displayMessage(data.message, 'small', 'changePasswordForm', 'green');
     } catch (error) {
         displayErrorList(JSON.parse(error.message), 'changePasswordForm');
     }
@@ -232,6 +289,7 @@ async function TwoFactorAuthConfirmOTPUpdate() {
     // Get the input values
     const token = sessionStorage.getItem('token')
     const userOTP = document.querySelector('#OTP').value;
+    const otpMessageDiv = document.getElementById('otpMessage');
     const UserData = {
         otp: userOTP,
       };
@@ -251,7 +309,7 @@ async function TwoFactorAuthConfirmOTPUpdate() {
         console.log(response)
         } catch (error) {
             console.error('Error:', error.message);
-            displayError(error.message, 'small', 'confirmOTP');
+            displayMessage(error.message, 'small', 'confirmOTP');
         }
 }
 

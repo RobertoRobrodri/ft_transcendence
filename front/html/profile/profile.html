@@ -2,32 +2,53 @@
     <div class="col-md-12 mt-5 text-center">
         <h1>{{USERNAME}} Profile</h1>
     </div>
-    <div class="userInfo col-md-6 d-flex justify-content-center">
-        <div class="vertical-center">
-            <table>
-                <tr class="mb-5">
-                    <td class="text-start">Wins:</td>
-                    <td class="d-flex justify-content-end">{{WINS}}</td>
-                </tr>
-                <br>
-                <tr class="mb-5">
-                    <td class="text-start">Loses:</td>
-                    <td class="d-flex justify-content-end">{{LOSSES}}</td>
-                </tr>
-                <tr class="mb-5">
-                    <td class="text-start">Points:</td>
-                    <td class="d-flex justify-content-end">0</td>
-                </tr>
-                <tr class="mb-5">
-                    <td class="text-start">Status:</td>
-                    <td class="d-flex justify-content-end">{{STATUS}}</td>
-                </tr>
-            </table>
-        </div>
+    <div class="col-md-6">
+        <ul class="nav nav-tabs" id="myTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-list="stats">Stats</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-list="matches">Matches</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-list="tournaments">Tournaments</a>
+            </li>
+        </ul>
     </div>
     <div class="col-md-6 text-center">
+        <img class="userPhoto" src='./assets/gigachad.jpg' alt="Profile picture">
+    </div>
+    <div class="userInfo col-md-6 d-flex justify-content-center">
         <div class="vertical-center">
-            <img class="userPhoto" src='./assets/gigachad.jpg' alt="Profile picture">
+            <div id="stats" class="tab-content active">
+                <!-- Stats -->
+                <table>
+                    <tr class="mb-5">
+                        <td class="text-start">Pong Wins:</td>
+                        <td class="d-flex justify-content-end">{{WINS_PONG}}</td>
+                    </tr>
+                    <tr class="mb-5">
+                        <td class="text-start">Pong Loses:</td>
+                        <td class="d-flex justify-content-end">{{LOSSES_PONG}}</td>
+                    </tr>
+                    <tr class="mb-5">
+                        <td class="text-start">Pool Wins:</td>
+                        <td class="d-flex justify-content-end">{{WINS_POOL}}</td>
+                    </tr>
+                    <tr class="mb-5">
+                        <td class="text-start">Pool Loses:</td>
+                        <td class="d-flex justify-content-end">{{LOSSES_POOL}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="matches" class="tab-content">
+                <!-- Contenido de la pestaña Matches -->
+                
+            </div>
+            <div id="tournaments" class="tab-content">
+                <!-- Contenido de la pestaña Tournaments -->
+                
+            </div>
         </div>
     </div>
 </div>

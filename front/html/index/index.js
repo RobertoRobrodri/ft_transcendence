@@ -1,5 +1,10 @@
 import { renewJWT } from "../components/updatejwt.js"
+import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
+import { CHAT_TYPES, GAMES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
+import { addSingleUser, removeSingleUser } from "../chat/chatScript.js";
 
+let NotificationsSM = new NotificationsSocketManager();
+let hashCleared = false;
 export function loadMainPage() {
     // Renew jwt
     renewJWT();
@@ -25,8 +30,12 @@ export function loadMainPage() {
         style2.textContent = css2;
         document.head.appendChild(style2);
         //clear hash
-        history.pushState("", document.title, window.location.pathname + window.location.search);
+        if (!hashCleared){
+            hashCleared = true;
+            history.pushState("", document.title, window.location.pathname + window.location.search);
+        }
         setClickEvents();
+        connectNotifications();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
@@ -348,5 +357,11 @@ function makeDraggable(element, elementClick) {
     function closeDragElement() {
         document.removeEventListener('mouseup', closeDragElement);
         document.removeEventListener('mousemove', elementDrag);
+    }
+}
+
+export function connectNotifications() {
+    if(NotificationsSM.connect() == NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED) {
+        // NotificationsSM.send(CHAT_TYPES.USER_LIST);
     }
 }

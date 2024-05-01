@@ -1,133 +1,3 @@
-<!-- Navbar -->
-<!-- <nav class="mshide navbar navbar-expand-lg navbar-dark">
-    <a class="navbar-brand">PONG!</a>
-    <div class="navbar-collapse justify-content-end">
-        <span class="navbar-text user-info" id="user_info">Welcome, {{USERNAME}}!</span>
-    </div>
-</nav> -->
-
-<!-- <div class="mshide container-fluid">
-    <div class="row">
-
-        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div>
-                <button id="initmatchmaking">Matchmaking</button>
-            </div>
-            <br>
-            <div>
-                <button id="initmatchmakingpool">Pool!!</button>
-            </div>
-            <br>
-            <div>
-                <button id="initmatchmakingtournament">Tournament</button>
-            </div>
-            <br>
-            <div>
-                <button id="cancelmatchmaking">Cancel Matchmaking</button>
-            </div>
-            <br>
-            <div>
-                <button id="initsinglegame">Play single game</button>
-            </div>
-            <br>
-            <div>
-                <button id="endsinglegame">End single game</button>
-            </div>
-            <br>
-            <div>
-                <button id="initversusgame">Play versus game</button>
-            </div>
-            <br>
-            <div>
-                <button id="endversusgame">End versus game</button>
-            </div>
-            <br>
-            <div>
-                <button id="disconnect">test disconnect socket</button>
-            </div>
-            <br>
-            <div>
-                <button class="btn btn-primary" id="Ignore">Ignore</button>
-            </div>
-            <br>
-            <div>
-                <button class="btn btn-primary" id="Unignore">Unignore</button>
-            </div>
-            <br>
-            <div>
-                <button class="btn btn-primary" id="ignorelist">Get Ingored List (console log)</button>
-            </div>
-            <br>
-            <br>
-            <div>
-                <input type="text" class="form-control" id="newMessage" placeholder="New General Message">
-                <br>
-                <button id="sendMessageBtn">Send</button>
-            </div>
-            <br>
-            <br>
-            <div>
-                <button id="insiteToGame">Invite to game</button>
-            </div>
-            <br>
-            <br>
-            <div>
-                <input type="text" id="dstUser" placeholder="Destination user">
-                <br>
-                <input type="text" class="form-control" id="newPrivMessage" placeholder="New Priv Message">
-                <button class="btn btn-primary" id="sendPrivMessageBtn">Send</button>
-            </div>
-
-            <h5 class="sidebar-title">Online Users</h5>
-            <div class="sidebar-sticky">
-                <ul class="nav flex-column" id="userList"></ul>
-            </div>
-        </nav>
-
-        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
-            
-            <div id='renderView' style='width: 50%; height: 50%;'></div>
-            
-
-            
-            <div class="container mt-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card p-3 nav-option">
-                            <h5 class="card-title">Tournament</h5>
-                            <div class="form-group">
-                                <label for="nickname">Nickname:</label>
-                                <input type="text" class="form-control" id="nickname">
-                            </div>
-                            <div class="form-group">
-                                <label for="tournament-name">Tournament Name:</label>
-                                <input type="text" class="form-control" id="tournament-name">
-                            </div>
-                            <div class="form-group">
-                                <label for="number-of-players">Number of Players:</label>
-                                <input type="number" class="form-control" id="number-of-players">
-                            </div>
-                            <button class="btn btn-primary" id="createTournament">Create Tournament</button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card p-3 nav-option">
-                            <h5 class="sidebar-title">Tournament list (Click to join)</h5>
-                            <ul id="tournamentList" class="list-group"></ul>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card p-3 nav-option">
-                            <h5 class="sidebar-title">Game list (Click to spectate)</h5>
-                            <ul id="gameList" class="list-group"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>            
-        </main>
-    </div>
-</div> -->
-
 <div class="container-fluid">
 
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -177,7 +47,21 @@
                 </div>
             </div>
         </div>
-
+        <!-- <div class="div-table-container">
+            <div class="col-md-3 text-right">
+                <div class="user-table-container">
+                    <table class="table table-dark">
+                        <thead>
+                            <tr>
+                                <th scope="col">Online users</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> -->
         <!-- <img id="draggable" class="draggable" src="../assets/personBlue.svg" alt="Menu"> -->
     </div>
     <div class="system-bar fixed-bottom">
@@ -187,17 +71,17 @@
                 <img id="menuLogo" class="menuLogo" src="../assets/personBlue.svg" alt="Menu">
             </div>
         </div>
+        <div class="popup">
+            <span class="popuptext" id="myPopup"> New friend request has arrived</span>
+        </div>
     </div>
 
     <div class="menu" id="menu">
-        <!-- Aquí puedes poner los elementos de tu menú -->
         <ul>
-            <li><a href="#">Main menu</a></li>
-            <li><a href="#/friends">Friend list</a></li>
-            <li><a href="#/edit-profile">Edit profile</a></li>
-            <!-- <li><p class="usuarios">Usuarios conectados</p></li> -->
-            <li><a class="usuarios" href="">Usuarios conectados</a></li>
-            <li><a href="#">Esta opción ahora si se muestra</a></li>
+            <li><a id="mainMenuBtn" href="">Main menu</a></li>
+            <li><a id="friendListBtn" href="#/friends">Friend list</a></li>
+            <li><a id="editProfileBtn" href="#/edit-profile">Edit profile</a></li>
+            <li><a id="usuariosBtn" class="usuarios" href="">Usuarios conectados</a></li>
         </ul>
     </div>
 </div>

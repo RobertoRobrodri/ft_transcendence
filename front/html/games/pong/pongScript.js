@@ -3,6 +3,8 @@ import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js
 import { initializeSingleGame, endSingleGame } from "./singlegame.js";
 import { initializeVersusGame, endVersusGame } from "./versusgame.js";
 import { sleep } from "../../components/utils.js";
+import { initializeGame, endGame } from "./localGameLogic.js";
+//import { sleep } from "../../components/utils.js";
 // import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
@@ -21,11 +23,12 @@ let gameSM = new GameSocketManager();
 
 let optionsView, matchmakingView, localgameView, onlineMenuView,
     tournamentView, tournamentJoinView, tournamentReadyView,
-    emparejamientoView, canvasDivView, resultadosView;
+    emparejamientoView, canvasDivView, resultadosView,
+    canvas3DDivView;
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
-
+    document.getElementById('root').addEventListener('mouseover', showDescription);
     optionsView = document.getElementById("game_options_pong");
     matchmakingView = document.getElementById("matchmaking_pong");
     localgameView = document.getElementById("local_game_options_pong");
@@ -34,6 +37,7 @@ export function init(customData = null) {
     tournamentJoinView = document.getElementById("tournament_join");
     tournamentReadyView = document.getElementById("tournament_ready");
     canvasDivView = document.getElementById("canvasDiv");
+    canvas3DDivView = document.getElementById("canvas3DDiv");
     emparejamientoView = document.getElementById("emparejamiento");
     resultadosView = document.getElementById("results");
     canvas = document.getElementById("pongCanvas");
@@ -106,35 +110,60 @@ function gameEventHandler(e) {
         toggleView(optionsView, true);
         CancelMatchmaking();
     }
-    // juego local
+    // juego local (2 players)
     else if (e.target.matches('#localGameButton_pong') === true) {
         toggleView(optionsView, false);
         toggleView(localgameView, true);
     }
-    // 1 jugador
+    // 1 jugador (with Neural network)
     else if (e.target.matches('#soloGameButton_pong') === true) {
         toggleView(localgameView, false);
         toggleView(canvasDivView, true);
-        initializeSingleGame();
+        initializeGame();
     }
+    // 1 jugador (With Algorithm)
+    else if (e.target.matches('#soloGameButtonAlgo_pong') === true) {
+        toggleView(localgameView, false);
+        toggleView(canvasDivView, true);
+        initializeGame(false, false)
+    }
+    // 3D
+    else if (e.target.matches('#soloGameButton3D_pong') === true) {
+        toggleView(localgameView, false);
+        toggleView(canvas3DDivView, true);
+        initializeGame(false, true, true)
+    }
+
     // Multijugador local
     else if (e.target.matches('#localMultiplayerButton_pong') === true) {
         toggleView(localgameView, false);
-        initializeVersusGame();
+        toggleView(canvasDivView, true);
+        initializeGame(true);
     }
     else if (e.target.matches('#goBackButton_pong') === true) {
         toggleView(optionsView, true);
         toggleView(localgameView, false);
+        toggleView(onlineMenuView, false);
     }
     else if (e.target.matches('#red-myWindowGame') === true) {
         // si está conectado el socket, lo desconecta
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
-        endSingleGame();
-        // si está jugando en una partida multijugador local, la termina
-        endVersusGame();
+        endGame(true);
     }
+}
 
+function showDescription(e) {
+    let description = document.getElementById("description");
+    if (e.target.matches('#localGameButton_pong') === true) {
+        description.innerText = " Play against AI or multiplayer in the same keyboard \n First to score 6 points \n -- Player 1 controls -- \n Paddle Up = W \n Paddle Down = S \n -- Player 2 controls -- \n Paddle Up = O \n Paddle Down = L \n"
+    }
+    else if (e.target.matches('#onlineGameMenu_pong') === true) {
+        description.innerText = "Enter a game against a random opponent.\n This game will count for your stats \n -- Player controls -- \n Paddle Up = ↑ \n Paddle Down = ↓"
+    }
+    else if (e.target.matches('#tournamentButton_pong') === true) {
+        description.innerText = "Enter a tournament \n multiple players will take \nturns playing against each other \n -- Player controls -- \n Paddle Up = ↑ \n Paddle Down = ↓"
+    }
 }
 
 export function toggleView(view, visible = true) {
@@ -586,7 +615,7 @@ function getDirectionFromKeyCode(keyCode) {
     }
 }
 
-function drawScore(scores) {
+export function drawScore(scores) {
     // Set font style
     ctx.font = "20px Arial";
     ctx.fillStyle = "#ffffff";
