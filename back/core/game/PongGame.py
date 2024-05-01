@@ -332,7 +332,7 @@ class PongGame:
         winner  = user1 if winner == 0 else user2
         loser   = user2 if winner == user1 else user1
         # Add match to db
-        await Game.store_match(user1, user2, winner, self.scores)
+        await Game.store_match(user1, user2, winner, self.scores, "Pong")
         # Increment win in 1
         await CustomUser.user_win(winner)
         # Increment loss in 1

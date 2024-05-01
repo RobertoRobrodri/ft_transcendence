@@ -31,7 +31,7 @@ export function init(customData = null) {
 }
 
 function setupNav() {
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('#chatTabs .nav-link');
     const userList = document.getElementById('chatList');
     const blockedList = document.getElementById('blockedList');
     const game_req = document.getElementById('game_request_a');

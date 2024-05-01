@@ -40,6 +40,10 @@ services:
       - ddbb:/var/lib/postgresql/data
       - ./.logs/db:/log
     command: -c 'config_file=/etc/postgresql/postgresql.conf'
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
     networks:
       - transcendence
     env_file:

@@ -259,7 +259,6 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
 
 gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
     score = data;
-    console.log(data);
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
