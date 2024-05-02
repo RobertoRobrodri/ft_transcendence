@@ -59,7 +59,7 @@ class PongGame:
     async def start_game(self):
         # Waiting 2 players set ready status
         try:
-            await asyncio.wait_for(self.wait_for_players_ready(), timeout=20)
+            await asyncio.wait_for(self.wait_for_players_ready(), timeout=30)
             await asyncio.wait_for(self.countdown(), timeout=self.sleep_match + 3)
 
         except asyncio.TimeoutError:

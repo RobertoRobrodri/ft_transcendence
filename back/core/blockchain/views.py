@@ -66,7 +66,7 @@ class ContractGetTableView(generics.GenericAPIView):
         
 class ContractGetListView(generics.GenericAPIView):
 
-    def get(self, request, user_id):
+    def get(self, request, user_id = None):
         try:
             if user_id is None:
                 user_id = request.user.id

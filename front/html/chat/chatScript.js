@@ -238,7 +238,6 @@ chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, blockedList => {
 chatSM.registerCallback(CHAT_TYPES.GAME_REQUEST, data => {
     
     showGameRequest(data);
-    console.log(data);
     //show message to acept or something... then
     //chatSM.send(CHAT_TYPES.ACCEPT_GAME, data.sender);
 });

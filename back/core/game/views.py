@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class GamesViewset(generics.GenericAPIView):
 
-    def get(self, request, user_id):
+    def get(self, request, user_id = None):
         try:
             if user_id is None:
                 user_id = request.user.id

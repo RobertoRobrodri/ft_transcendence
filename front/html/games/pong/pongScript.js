@@ -99,6 +99,9 @@ function gameEventHandler(e) {
         toggleView(onlineMenuView, false);
         toggleView(matchmakingView, true);
         InitMatchmaking();
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "hidden";
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
         toggleView(matchmakingView, false);
@@ -106,6 +109,9 @@ function gameEventHandler(e) {
         toggleView(tournamentView, false);
         toggleView(optionsView, true);
         CancelMatchmaking();
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "auto";
     }
     // juego local (2 players)
     else if (e.target.matches('#localGameButton_pong') === true) {
@@ -128,7 +134,7 @@ function gameEventHandler(e) {
     else if (e.target.matches('#soloGameButton3D_pong') === true) {
         toggleView(localgameView, false);
         toggleView(canvas3DDivView, true);
-        initializeGame(false, true, true)
+        initializeGame(false, false, true)
     }
 
     // Multijugador local
@@ -194,7 +200,11 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if (data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
+        toggleView(canvasDivView, true);
         toggleView(optionsView, false);
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "hidden";
     }
 });
 
@@ -254,6 +264,9 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         toggleView(canvasDivView, false);
         toggleView(optionsView, true);
         toggleView(emparejamientoView, false);
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "auto";
     }
 });
 
@@ -274,9 +287,38 @@ gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
-    console.log(`game start in: ${data.counter}`)
-    // gameSM.send(GAME_TYPES.PLAYER_READY);
+    const countdownValue = data.counter;
+    let countdownDiv = document.getElementById("countdown");
+    if (countdownDiv)
+        countdownDiv.parentNode.removeChild(countdownDiv);
 
+    countdownDiv = document.createElement("div");
+    countdownDiv.id = "countdown";
+    countdownDiv.style.position = "absolute";
+    countdownDiv.style.top = "50%";
+    countdownDiv.style.left = "50%";
+    countdownDiv.style.transform = "translate(-50%, -50%)";
+    countdownDiv.style.fontSize = "40px";
+    countdownDiv.style.color = "#fff";
+    countdownDiv.style.fontFamily = "Arial";
+    countdownDiv.style.textAlign = "center";
+    countdownDiv.style.opacity = "0";
+        
+    const canvasDiv = document.getElementById("canvasDiv");
+    const canvas3DDiv = document.getElementById("canvas3DDiv");
+
+    if (!canvasDiv.classList.contains("mshide"))
+        canvasDiv.appendChild(countdownDiv);
+    else if (!canvas3DDiv.classList.contains("mshide"))
+        canvas3DDiv.appendChild(countdownDiv);
+
+    if (countdownValue >= 1) {
+        countdownDiv.innerText = countdownValue.toString();
+        countdownDiv.style.opacity = "1";
+        countdownDiv.classList.add("countdown-animation");
+    } else {
+        countdownDiv.parentNode.removeChild(countdownDiv);
+    }
 });
 
 gameSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
@@ -543,6 +585,9 @@ function updateGame(gameState) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // Draw Score
     drawScore(score);
+    // Draw lines
+    drawDashedCenterLine();
+
     // Draw paddles
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];
@@ -550,6 +595,16 @@ function updateGame(gameState) {
     }
     // Draw ball
     drawBall(gameState.ball.x, gameState.ball.y);
+}
+
+function drawDashedCenterLine() {
+    ctx.fillStyle = "#9b9b9b";
+    const lineHeight = 10;
+    const gap = 20;
+    const center = canvas.width / 2;
+    for (let y = 5; y < canvas.height; y += gap) {
+        ctx.fillRect(center - 2.5, y, 5, lineHeight);
+    }
 }
 
 function drawPaddle(x, y) {
