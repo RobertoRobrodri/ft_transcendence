@@ -2,9 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator
 from channels.db import database_sync_to_async
+from game.elo import expected, elo
 import base64
 
-# Create your models here.
 import logging
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,10 @@ class CustomUser(AbstractUser):
     username                    = models.CharField(max_length=42, unique=True)
     wins                        = models.IntegerField(default=0)
     losses                      = models.IntegerField(default=0)
+    elo                         = models.IntegerField(default=1000)
     wins_pool                   = models.IntegerField(default=0)
     losses_pool                 = models.IntegerField(default=0)
+    elo_pool                    = models.IntegerField(default=1000)
     status                      = models.CharField(max_length=9, choices=Status, default=Status.INMENU)
     connected                   = models.BooleanField(default=False)
     channel_name                = models.CharField(max_length=255, blank=True, null=True)
@@ -87,42 +89,48 @@ class CustomUser(AbstractUser):
     @classmethod
     @database_sync_to_async
     def update_user_on_connect(cls, user, channel_name):
-        user.channel_name = channel_name
-        user.connected = True
-        user.save()
+        u = CustomUser.objects.get(id=user.id)
+        u.channel_name = channel_name
+        u.connected = True
+        u.save()
 
     @classmethod
     @database_sync_to_async
     def update_user_on_connect_to_site(cls, user, nt_channel_name):
-        user.status = CustomUser.Status.INMENU
-        user.notifications_channel_name = nt_channel_name
-        user.save()
+        u = CustomUser.objects.get(id=user.id)
+        u.status = CustomUser.Status.INMENU
+        u.notifications_channel_name = nt_channel_name
+        u.save()
 
     @classmethod
     @database_sync_to_async
     def update_user_on_disconnect(cls, user):
-        user.connected = False
-        user.save()
+        u = CustomUser.objects.get(id=user.id)
+        u.connected = False
+        u.save()
 
     @classmethod
     @database_sync_to_async
     def update_user_on_disconnect_from_site(cls, user):
-        user.status = CustomUser.Status.OFFLINE
-        user.save()
+        u = CustomUser.objects.get(id=user.id)
+        u.status = CustomUser.Status.OFFLINE
+        u.save()
     
     @classmethod
     @database_sync_to_async
     def ignore_user(cls, user, id):
         user_to_ignore = CustomUser.objects.get(id=id)
-        user.ignored_users.add(user_to_ignore)
-        user.save()
+        u = CustomUser.objects.get(id=user.id)
+        u.ignored_users.add(user_to_ignore)
+        u.save()
 
     @classmethod
     @database_sync_to_async
     def unignore_user(cls, user, user_id):
         user_to_unignore = CustomUser.objects.get(id=user_id)
-        user.ignored_users.remove(user_to_unignore)
-        user.save()
+        u = CustomUser.objects.get(id=user.id)
+        u.ignored_users.remove(user_to_unignore)
+        u.save()
         
     @classmethod
     @database_sync_to_async
@@ -160,24 +168,40 @@ class CustomUser(AbstractUser):
     
     @classmethod
     @database_sync_to_async
-    def user_win(cls, user):
-        user.wins += 1
-        user.save()
+    def user_win(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
+        u = CustomUser.objects.get(id=user.id)
+        u.wins += 1
+        u.elo = new_elo
+        u.save()
     
     @classmethod
     @database_sync_to_async
-    def user_lose(cls, user):
-        user.losses += 1
-        user.save()
+    def user_lose(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
+        u = CustomUser.objects.get(id=user.id)
+        u.losses += 1
+        u.elo = new_elo
+        u.save()
     
     @classmethod
     @database_sync_to_async
-    def user_win_pool(cls, user):
-        user.wins_pool += 1
-        user.save()
+    def user_win_pool(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
+        u = CustomUser.objects.get(id=user.id)
+        u.wins_pool += 1
+        u.elo_pool = new_elo
+        u.save()
     
     @classmethod
     @database_sync_to_async
-    def user_lose_pool(cls, user):
-        user.losses_pool += 1
-        user.save()
+    def user_lose_pool(cls, user, elo_player_1, elo_player_2, result):
+        expected_result = expected(elo_player_1, elo_player_2)
+        new_elo = elo(elo_player_1, result, expected_result)
+        u = CustomUser.objects.get(id=user.id)
+        u.losses_pool += 1
+        u.elo_pool = new_elo
+        u.save()

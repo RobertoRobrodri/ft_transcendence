@@ -12,7 +12,7 @@ from .PongGame import PongGame
 from .pool.PoolGame import PoolGame
 from .game_state import games, tournaments, available_games, matchmaking_queue
 from blockchain.views import ContractPutView
-from blockchain.models import Participant
+from blockchain.models import Participant, Tournament
 
 import logging
 logger = logging.getLogger(__name__)
@@ -442,6 +442,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
             # Force await 7 seconds
             await asyncio.sleep(7)
+            
+            # If all users leave torunament, remove it!
+            if len(pairing) == 0:
+                await Tournament.delete_tournament(tournament_id)
+                return
+
 
             for pairing in pairings:
                 if len(pairing) == 2:
@@ -505,7 +511,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
     async def enterMarchmaking(self, user, data):
         # Check if game type exist
-        game_request = data.get("message")
+        game_request = data.get("message").get("game")
         if game_request is None or not any(game in game_request for game in available_games):
             return
         # If user is already in queue (any game)
@@ -526,10 +532,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             
         # Get oponent
         async with matchmaking_lock: # Block this section to prevent 2 or more users pop user and only have 1
-            rival = matchmaking_queue.pop_users(game_request, room_size)
-            if rival is None: # Anyway, let's check to prevent fails
-                self.enterMarchmaking(user, data)
-                return
+            if data.get("message").get("ranked") is not False:
+                logger.warning('Ranked matchmaking')
+                rival = await matchmaking_queue.check_mmr(user, game_request)
+                if rival is None: # Anyway, let's check to prevent fails
+                    self.enterMarchmaking(user, data)
+                    return
+            else:
+                rival = matchmaking_queue.pop_users(game_request, room_size)
+                if rival is None: # Anyway, let's check to prevent fails
+                    self.enterMarchmaking(user, data)
+                    return
             
         await send_to_me(self, INQUEUE, {'game': game_request, 'message': 'Waiting for another player...'})
         # Generate unique room name
@@ -635,8 +648,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         game_list = []
         for game_id, game_info in games.items():
             if game_info['game'] == game_req:
+                player_usernames = [player['username'] for player in games[game_id]["instance"].players.values()]
                 game_summary = {
-                    'id': game_id
+                    'id': game_id,
+                    'players': player_usernames
                 }
                 game_list.append(game_summary)
         return {'game': game_req, 'data': game_list}

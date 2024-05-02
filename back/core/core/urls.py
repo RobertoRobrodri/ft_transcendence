@@ -46,5 +46,7 @@ urlpatterns = [
     # Monitoring
     path("", include("django_prometheus.urls"), name="django-prometheus"),
     # Blockchain
-     path('api/blockchain/', include('blockchain.urls')),
+    path('api/blockchain/', include('blockchain.urls')),
+	# Matches
+    path('api/game/', include('game.urls')),
 ]

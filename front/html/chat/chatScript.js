@@ -31,7 +31,7 @@ export function init(customData = null) {
 }
 
 function setupNav() {
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('#chatTabs .nav-link');
     const userList = document.getElementById('chatList');
     const blockedList = document.getElementById('blockedList');
     const game_req = document.getElementById('game_request_a');
@@ -238,7 +238,6 @@ chatSM.registerCallback(CHAT_TYPES.IGNORE_LIST, blockedList => {
 chatSM.registerCallback(CHAT_TYPES.GAME_REQUEST, data => {
     
     showGameRequest(data);
-    console.log(data);
     //show message to acept or something... then
     //chatSM.send(CHAT_TYPES.ACCEPT_GAME, data.sender);
 });

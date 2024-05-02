@@ -1,8 +1,6 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
-//import { sleep } from "../../components/utils.js";
-// import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
 // Global vars //
@@ -99,6 +97,14 @@ function gameEventHandler(e) {
         toggleView(onlineMenuView, false);
         toggleView(matchmakingView, true);
         InitMatchmaking();
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "hidden";
+    }
+    else if (e.target.matches('#rankedGameButton_pong') === true) {
+        toggleView(onlineMenuView, false);
+        toggleView(matchmakingView, true);
+        InitMatchmaking(true);
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
         toggleView(matchmakingView, false);
@@ -106,6 +112,9 @@ function gameEventHandler(e) {
         toggleView(tournamentView, false);
         toggleView(optionsView, true);
         CancelMatchmaking();
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "auto";
     }
     // juego local (2 players)
     else if (e.target.matches('#localGameButton_pong') === true) {
@@ -128,7 +137,7 @@ function gameEventHandler(e) {
     else if (e.target.matches('#soloGameButton3D_pong') === true) {
         toggleView(localgameView, false);
         toggleView(canvas3DDivView, true);
-        initializeGame(false, true, true)
+        initializeGame(false, false, true)
     }
 
     // Multijugador local
@@ -194,7 +203,11 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if (data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
+        toggleView(canvasDivView, true);
         toggleView(optionsView, false);
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "hidden";
     }
 });
 
@@ -251,15 +264,20 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         score = [0, 0];
         audio.play();
         //gameSM.disconnect();
+        let leaveButton = document.getElementById("leaveButton-spectator")
+        if (leaveButton)
+            leaveButton.remove();
         toggleView(canvasDivView, false);
         toggleView(optionsView, true);
         toggleView(emparejamientoView, false);
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "auto";
     }
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_SCORE, data => {
     score = data;
-    console.log(data);
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
@@ -269,15 +287,45 @@ gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
+    console.log(data)
     if (data.game == GAMES.PONG) {
         fillGames(data);
     }
 });
 
 gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
-    console.log(`game start in: ${data.counter}`)
-    // gameSM.send(GAME_TYPES.PLAYER_READY);
+    const countdownValue = data.counter;
+    let countdownDiv = document.getElementById("countdown");
+    if (countdownDiv)
+        countdownDiv.parentNode.removeChild(countdownDiv);
 
+    countdownDiv = document.createElement("div");
+    countdownDiv.id = "countdown";
+    countdownDiv.style.position = "absolute";
+    countdownDiv.style.top = "50%";
+    countdownDiv.style.left = "50%";
+    countdownDiv.style.transform = "translate(-50%, -50%)";
+    countdownDiv.style.fontSize = "40px";
+    countdownDiv.style.color = "#fff";
+    countdownDiv.style.fontFamily = "Arial";
+    countdownDiv.style.textAlign = "center";
+    countdownDiv.style.opacity = "0";
+        
+    const canvasDiv = document.getElementById("canvasDiv");
+    const canvas3DDiv = document.getElementById("canvas3DDiv");
+
+    if (!canvasDiv.classList.contains("mshide"))
+        canvasDiv.appendChild(countdownDiv);
+    else if (!canvas3DDiv.classList.contains("mshide"))
+        canvas3DDiv.appendChild(countdownDiv);
+
+    if (countdownValue >= 1) {
+        countdownDiv.innerText = countdownValue.toString();
+        countdownDiv.style.opacity = "1";
+        countdownDiv.classList.add("countdown-animation");
+    } else {
+        countdownDiv.parentNode.removeChild(countdownDiv);
+    }
 });
 
 gameSM.registerCallback(CHAT_TYPES.MY_DATA, data => {
@@ -487,32 +535,41 @@ function fillGames(data) {
     var games = document.getElementById("gameList");
     if (!games)
         return;
+    // let div = gameType === "pong" ? canvasDivView = document.getElementById("canvasDiv") : document.getElementById("renderView");
     // Remove previous li elements
     while (games.firstChild)
         games.removeChild(games.firstChild);
 
     data.data.forEach((element) => {
         var curli = document.createElement("li");
-        curli.textContent = `${element.id}`;
+        curli.textContent = `${element.players[0]} vs ${element.players[1]}`;
         curli.classList.add("list-group-item");
-        //Click example to join tournament
-        curli.addEventListener('click', function () {
+        var joinButton = document.createElement("button");
+        joinButton.textContent = "View";
+        joinButton.classList.add("btn", "btn-success", "btn-sm", "ml-2");
+        joinButton.addEventListener('click', function () {
             gameSM.send(GAME_TYPES.SPECTATE_GAME, {
                 id: element.id
             })
+            toggleView(canvasDivView, true);
+            toggleView(onlineMenuView, false);
+            // Leave
+            var leaveButton = document.createElement("button");
+            leaveButton.textContent = "Leave";
+            leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+            leaveButton.id = "leaveButton-spectator"
+            leaveButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
+                    id: element.id
+                })
+                leaveButton.remove();
+                toggleView(canvasDivView, false);
+                toggleView(onlineMenuView, true);
+            });
+            canvasDivView.appendChild(leaveButton);
         });
-
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function (event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
-                id: element.id
-            })
-        });
-        curli.appendChild(leaveButton);
+        curli.appendChild(joinButton);
         games.appendChild(curli);
     });
 }
@@ -520,9 +577,9 @@ function fillGames(data) {
 ////////////////
 // GAME LOGIC //
 ////////////////
-
-function InitMatchmaking() {
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+// ! ranked false by default
+function InitMatchmaking(ranked = false) {
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, {game : GAMES.PONG, ranked: ranked});
 }
 
 function InitMatchmakingTournament() {
@@ -544,6 +601,9 @@ function updateGame(gameState) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // Draw Score
     drawScore(score);
+    // Draw lines
+    drawDashedCenterLine();
+
     // Draw paddles
     for (const playerId in gameState.players) {
         const player = gameState.players[playerId];
@@ -551,6 +611,16 @@ function updateGame(gameState) {
     }
     // Draw ball
     drawBall(gameState.ball.x, gameState.ball.y);
+}
+
+function drawDashedCenterLine() {
+    ctx.fillStyle = "#9b9b9b";
+    const lineHeight = 10;
+    const gap = 20;
+    const center = canvas.width / 2;
+    for (let y = 5; y < canvas.height; y += gap) {
+        ctx.fillRect(center - 2.5, y, 5, lineHeight);
+    }
 }
 
 function drawPaddle(x, y) {
