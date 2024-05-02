@@ -1,8 +1,6 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
-//import { sleep } from "../../components/utils.js";
-// import { renewJWT } from "../components/updatejwt.js";
 
 /////////////////
 // Global vars //
@@ -102,6 +100,11 @@ function gameEventHandler(e) {
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
+    }
+    else if (e.target.matches('#rankedGameButton_pong') === true) {
+        toggleView(onlineMenuView, false);
+        toggleView(matchmakingView, true);
+        InitMatchmaking(true);
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
         toggleView(matchmakingView, false);
@@ -261,6 +264,9 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         score = [0, 0];
         audio.play();
         //gameSM.disconnect();
+        let leaveButton = document.getElementById("leaveButton-spectator")
+        if (leaveButton)
+            leaveButton.remove();
         toggleView(canvasDivView, false);
         toggleView(optionsView, true);
         toggleView(emparejamientoView, false);
@@ -281,6 +287,7 @@ gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
+    console.log(data)
     if (data.game == GAMES.PONG) {
         fillGames(data);
     }
@@ -528,32 +535,41 @@ function fillGames(data) {
     var games = document.getElementById("gameList");
     if (!games)
         return;
+    // let div = gameType === "pong" ? canvasDivView = document.getElementById("canvasDiv") : document.getElementById("renderView");
     // Remove previous li elements
     while (games.firstChild)
         games.removeChild(games.firstChild);
 
     data.data.forEach((element) => {
         var curli = document.createElement("li");
-        curli.textContent = `${element.id}`;
+        curli.textContent = `${element.players[0]} vs ${element.players[1]}`;
         curli.classList.add("list-group-item");
-        //Click example to join tournament
-        curli.addEventListener('click', function () {
+        var joinButton = document.createElement("button");
+        joinButton.textContent = "View";
+        joinButton.classList.add("btn", "btn-success", "btn-sm", "ml-2");
+        joinButton.addEventListener('click', function () {
             gameSM.send(GAME_TYPES.SPECTATE_GAME, {
                 id: element.id
             })
+            toggleView(canvasDivView, true);
+            toggleView(onlineMenuView, false);
+            // Leave
+            var leaveButton = document.createElement("button");
+            leaveButton.textContent = "Leave";
+            leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
+            leaveButton.id = "leaveButton-spectator"
+            leaveButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
+                    id: element.id
+                })
+                leaveButton.remove();
+                toggleView(canvasDivView, false);
+                toggleView(onlineMenuView, true);
+            });
+            canvasDivView.appendChild(leaveButton);
         });
-
-        // Leave
-        var leaveButton = document.createElement("button");
-        leaveButton.textContent = "Leave";
-        leaveButton.classList.add("btn", "btn-danger", "btn-sm", "ml-2");
-        leaveButton.addEventListener('click', function (event) {
-            event.stopPropagation();
-            gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
-                id: element.id
-            })
-        });
-        curli.appendChild(leaveButton);
+        curli.appendChild(joinButton);
         games.appendChild(curli);
     });
 }
@@ -561,9 +577,9 @@ function fillGames(data) {
 ////////////////
 // GAME LOGIC //
 ////////////////
-
-function InitMatchmaking() {
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+// ! ranked false by default
+function InitMatchmaking(ranked = false) {
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, {game : GAMES.PONG, ranked: ranked});
 }
 
 function InitMatchmakingTournament() {

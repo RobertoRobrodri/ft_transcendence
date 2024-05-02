@@ -11,7 +11,7 @@ export function loadingAnimation(ruta) {
 
 export function displayMessage(msg, type, id, color='red') {
     const errorElement = document.createElement(type);
-    (type === "ul") ? errorElement.innerHTML = error : errorElement.textContent = msg;
+    (type === "ul") ? errorElement.innerHTML = msg : errorElement.textContent = msg;
     errorElement.style.color = color;
     const errorContainer = document.getElementById(id);
     // Remove existing error messages of the same type

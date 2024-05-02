@@ -334,9 +334,9 @@ class PongGame:
         # Add match to db
         await Game.store_match(user1, user2, winner, self.scores, "Pong")
         # Increment win in 1
-        await CustomUser.user_win(winner)
+        await CustomUser.user_win(winner, winner.elo, loser.elo, 1)
         # Increment loss in 1
-        await CustomUser.user_lose(loser)
+        await CustomUser.user_lose(loser, loser.elo, winner.elo, 0)
     
     async def set_game_tournament_points(self):
         current_round = tournaments[self.tournament_id]['rounds'][-1]
