@@ -13,8 +13,8 @@ export class SocketManager {
         {
             let token = sessionStorage.getItem('token');
             let host = window.location.hostname;
-            let socketHost = host === 'localhost' ? 'localhost' : window.location.host;
-            this.socket = new WebSocket(`wss://${socketHost}:443/${this.path}/?token=${token}`);
+            let socketHost = host === 'localhost' ? 'localhost:4043' : window.location.host;
+            this.socket = new WebSocket(`wss://${socketHost}/${this.path}/?token=${token}`);
             this.setupSocketEvents();
             this.nbrConnection++;
             return this.SOCKETSTATUS.CONNECTED

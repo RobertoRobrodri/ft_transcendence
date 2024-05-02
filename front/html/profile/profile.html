@@ -1,9 +1,8 @@
 <div class="row mshide" id="user_info">
-    <div class="col-md-12 mt-5 text-center">
-        <h1>{{USERNAME}} Profile</h1>
+    <div class="col-md-12 mt-5 text-center" id="profileTitle">
     </div>
     <div class="col-md-6">
-        <ul class="nav nav-tabs" id="myTabs">
+        <ul class="nav nav-tabs" id="profileTabs">
             <li class="nav-item">
                 <a class="nav-link active" data-list="stats">Stats</a>
             </li>
@@ -14,42 +13,48 @@
                 <a class="nav-link" data-list="tournaments">Tournaments</a>
             </li>
         </ul>
-    </div>
-    <div class="col-md-6 text-center">
-        <img class="userPhoto" src='./assets/gigachad.jpg' alt="Profile picture">
-    </div>
-    <div class="userInfo col-md-6 d-flex justify-content-center">
-        <div class="vertical-center">
-            <div id="stats" class="tab-content active">
-                <!-- Stats -->
-                <table>
+        <div class="userInfo vertical-center">
+            <!-- Stats -->
+            <div id="secStats" class="fullest tab-content active">
+                <table table class="fullest">
                     <tr class="mb-5">
                         <td class="text-start">Pong Wins:</td>
-                        <td class="d-flex justify-content-end">{{WINS_PONG}}</td>
+                        <td class="d-flex justify-content-end" id="WINS_PONG"></td>
                     </tr>
                     <tr class="mb-5">
                         <td class="text-start">Pong Loses:</td>
-                        <td class="d-flex justify-content-end">{{LOSSES_PONG}}</td>
+                        <td class="d-flex justify-content-end" id="LOSSES_PONG"></td>
+                    </tr>
+                    <tr class="mb-5">
+                        <td class="text-start">Pong elo:</td>
+                        <td class="d-flex justify-content-end">{{ELO_PONG}}</td>
                     </tr>
                     <tr class="mb-5">
                         <td class="text-start">Pool Wins:</td>
-                        <td class="d-flex justify-content-end">{{WINS_POOL}}</td>
+                        <td class="d-flex justify-content-end" id="WINS_POOL"></td>
                     </tr>
                     <tr class="mb-5">
                         <td class="text-start">Pool Loses:</td>
-                        <td class="d-flex justify-content-end">{{LOSSES_POOL}}</td>
+                        <td class="d-flex justify-content-end" id="LOSSES_POOL"></td>
+                    </tr>
+                    <tr class="mb-5">
+                        <td class="text-start">Pool elo:</td>
+                        <td class="d-flex justify-content-end">{{ELO_POOL}}</td>
                     </tr>
                 </table>
             </div>
-            <div id="matches" class="tab-content">
-                <!-- Contenido de la pestaña Matches -->
-
+            <!-- Matches -->
+            <div id="secMatches" class="fullest tab-content mshide">
+                <ul id="profileMatchesList" class="scrollable-list list-unstyled mt-2 mb-0"></ul>
             </div>
-            <div id="tournaments" class="tab-content">
-                <!-- Contenido de la pestaña Tournaments -->
-
+            <!-- Tournaments -->
+            <div id="secTournaments" class="fullest tab-content mshide">
+                <ul id="profileTournamentList" class="scrollable-list list-unstyled mt-2 mb-0"></ul>
             </div>
         </div>
+    </div>
+    <div class="col-md-6 text-center">
+        <img id="userPhoto" class="userPhoto" src='./assets/gigachad.jpg' alt="Profile picture">
     </div>
 </div>
 
@@ -59,166 +64,5 @@
         <h1> Tournament History </h1>
     </div>
     <div class="col-md-12" id="tournamentCanva">
-        <div class="container">
-            <h2>Chads Pong – Men's tournament</h2>
-            <div class="tournament-bracket tournament-bracket--rounded">
-                <div class="tournament-bracket__round tournament-bracket__round--quarterfinals">
-                    <!-- <h3 class="tournament-bracket__round-title">Quarterfinals</h3> -->
-                    <ul class="tournament-bracket__list">
-                        <li class="tournament-bracket__item">
-                            <div class="tournament-bracket__match" tabindex="0">
-                                <table class="tournament-bracket__table">
-                                    <caption class="tournament-bracket__caption">
-                                        <time datetime="1998-02-18">18 February 1998</time>
-                                    </caption>
-                                    <!-- <thead class="sr-only">
-                                        <tr>
-                                            <th>Country</th>
-                                            <th>Score</th>
-                                        </tr>
-                                    </thead> -->
-                                    <tbody class="tournament-bracket__content">
-                                        <tr class="tournament-bracket__team tournament-bracket__team--winner">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code" title="Canada">Pei1</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-ca"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">4</span>
-                                            </td>
-                                        </tr>
-                                        <tr class="tournament-bracket__team">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code" title="Kazakhstan">Pei2</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-kz"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">1</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </li>
-
-                        <li class="tournament-bracket__item">
-                            <div class="tournament-bracket__match" tabindex="0">
-                                <table class="tournament-bracket__table">
-                                    <!-- <caption class="tournament-bracket__caption">
-                                        <time datetime="1998-02-18">18 February 1998</time>
-                                    </caption> -->
-                                    <!-- <thead class="sr-only">
-                                        <tr>
-                                            <th>Country</th>
-                                            <th>Score</th>
-                                        </tr>
-                                    </thead> -->
-                                    <tbody class="tournament-bracket__content">
-                                        <tr class="tournament-bracket__team tournament-bracket__team--winner">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code" title="Czech Republic">Pei3</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-cz"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">4</span>
-                                            </td>
-                                        </tr>
-                                        <tr class="tournament-bracket__team">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code"
-                                                    title="Unitede states of America">Pei4</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-us"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">1</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </li>
-                        <li class="tournament-bracket__item">
-                            <div class="tournament-bracket__match" tabindex="0">
-                                <table class="tournament-bracket__table">
-                                    <!-- <caption class="tournament-bracket__caption">
-                                        <time datetime="1998-02-18">18 February 1998</time>
-                                    </caption> -->
-                                    <!-- <thead class="sr-only">
-                                        <tr>
-                                            <th>Country</th>
-                                            <th>Score</th>
-                                        </tr>
-                                    </thead> -->
-                                    <tbody class="tournament-bracket__content">
-                                        <tr class="tournament-bracket__team tournament-bracket__team--winner">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code" title="Finland">Pei5</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-fi"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">2</span>
-                                            </td>
-                                        </tr>
-                                        <tr class="tournament-bracket__team">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code" title="Sweden">Pei6</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-se"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">1</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </li>
-
-                        <li class="tournament-bracket__item">
-                            <div class="tournament-bracket__match" tabindex="0">
-                                <table class="tournament-bracket__table">
-                                    <!-- <caption class="tournament-bracket__caption">
-                                        <time datetime="1998-02-18">18 February 1998</time>
-                                    </caption> -->
-                                    <!-- <thead class="sr-only">
-                                        <tr>
-                                            <th>Country</th>
-                                            <th>Score</th>
-                                        </tr>
-                                    </thead> -->
-                                    <tbody class="tournament-bracket__content">
-                                        <tr class="tournament-bracket__team tournament-bracket__team--winner">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code" title="Russia">Pei7</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-ru"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">4</span>
-                                            </td>
-                                        </tr>
-                                        <tr class="tournament-bracket__team">
-                                            <td class="tournament-bracket__country">
-                                                <p class="tournament-bracket__code" title="Belarus">Pei8</p>
-                                                <span class="tournament-bracket__flag flag-icon flag-icon-by"
-                                                    aria-label="Flag"></span>
-                                            </td>
-                                            <td class="tournament-bracket__score">
-                                                <span class="tournament-bracket__number">1</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
     </div>
 </div>

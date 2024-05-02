@@ -5,7 +5,18 @@ from asgiref.sync import sync_to_async
 class Tournament(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     name = models.CharField(max_length=100)
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    @classmethod
+    @sync_to_async
+    def delete_tournament(cls, tournament_id):
+        try:
+            tournament = cls.objects.get(id=tournament_id)
+            tournament.delete()
+            return True
+        except cls.DoesNotExist:
+            return False
+        
     def __str__(self):
         return self.name
 
@@ -31,7 +42,7 @@ class Participant(models.Model):
         user = CustomUser.objects.get(id=user_id)
         participant = cls.objects.get(user=user)
         participated_tournaments = participant.tournaments.all()
-        return [{'id': tournament.id, 'name': tournament.name} for tournament in participated_tournaments]
+        return [{'id': tournament.id, 'name': tournament.name, 'created_at': tournament.created_at} for tournament in participated_tournaments]
 
 class Participation(models.Model):
     participant = models.ForeignKey(Participant, on_delete=models.CASCADE)

@@ -7,6 +7,8 @@ import { toggleView } from "../games/pong/pongScript.js"
 let editProfileView, setMFAView, changePasswordView,
     profileOptionsView;
 
+let selectedList = "stats";
+
 export function initDivs() {
     editProfileView = document.getElementById('edit_profile');
     setMFAView = document.getElementById('set_MFA');
@@ -17,12 +19,50 @@ export function initDivs() {
 
 export function init(customData = null) {
     loadUserInfo(customData);
-    getTournaments();
+    getTournaments(customData);
+    getMatches(customData);
+    initTabListener();
 }
 // window.addEventListener('beforeunload', function(event) {
 //     console.log('La página está a punto de descargarse.');
 // });
 
+function initTabListener() {
+    const navLinks = document.querySelectorAll('#profileTabs .nav-link');
+    
+    const userStats       = document.getElementById('secStats');
+    const userMatches     = document.getElementById('secMatches');
+    const userTournaments = document.getElementById('secTournaments');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            navLinks.forEach(navLink => {
+                navLink.classList.remove('active');
+            });
+            const listToShow = this.getAttribute('data-list');
+            if (listToShow === 'stats') {
+                selectedList = "stats";
+                this.classList.add('active');
+                userStats.classList.remove("mshide");
+                userMatches.classList.add("mshide");
+                userTournaments.classList.add("mshide");
+            } else if (listToShow === 'matches') {
+                this.classList.add('active');
+                selectedList = "matches";
+                userStats.classList.add("mshide");
+                userMatches.classList.remove("mshide");
+                userTournaments.classList.add("mshide");
+            } else if (listToShow === 'tournaments') {
+                this.classList.add('active');
+                selectedList = "tournaments";
+                userStats.classList.add("mshide");
+                userMatches.classList.add("mshide");
+                userTournaments.classList.remove("mshide");
+            }
+
+        });
+    });
+}
 
 function gameEventHandler(e) {
     if (e.target.matches('#editProfile') === true) {
@@ -64,24 +104,30 @@ export async function loadUserInfo(customData = null) {
         }
         const data = await response.json();
         let user_info = document.getElementById("user_info");
-        let default_picture = './assets/gigachad.jpg'
-        let user_updated = user_info.innerHTML.replace(/{{USERNAME}}/g, data.username);
-        user_updated = user_updated.replace(/{{WINS_PONG}}/g, data.wins);
-        user_updated = user_updated.replace(/{{LOSSES_PONG}}/g, data.losses);
-        user_updated = user_updated.replace(/{{WINS_POOL}}/g, data.wins_pool);
-        user_updated = user_updated.replace(/{{LOSSES_POOL}}/g, data.losses_pool);
+        
+        const h1Element = document.createElement('h1');
+        h1Element.textContent = `${data.username} Profile`;
+        const profileTitle = document.getElementById('profileTitle');
+        profileTitle.appendChild(h1Element);
+
+        document.getElementById("WINS_PONG").textContent      = data.wins;
+        document.getElementById("LOSSES_PONG").textContent    = data.losses;
+        document.getElementById("WINS_POOL").textContent      = data.wins_pool;
+        document.getElementById("LOSSES_POOL").textContent    = data.losses_pool;
         if (data.profile_picture != null)
-            user_updated = user_updated.replace(default_picture, 'data:image/png;base64,' + data.profile_picture);
-        if (data.qr != null) {
-            let qr = 'data:image/png;base64,' + data.qr;
-            var htmlDinamico = `
-            <div class="vertical-center">
-                <img class="qrcode" src='${qr}' alt="QR code">
-            </div>
-            `;
-            user_updated += htmlDinamico;
+            document.getElementById("userPhoto").src = 'data:image/png;base64,' + data.profile_picture;
+        if (data.qr != null)
+        { 
+            const divContenedor = document.createElement('div');
+            divContenedor.classList.add('vertical-center');
+            const imagenQR = document.createElement('img');
+            imagenQR.classList.add('qrcode');
+            imagenQR.src = 'data:image/png;base64,' + data.qr;
+            imagenQR.alt = 'QR code';
+            divContenedor.appendChild(imagenQR);
+            const user_info = document.getElementById("user_info");
+            user_info.appendChild(divContenedor);
         }
-        user_info.innerHTML = user_updated;
         user_info.classList.remove("mshide");
     }
     catch (error) {
@@ -90,11 +136,60 @@ export async function loadUserInfo(customData = null) {
     }
 }
 
-// Funcion para obtener una lista de todos los torneos que se ha participado, retorna nombre del torneo y el id
-export async function getTournaments() {
+async function getMatches(customData = null) {
+    const token = sessionStorage.getItem('token')
+    try {
+        let url = `api/game/getMatches/`;
+        if(customData)
+            url = `api/game/getMatches/${customData}/`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }}
+        );
+        if (!response.ok)
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        const data = await response.json();
+        const matches = data.matches;
+        const profileMatchesList = document.getElementById("profileMatchesList");
+        matches.forEach(game => {
+            const listItem = document.createElement("li");
+            listItem.classList.add("game-item");
+            
+            // Crear elementos de texto para cada parte del juego
+            const playersText = document.createTextNode(`${game.username} vs ${game.opponent_username}`);
+            const playerScoreText = document.createTextNode(`Player Score: ${game.player_score}`);
+            const opponentScoreText = document.createTextNode(`Opponent Score: ${game.opponent_score}`);
+            const dateText = document.createTextNode(`Date: ${new Date(game.date).toLocaleString()}`);
+            const gameTypeText = document.createTextNode(`Game: ${game.game_type}`);
+            
+            listItem.appendChild(playersText);
+            listItem.appendChild(document.createElement("br"));
+            listItem.appendChild(playerScoreText);
+            listItem.appendChild(document.createElement("br"));
+            listItem.appendChild(opponentScoreText);
+            listItem.appendChild(document.createElement("br"));
+            listItem.appendChild(dateText);
+            listItem.appendChild(document.createElement("br"));
+            listItem.appendChild(gameTypeText);
+
+            profileMatchesList.appendChild(listItem);
+        });
+    }
+    catch (error) {
+        renewJWT();
+    }
+}
+
+// Funcion para obtener una lista de todos los torneos que se ha participado, retorna nombre del torneo fecha y el id
+async function getTournaments(customData = null) {
     const token = sessionStorage.getItem('token')
     try {
         let url = 'api/blockchain/getTournaments/';
+        if(customData != null)
+            url = `api/blockchain/getTournaments/${customData}/`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -108,11 +203,29 @@ export async function getTournaments() {
         }
 
         const data = await response.json();
-        // console.log(data)
-        //al hacer click en un torneo, se solicita la tabla enviando el id del torneo, ejemplo de solicitud:
-        for (let tournament of data['tournaments_participated']) {
-            getTournamentTable(tournament['id']);
-        }
+        const tournaments = data.tournaments_participated;
+        const profileTournamentsList = document.getElementById("profileTournamentList");
+        tournaments.forEach(element => {
+            const listItem = document.createElement("li");
+            listItem.classList.add("tournament-item");
+            listItem.setAttribute("id", element.id);
+            
+            // Crear elementos de texto para cada parte del juego
+            const tournamentName = document.createTextNode(`${element.name}`);
+            const dateText = document.createTextNode(`Date: ${new Date(element.created_at).toLocaleString()}`);
+
+            listItem.appendChild(tournamentName);
+            listItem.appendChild(document.createElement("br"));
+            listItem.appendChild(dateText);
+
+            profileTournamentsList.appendChild(listItem);
+
+            listItem.addEventListener("click", function() {
+                getTournamentTable(clickedId)
+                const clickedId = this.id;
+            });
+        });
+        
 
     }
     catch (error) {
@@ -256,6 +369,8 @@ export async function getTournamentTable(tournament_id) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
+        console.log(data)
+        // TODO: mostrar aqui la tabla y rellenarla con data
         drawTournament(data);
     }
     catch (error) {
