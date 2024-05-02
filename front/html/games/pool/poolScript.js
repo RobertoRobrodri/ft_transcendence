@@ -27,7 +27,10 @@ export function init(customData = null)
 function poolEventHandler(e) {
     if (e.target.matches('#onlineGameButton_pool') === true) {
         connectGame();
-    } 
+    }
+    else if (e.target.matches('#rankedGameButton_pool') === true) {
+        connectGame(true);
+    }
     else if (e.target.matches('#cancelMatchmakingButton_pool') === true) {
         toggleView(matchmakingView, false);
         toggleView(optionsView, true);
@@ -46,19 +49,14 @@ function toggleView(view, visible = true) {
         view.classList.add("mshide");
 }
 
- async function connectGame()
+ async function connectGame(ranked = false)
 {
-    //gameSM.connect();
-    //await sleep(200); // Si entramos directos al matchmaking necesita un pequeño sleep
-    InitMatchmakingPool();
-    // ! We now get the canvas from the update game
-    // canvas = document.getElementById("pongCanvas");
-    // ctx = canvas.getContext("2d");
+    InitMatchmakingPool(ranked);
 }
 
-function InitMatchmakingPool()
+function InitMatchmakingPool(ranked = false)
 {
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.POOL);
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, {game : GAMES.POOL, ranked: ranked});
 }
 
 function CancelMatchmaking()
