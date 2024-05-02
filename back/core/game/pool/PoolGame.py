@@ -259,13 +259,15 @@ class PoolGame:
         user1   = await CustomUser.get_user_by_id(players_list[0]['userid'])
         user2   = await CustomUser.get_user_by_id(players_list[1]['userid'])
         if ballNumber == 8:
+            self.scores = [1, 0]
             winner  = user1 if players_list[0]["nbr"] != self.turnPlayer else user2
             loser   = user2 if winner == user1 else user1
         else:
+            self.scores = [0, 1]
             winner  = user1 if players_list[0]["nbr"] == self.turnPlayer else user2
             loser   = user2 if winner == user1 else user1
         # Add match to db
-        await Game.store_match(user1, user2, winner, self.scores)
+        await Game.store_match(user1, user2, winner, self.scores, "Pool")
         # Increment win in 1
         await CustomUser.user_win_pool(winner, winner.elo_pool, loser.elo_pool, 1)
         # Increment loss in 1

@@ -31,7 +31,7 @@ DEBUG = True
 # Development
 #ALLOWED_HOSTS = ['*']
 # Production all containers that should be able to call django endpoints
-ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db']
+ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db', os.environ.get('DOMAIN_NAME')]
 
 MEDIA_ROOT = '/core/media/'
 MEDIA_URL = '/media/'
@@ -198,12 +198,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
 #    "http://localhost:80",
-    "https://nginx:443",
+    "https://nginx:4043",
 ]
 
 CORS_ORIGIN_WHITELIST = [
 #    "http://localhost:80",
-    "https://nginx:443",
+    "https://nginx:4043",
 ]
 
 LOGGING = {

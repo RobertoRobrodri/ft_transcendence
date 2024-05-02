@@ -12,7 +12,7 @@ from .PongGame import PongGame
 from .pool.PoolGame import PoolGame
 from .game_state import games, tournaments, available_games, matchmaking_queue
 from blockchain.views import ContractPutView
-from blockchain.models import Participant
+from blockchain.models import Participant, Tournament
 
 import logging
 logger = logging.getLogger(__name__)
@@ -442,6 +442,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
             # Force await 7 seconds
             await asyncio.sleep(7)
+            
+            # If all users leave torunament, remove it!
+            if len(pairing) == 0:
+                await Tournament.delete_tournament(tournament_id)
+                return
+
 
             for pairing in pairings:
                 if len(pairing) == 2:

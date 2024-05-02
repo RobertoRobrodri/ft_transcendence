@@ -143,3 +143,13 @@ h2 {
 .ml-2 {
     margin-left: 5px;
 }
+
+@keyframes countdownFade {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 0; }
+}
+
+.countdown-animation {
+    animation: countdownFade 3s forwards;
+}
