@@ -265,7 +265,7 @@
  .tournament-bracket__match {
    display: flex;
    width: 100%;
-   background-color: #ffffff;
+   background-color: #565656;
    padding: 1em;
    border: 1px solid transparent;
    border-radius: 0.1em;
@@ -426,7 +426,7 @@
      
      .tournament-bracket__code {
         font-weight: bold;
-        color: #212121;
+        color: #45f3ff;
        order: 1;
      }
    }
@@ -480,7 +480,7 @@
  
  .tournament-bracket__code {
    padding: 0 0.5em;
-   color: #212121;
+   color: #45f3ff;
    font-weight: 600;
    text-transform: uppercase;
    border: 0;
@@ -512,16 +512,17 @@
  }
  
  .tournament-bracket__number {
-    color: #212121;
+    color: #45f3ff;
     font-weight: bold;
    display: inline-block;
    padding: 0.2em 0.4em 0.2em;
    border-bottom: 0.075em solid transparent;
    font-size: 0.95rem;
-   background-color: #F5F5F5;
+   background-color: #565656;
    border-color: spin(shade(#F5F5F5, 10%), -10);
    
    .tournament-bracket__team--winner & {
+     color: #28292d;
      background-color: #45f3ff;
      border-color: spin(shade(#45f3ff, 2%), -10);
    }
