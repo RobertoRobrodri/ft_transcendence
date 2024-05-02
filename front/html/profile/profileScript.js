@@ -110,8 +110,10 @@ export async function loadUserInfo(customData = null) {
 
         document.getElementById("WINS_PONG").textContent      = data.wins;
         document.getElementById("LOSSES_PONG").textContent    = data.losses;
+        document.getElementById("ELO_PONG").textContent       = data.elo;
         document.getElementById("WINS_POOL").textContent      = data.wins_pool;
         document.getElementById("LOSSES_POOL").textContent    = data.losses_pool;
+        document.getElementById("ELO_POOL").textContent       = data.elo_pool;
         if (data.profile_picture != null)
             document.getElementById("userPhoto").src = 'data:image/png;base64,' + data.profile_picture;
         if (data.qr != null)
