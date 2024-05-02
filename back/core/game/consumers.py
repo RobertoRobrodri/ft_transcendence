@@ -505,7 +505,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
     async def enterMarchmaking(self, user, data):
         # Check if game type exist
-        game_request = data.get("message")
+        game_request = data.get("message").get("game")
         if game_request is None or not any(game in game_request for game in available_games):
             return
         # If user is already in queue (any game)
@@ -526,10 +526,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             
         # Get oponent
         async with matchmaking_lock: # Block this section to prevent 2 or more users pop user and only have 1
-            rival = matchmaking_queue.pop_users(game_request, room_size)
-            if rival is None: # Anyway, let's check to prevent fails
-                self.enterMarchmaking(user, data)
-                return
+            if data.get("message").get("ranked") is not False:
+                logger.warning('Ranked matchmaking')
+                rival = await matchmaking_queue.check_mmr(user, game_request)
+                if rival is None: # Anyway, let's check to prevent fails
+                    self.enterMarchmaking(user, data)
+                    return
+            else:
+                rival = matchmaking_queue.pop_users(game_request, room_size)
+                if rival is None: # Anyway, let's check to prevent fails
+                    self.enterMarchmaking(user, data)
+                    return
             
         await send_to_me(self, INQUEUE, {'game': game_request, 'message': 'Waiting for another player...'})
         # Generate unique room name

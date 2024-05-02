@@ -98,6 +98,11 @@ function gameEventHandler(e) {
         toggleView(matchmakingView, true);
         InitMatchmaking();
     }
+    else if (e.target.matches('#rankedGameButton_pong') === true) {
+        toggleView(onlineMenuView, false);
+        toggleView(matchmakingView, true);
+        InitMatchmaking(true);
+    }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
         toggleView(matchmakingView, false);
         toggleView(onlineMenuView, false);
@@ -531,9 +536,9 @@ function fillGames(data) {
 ////////////////
 // GAME LOGIC //
 ////////////////
-
-function InitMatchmaking() {
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.PONG);
+// ! ranked false by default
+function InitMatchmaking(ranked = false) {
+    gameSM.send(GAME_TYPES.INITMATCHMAKING, {game : GAMES.PONG, ranked: ranked});
 }
 
 function InitMatchmakingTournament() {
