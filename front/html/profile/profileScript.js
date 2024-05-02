@@ -1,7 +1,7 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayMessage } from "../components/loader.js"
 import { connectNotifications } from "../index/index.js"
-import {toggleView} from "../games/pong/pongScript.js"
+import { toggleView } from "../games/pong/pongScript.js"
 
 let editProfileView, setMFAView, changePasswordView,
     profileOptionsView;
@@ -88,14 +88,15 @@ export async function loadUserInfo(customData = null) {
     const token = sessionStorage.getItem('token')
     try {
         let url = 'api/user_management/user_list/';
-        if(customData)
+        if (customData)
             url = `/api/user_management/user_specific/${customData}/`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-            }}
+            }
+        }
         );
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -193,7 +194,8 @@ async function getTournaments(customData = null) {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-            }}
+            }
+        }
         );
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -218,8 +220,8 @@ async function getTournaments(customData = null) {
             profileTournamentsList.appendChild(listItem);
 
             listItem.addEventListener("click", function() {
-                const clickedId = this.id;
                 getTournamentTable(clickedId)
+                const clickedId = this.id;
             });
         });
         
@@ -229,6 +231,124 @@ async function getTournaments(customData = null) {
         // Token error, try update jwt
         renewJWT();
     }
+}
+
+function createTd(tdClass, text) {
+    var newTD = document.createElement("td");
+    newTD.classList.add(tdClass);
+
+    if (tdClass === "tournament-bracket__country") {
+        var p = document.createElement("p");
+        p.classList.add("tournament-bracket__code");
+        p.textContent = text;
+        newTD.appendChild(p);
+    }
+    else {
+        var span = document.createElement("span");
+        span.classList.add("tournament-bracket__number");
+        span.textContent = text;
+        newTD.appendChild(span);
+    }
+    return newTD;
+}
+
+function createPlayerTr(player) {
+    var trPlayer = document.createElement("tr");
+    trPlayer.classList.add("tournament-bracket__team");
+
+    trPlayer.appendChild(createTd("tournament-bracket__country", player.nickname));
+    trPlayer.appendChild(createTd("tournament-bracket__number", player.points));
+
+    return trPlayer;
+}
+
+function rellenarParticipantes(participantes, tbodyTable) {
+    let player1 = {
+        nickname: participantes[0].nickname,
+        points: participantes[0].points
+    }
+    let player2 = {
+        nickname: "Bye",
+        points: 0
+    }
+    if (participantes.length === 2) {
+        player2.nickname = participantes[1].nickname;
+        player2.points = participantes[1].points;
+    }
+    var trPlayer1 = createPlayerTr(player1);
+    var trPlayer2 = createPlayerTr(player2);
+
+    if (player1.points > player2.points || player2.nickname == "Bye")
+        trPlayer1.classList.add("tournament-bracket__team--winner");
+    else
+        trPlayer2.classList.add("tournament-bracket__team--winner");
+
+    tbodyTable.appendChild(trPlayer1);
+    tbodyTable.appendChild(trPlayer2);
+}
+
+function obtainCaptionDate(fecha) {
+    var captionDate = document.createElement("caption");
+    captionDate.classList.add("tournament-bracket__caption");
+
+    var date = document.createElement("time");
+
+    // date.setAttribute("datetime", fecha);
+
+    date.textContent = fecha;
+    captionDate.appendChild(date);
+
+    return captionDate;
+}
+
+function drawTournament(data) {
+    let totalRondas = data["tournament"].length;
+    let cont = 0;
+    // console.log("Dibujamos torneo:");
+    // console.log(data);
+    var divTournament = document.getElementById("tournamentCanva");
+    // Eliminamos todo lo que haya dentro del div de los torneos
+    // por si se ha cargado algún torneo antes
+    while (divTournament.firstChild) {
+        divTournament.removeChild(divTournament.firstChild);
+    }
+    var tournamentDiv = document.createElement("div");
+    tournamentDiv.classList.add("tournament-bracket");
+    tournamentDiv.classList.add("tournament-bracket--rounded");
+    // tournamentDiv.textContent = "Test";
+    var divRounds = document.createElement("div");
+    divRounds.classList.add("tournament-bracket__round");
+    for (let ronda of data["tournament"]) {
+        if (cont === totalRondas - 1)
+            break;
+
+        var ulRound = document.createElement("ul");
+        ulRound.classList.add("tournament-bracket__list");
+        for (let participantes of ronda) {
+            var liParticipantes = document.createElement("li");
+            liParticipantes.classList.add("tournament-bracket__item");
+            var divPartidos = document.createElement("div");
+            divPartidos.classList.add("tournament-bracket__match");
+            divPartidos.setAttribute("tabindex", "0");
+            var tablePartidos = document.createElement("table");
+            tablePartidos.classList.add("tournament-bracket__table");
+            var tbodyTable = document.createElement("tbody");
+            tbodyTable.classList.add("tournament-bracket__content");
+
+            
+            rellenarParticipantes(participantes, tbodyTable);
+            
+            tablePartidos.appendChild(obtainCaptionDate("02/05/2024"));
+            tablePartidos.appendChild(tbodyTable);
+            divPartidos.appendChild(tablePartidos);
+            liParticipantes.appendChild(divPartidos);
+            ulRound.appendChild(liParticipantes);
+        }
+        divRounds.appendChild(ulRound);
+        cont++;
+    }
+    divTournament.appendChild(divRounds);
+    divTournament.appendChild(tournamentDiv);
 }
 
 export async function getTournamentTable(tournament_id) {
@@ -241,15 +361,16 @@ export async function getTournamentTable(tournament_id) {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-            }}
+            }
+        }
         );
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
         console.log(data)
-
         // TODO: mostrar aqui la tabla y rellenarla con data
+        drawTournament(data);
     }
     catch (error) {
         console.error('Error:', error.message);
@@ -264,7 +385,7 @@ export function loadEditProfilePage() {
     existingStyles.forEach(style => {
         document.head.removeChild(style);
     });
-    
+
     let loginPage = document.getElementById("root");
     Promise.all([
         fetch('./profile/editProfile.html').then(response => response.text()),
@@ -285,8 +406,7 @@ export function loadEditProfilePage() {
     });
 }
 
-function updateUser(e)
-{
+function updateUser(e) {
     // This prevents refresh page
     e.preventDefault();
     if (e.target.matches('#editProfileForm') === true)
@@ -299,8 +419,7 @@ function updateUser(e)
         TwoFactorAuthConfirmOTPUpdate();
 }
 
-async function update2FA()
-{
+async function update2FA() {
     const token = sessionStorage.getItem('token');
     const formData = {
         TwoFactorAuth: document.querySelector('input[name="twoFactorAuth"]:checked').value
@@ -314,19 +433,18 @@ async function update2FA()
             },
             body: JSON.stringify(formData),
         });
-    if (!response.ok && response.status !== 307) {
-        const error = await response.json();
-        throw new Error(JSON.stringify(error));
-    }
-    const data = await response.json();
-    console.log(data.message);
-    displayMessage(data.message, 'small', 'activateTwoFactorAuthForm', 'green');
-    if (response.status === 307)
-    {
-        document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qr;
-        // Show modal
-        $('#twoFactorAuthModal').modal('show');
-    }
+        if (!response.ok && response.status !== 307) {
+            const error = await response.json();
+            throw new Error(JSON.stringify(error));
+        }
+        const data = await response.json();
+        console.log(data.message);
+        displayMessage(data.message, 'small', 'activateTwoFactorAuthForm', 'green');
+        if (response.status === 307) {
+            document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qr;
+            // Show modal
+            $('#twoFactorAuthModal').modal('show');
+        }
     } catch (error) {
         displayMessage(error.message, 'small', 'activateTwoFactorAuthForm');
     }
@@ -344,26 +462,26 @@ async function updateProfile() {
             if (file.size > 1024 * 1024)
                 throw new Error('Image too large!');
             formData.append('profile_picture', file);
-        } catch(error) {
+        } catch (error) {
             displayMessage(error.message, 'small', 'editProfileForm')
         }
     }
     try {
         const response = await fetch('/api/user_management/user_update/', {
-        method: 'PATCH',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-    });
-    if (!response.ok) {
-        const error = await response.json();
-        console.log(error)
-        throw new Error(JSON.stringify(error));
-    }
-    const data = await response.json();
-    console.log(data)
-    displayMessage(data.message, 'small', 'editProfileForm', 'green');
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            console.log(error)
+            throw new Error(JSON.stringify(error));
+        }
+        const data = await response.json();
+        console.log(data)
+        displayMessage(data.message, 'small', 'editProfileForm', 'green');
     } catch (error) {
         console.log(error)
         displayErrorList(JSON.parse(error.message), 'editProfileForm');
@@ -383,19 +501,19 @@ async function updatePassword() {
     };
     try {
         const response = await fetch('/api/user_management/user_update_password/', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(passwordData),
-    });
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(JSON.stringify(error));
-    }
-    const data = await response.json();
-    displayMessage(data.message, 'small', 'changePasswordForm', 'green');
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(passwordData),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(JSON.stringify(error));
+        }
+        const data = await response.json();
+        displayMessage(data.message, 'small', 'changePasswordForm', 'green');
     } catch (error) {
         displayErrorList(JSON.parse(error.message), 'changePasswordForm');
     }
@@ -408,9 +526,9 @@ async function TwoFactorAuthConfirmOTPUpdate() {
     const otpMessageDiv = document.getElementById('otpMessage');
     const UserData = {
         otp: userOTP,
-      };
-      try {
-            const response = await fetch('api/user_management/user_update_validate_2FA/', {
+    };
+    try {
+        const response = await fetch('api/user_management/user_update_validate_2FA/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -423,12 +541,12 @@ async function TwoFactorAuthConfirmOTPUpdate() {
         }
         const data = await response.json();
         console.log(response)
-        } catch (error) {
-            console.error('Error:', error.message);
-            displayMessage(error.message, 'small', 'confirmOTP');
-        }
+    } catch (error) {
+        console.error('Error:', error.message);
+        displayMessage(error.message, 'small', 'confirmOTP');
+    }
 }
 
 function editProfileListener() {
-	document.getElementById('root').addEventListener('submit', updateUser);
+    document.getElementById('root').addEventListener('submit', updateUser);
 }

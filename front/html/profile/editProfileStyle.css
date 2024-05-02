@@ -11,6 +11,14 @@ body {
     backdrop-filter: blur(25px);
 }
 
+.mfaModal {
+    background-color: #28292d;
+}
+
+.cerrarMFA {
+    color: #45f3ff;
+}
+
 /* Estilo de los textos comunes */
 .commonText {
     color: #fff;
