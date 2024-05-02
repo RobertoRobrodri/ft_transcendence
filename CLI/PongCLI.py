@@ -14,7 +14,7 @@ class PongCLI:
         self.registerUrl = 'https://localhost/api/pong_auth/register/'
         self.loguinUrl   = 'https://localhost/api/pong_auth/login/'
         self.loguin2fa   = 'https://localhost/api/pong_auth/verify_otp/'
-        self.socketUrl   = 'wss://localhost:443/ws/game/?token='
+        self.socketUrl   = 'wss://localhost:4043/ws/game/?token='
 
         # SOCKET EVENTS
         self.INITMATCHMAKING = 'init_matchmaking'
