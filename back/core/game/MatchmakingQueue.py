@@ -1,5 +1,5 @@
 import queue
-
+from pong_auth.models import CustomUser
 class MatchmakingQueue:
     def __init__(self):
         self.queue = []
@@ -13,12 +13,22 @@ class MatchmakingQueue:
             if user_info['userid'] == userid:
                 self.queue.remove(user_info)
                 
-    # def pop_users(self):
-    #     if len(self.queue) >= 1:
-    #         return self.queue.pop(0)#, self.queue.pop(0)
-    #     else:
-    #         return None
-        
+    async def check_mmr(self, user, game):
+        pop_index = None
+        popped_user = []
+        user_elo = user.elo if game == 'pong' else user.elo_pool
+        for i, candidate in enumerate(self.queue):
+            rivalUser = await CustomUser.get_user_by_id(candidate['userid'])
+            candidate_elo = rivalUser.elo if game == 'pong' else rivalUser.elo_pool
+            if abs(user_elo - candidate_elo) <= 100:
+                pop_index = i
+                break
+        if pop_index is not None:
+            user_info = self.queue.pop(pop_index)
+            popped_user.append(user_info) 
+            return popped_user
+        return None
+  
     def pop_users(self, game, popAmmount):
         matching_users = [user_info for user_info in self.queue if user_info['game'] == game]
         if len(matching_users) < popAmmount:
