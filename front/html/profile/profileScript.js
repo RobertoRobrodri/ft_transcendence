@@ -1,5 +1,4 @@
 import { renewJWT } from "../components/updatejwt.js"
-// import { displayErrorList, displayError } from "../components/loader.js"
 import { displayErrorList, displayMessage } from "../components/loader.js"
 import { connectNotifications } from "../index/index.js"
 import { toggleView } from "../games/pong/pongScript.js"
