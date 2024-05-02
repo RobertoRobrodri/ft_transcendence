@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
         INQUEU = "inqueu"
         OFFLINE = "offline"
 
+    username                    = models.CharField(max_length=42, min_length=4)
     wins                        = models.IntegerField(default=0)
     losses                      = models.IntegerField(default=0)
     wins_pool                   = models.IntegerField(default=0)

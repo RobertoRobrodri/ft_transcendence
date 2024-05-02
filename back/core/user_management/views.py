@@ -24,6 +24,17 @@ class UserUpdateView(generics.GenericAPIView):
 			return Response({'message': 'User updated successfully'}, status=status.HTTP_200_OK)
 		return Response({'error': user_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+	def delete(self, request):
+		user = request.user
+		self.check_object_permissions(request, user)
+		previous_profile_picture = user.profile_picture
+        if previous_profile_picture:
+            previous_profile_picture.delete()
+        	user.profile_picture = None
+			user.save()
+			return Response({'message': 'Deleted profile picture'}, status=status.HTTP_200_OK)
+		return Response({'message': 'No profile picture'}, status=status.HTTP_400_BAD_REQUEST)
+
 class UserUpdatePasswordView(generics.GenericAPIView):
 	serializer_class = UserUpdatePasswordSerializer
 	queryset = CustomUser.objects.all()
