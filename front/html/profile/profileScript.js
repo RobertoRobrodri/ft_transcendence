@@ -168,6 +168,30 @@ export function loadEditProfilePage() {
     });
 }
 
+async function deleteProfilePicture(e) {
+    if (e.target.matches('#deleteProfilePicture') !== true)
+        return ;
+    const token = sessionStorage.getItem('token');;
+    try {
+        const response = await fetch('/api/user_management/user_update/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+    }
+    const data = await response.json();
+    displayMessage(data.message, 'small', 'editProfileForm');
+    } catch (error) {
+        console.log(error)
+        displayMessage(error.message, 'small', 'editProfileForm');
+}
+}
+
 function updateUser(e)
 {
     // This prevents refresh page
@@ -314,4 +338,5 @@ async function TwoFactorAuthConfirmOTPUpdate() {
 
 function editProfileListener() {
 	document.getElementById('root').addEventListener('submit', updateUser);
+    document.getElementById('root').addEventListener('click', deleteProfilePicture);
 }

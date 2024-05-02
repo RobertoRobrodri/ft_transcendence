@@ -28,9 +28,9 @@ class UserUpdateView(generics.GenericAPIView):
 		user = request.user
 		self.check_object_permissions(request, user)
 		previous_profile_picture = user.profile_picture
-        if previous_profile_picture:
-            previous_profile_picture.delete()
-        	user.profile_picture = None
+		if previous_profile_picture:
+			previous_profile_picture.delete()
+			user.profile_picture = None
 			user.save()
 			return Response({'message': 'Deleted profile picture'}, status=status.HTTP_200_OK)
 		return Response({'message': 'No profile picture'}, status=status.HTTP_400_BAD_REQUEST)
@@ -119,27 +119,27 @@ class UserListView(generics.GenericAPIView):
 		return Response(user_data, status=status.HTTP_200_OK)
 
 class UserDetailView(generics.GenericAPIView):
-    serializer_class = UserListSerializer
+	serializer_class = UserListSerializer
 
-    def get(self, request, user_id):
-        try:
-            user = CustomUser.objects.get(pk=user_id)
-            user_serializer = self.serializer_class(user)
-            user_data = user_serializer.data
+	def get(self, request, user_id):
+		try:
+			user = CustomUser.objects.get(pk=user_id)
+			user_serializer = self.serializer_class(user)
+			user_data = user_serializer.data
 
-            # Encode profile picture in base64
-            profile_picture_path = user_serializer.data['profile_picture']
-            if profile_picture_path is not None:
-                absolute_profile_picture_path = '/core' + profile_picture_path
-                # Open the profile picture file, read its content, and encode it in base64
-                with open(absolute_profile_picture_path, "rb") as image_file:
-                    encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
-                # Add the base64 encoded image to the serializer data
-                user_data['profile_picture'] = encoded_image
+			# Encode profile picture in base64
+			profile_picture_path = user_serializer.data['profile_picture']
+			if profile_picture_path is not None:
+				absolute_profile_picture_path = '/core' + profile_picture_path
+				# Open the profile picture file, read its content, and encode it in base64
+				with open(absolute_profile_picture_path, "rb") as image_file:
+					encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+				# Add the base64 encoded image to the serializer data
+				user_data['profile_picture'] = encoded_image
 
-            return Response(user_data, status=status.HTTP_200_OK)
-        except CustomUser.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+			return Response(user_data, status=status.HTTP_200_OK)
+		except CustomUser.DoesNotExist:
+			return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 		
 class UserDeleteView(generics.GenericAPIView):
 	queryset = CustomUser.objects.all()
