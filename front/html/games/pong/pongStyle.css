@@ -123,3 +123,13 @@ h2 {
     max-height: 20vh; /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */
     overflow-y: auto; /* Agrega scroll vertical si es necesario */
 }
+
+@keyframes countdownFade {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 0; }
+}
+
+.countdown-animation {
+    animation: countdownFade 3s forwards;
+}

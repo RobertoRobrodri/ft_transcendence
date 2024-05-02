@@ -2,6 +2,10 @@ import { PongAI } from './PongAI.js';
 import { drawScore, toggleView } from './pongScript.js';
 
 export function endGame(closed = false) {
+    let win = document.getElementById("myWindowGame-content");
+    if(win)
+        win.style.overflow = "auto";
+
     if (timeOutId != null) {
         clearTimeout(timeOutId);
         timeOutId = null;
@@ -51,6 +55,8 @@ var ball, paddle1, paddle2;
 let optionsView , canvasDivView;
 const ai = new PongAI(true);
 export function initializeGame(multiplayer = false, realAI = true, use3D = false) {
+    let win = document.getElementById("myWindowGame-content");
+    win.style.overflow = "hidden";
     canvasDivView = use3D === true ? document.getElementById("canvas3DDiv") : document.getElementById("canvasDiv");
     if (!use3D) {
         canvas = document.getElementById("pongCanvas");
@@ -247,6 +253,8 @@ function updateGame(gameState) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         // Draw Score
         drawScore(score);
+        // Draw lines
+        drawDashedCenterLine();
         // Draw paddles
         for (const playerId in gameState.players) {
             const player = gameState.players[playerId];
@@ -263,7 +271,16 @@ function updateGame(gameState) {
         }
         move3Dball(gameState.ball.x, gameState.ball.y);
     }
-    
+}
+
+function drawDashedCenterLine() {
+    ctx.fillStyle = "#9b9b9b";
+    const lineHeight = 10;
+    const gap = 20;
+    const center = canvas.width / 2;
+    for (let y = 5; y < canvas.height; y += gap) {
+        ctx.fillRect(center - 2.5, y, 5, lineHeight);
+    }
 }
 
 function move3DPaddle(playerId, x, y) {

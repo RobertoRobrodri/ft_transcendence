@@ -53,7 +53,7 @@ class ContractGetTableView(generics.GenericAPIView):
             tournament = json.loads(tournament_json)
             return tournament
         except Exception as e:
-            logger.error(f"Error getting tournament: {e}")
+            # logger.error(f"Error getting tournament: {e}")
             return []
 
     def get(self, request):
@@ -66,10 +66,11 @@ class ContractGetTableView(generics.GenericAPIView):
         
 class ContractGetListView(generics.GenericAPIView):
 
-    def get(self, request):
+    def get(self, request, user_id = None):
         try:
-            user = request.user
-            tournaments_participated = Participant.get_tournaments_by_participant(user.id)
+            if user_id is None:
+                user_id = request.user.id
+            tournaments_participated = Participant.get_tournaments_by_participant(user_id)
             return JsonResponse({'tournaments_participated': tournaments_participated})
         except Exception as e:
             # logger.error(f"Error processing GET request: {e}")
