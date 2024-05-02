@@ -111,8 +111,10 @@ export async function loadUserInfo(customData = null) {
 
         document.getElementById("WINS_PONG").textContent      = data.wins;
         document.getElementById("LOSSES_PONG").textContent    = data.losses;
+        document.getElementById("ELO_PONG").textContent       = data.elo;
         document.getElementById("WINS_POOL").textContent      = data.wins_pool;
         document.getElementById("LOSSES_POOL").textContent    = data.losses_pool;
+        document.getElementById("ELO_POOL").textContent       = data.elo_pool;
         if (data.profile_picture != null)
             document.getElementById("userPhoto").src = 'data:image/png;base64,' + data.profile_picture;
         if (data.qr != null)
@@ -406,6 +408,30 @@ export function loadEditProfilePage() {
     });
 }
 
+async function deleteProfilePicture(e) {
+    if (e.target.matches('#deleteProfilePicture') !== true)
+        return ;
+    const token = sessionStorage.getItem('token');;
+    try {
+        const response = await fetch('/api/user_management/user_update/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(JSON.stringify(error));
+    }
+    const data = await response.json();
+    displayMessage(data.message, 'small', 'editProfileForm');
+    } catch (error) {
+        console.log(error)
+        displayMessage(error.message, 'small', 'editProfileForm');
+}
+}
+
 function updateUser(e) {
     // This prevents refresh page
     e.preventDefault();
@@ -548,5 +574,6 @@ async function TwoFactorAuthConfirmOTPUpdate() {
 }
 
 function editProfileListener() {
-    document.getElementById('root').addEventListener('submit', updateUser);
+	document.getElementById('root').addEventListener('submit', updateUser);
+    document.getElementById('root').addEventListener('click', deleteProfilePicture);
 }

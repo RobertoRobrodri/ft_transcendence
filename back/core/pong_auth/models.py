@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinLengthValidator
 from channels.db import database_sync_to_async
 from game.elo import expected, elo
 import base64
@@ -14,6 +15,7 @@ class CustomUser(AbstractUser):
         INQUEU = "inqueu"
         OFFLINE = "offline"
 
+    username                    = models.CharField(max_length=42, unique=True)
     wins                        = models.IntegerField(default=0)
     losses                      = models.IntegerField(default=0)
     elo                         = models.IntegerField(default=1000)
