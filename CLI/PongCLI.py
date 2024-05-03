@@ -6,15 +6,17 @@ import curses
 import threading
 import queue
 import urllib3
+import os
 urllib3.disable_warnings()
 
+DOMAIN_NAME = os.environ.get('DOMAIN_NAME', 'localhost')
 class PongCLI:
     def __init__(self):
         self.token = None
-        self.registerUrl = 'https://localhost/api/pong_auth/register/'
-        self.loguinUrl   = 'https://localhost/api/pong_auth/login/'
-        self.loguin2fa   = 'https://localhost/api/pong_auth/verify_otp/'
-        self.socketUrl   = 'wss://localhost:4043/ws/game/?token='
+        self.registerUrl = 'https://{}:4043/api/pong_auth/register/'.format(DOMAIN_NAME)
+        self.loguinUrl   = 'https://{}:4043/api/pong_auth/login/'.format(DOMAIN_NAME)
+        self.loguin2fa   = 'https://{}:4043/api/pong_auth/verify_otp/'.format(DOMAIN_NAME)
+        self.socketUrl   = 'wss://{}:4043/ws/game/?token='.format(DOMAIN_NAME)
 
         # SOCKET EVENTS
         self.INITMATCHMAKING = 'init_matchmaking'

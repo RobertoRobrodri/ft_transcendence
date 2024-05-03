@@ -120,21 +120,14 @@ services:
       - transcendence
     depends_on:
       - elasticsearch
-    #TODO Secure this credentials, for now development doesnt matter
-    environment:
-      - ELASTIC_USER=elastic
-      - ELASTIC_PASS=123456
-      - KIBANA_SYSTEM_PASSWORD=mi_contrasena_kibana_system
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
     container_name: elasticsearch
-    #TODO Secure this credentials, for now development doesnt matter
     environment:
       - "ES_JAVA_OPTS= -Xms512m -Xmx512m"
       - discovery.type=single-node
       - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=123456
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
       - ./elk-config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -148,10 +141,7 @@ services:
   logstash:
     image: docker.elastic.co/logstash/logstash:8.12.1
     container_name: logstash
-    #TODO Secure this credentials, for now development doesnt matter
     environment:
-      - ELASTIC_PASSWORD=123456
-      - ELASTIC_USER=elastic
       - xpack.monitoring.elasticsearch.username=elastic
       - xpack.monitoring.elasticsearch.password="123456"
     volumes:
@@ -175,13 +165,10 @@ services:
     depends_on:
       - elasticsearch
       #- setup
-    #TODO Secure this credentials, for now development doesnt matter
     environment:
       - XPACK_MONITORING_ENABLED=true
       - XPACK_MONITORING_COLLECTION_ENABLED=true
       - XPACK_SECURITY_ENABLED=true
-      - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=mi_contrasena_kibana_system
     networks:
       - transcendence
     #deploy:
@@ -201,9 +188,6 @@ services:
     networks:
       - transcendence
     environment:
-    #TODO Secure this credentials, for now development doesnt matter
-      - GF_SECURITY_ADMIN_USER=test-user
-      - GF_SECURITY_ADMIN_PASSWORD=test
       - GF_SERVER_ROOT_URL=https://localhost/monitoring/grafana/
     depends_on:
       - prometheus
