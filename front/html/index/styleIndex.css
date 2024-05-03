@@ -6,6 +6,7 @@ body {
     height: 100vh; /* Altura del 100% de la ventana */
     cursor: url('../assets/cursor3.svg'), auto !important;
     background-image: url('../assets/fondo.png');
+    background-size: 100%;
     user-select: none;
 }
 
