@@ -150,6 +150,11 @@ function setWindowContent(uniqueId, customData = null) {
         var cssUrl = '../games/pool/poolStyle.css';
         var scriptUrl = '../games/pool/poolScript.js';
     }
+    else if (uniqueId == 'myWindowTerminal') {
+        var htmlUrl = '../terminal/terminal.html';
+        var cssUrl = '../terminal/terminal.css';
+        var scriptUrl = '../terminal/terminal.js';
+    }
     else {
         return;
     }
