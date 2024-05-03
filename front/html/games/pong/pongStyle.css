@@ -70,15 +70,14 @@
     flex: 0 0 33.33%; /* 3 columns per row for larger screens */
 }
 
-/* Text Styles */
-h2 {
+
+h2 { /* Text Styles */
     font-size: 24px;
     margin-bottom: 20px;
     color: #ffffff;
 }
 
-/* Animation for Matchmaking */
-@keyframes pulse {
+@keyframes pulse { /* Animation for Matchmaking */
     0% {
         transform: scale(1);
     }
@@ -90,12 +89,12 @@ h2 {
     }
 }
 
-.mshide {
-    display: none;
+.matchmaking {
+    animation: pulse 1.5s infinite;
 }
 
-.matchmaking {
-    animation: pulse 1.5s infinite; /* Apply pulse animation */
+.mshide {
+    display: none;
 }
 
 /* Canvas Styles */
@@ -152,4 +151,17 @@ h2 {
 
 .countdown-animation {
     animation: countdownFade 3s forwards;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px; 
+}
+
+::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.1);
 }

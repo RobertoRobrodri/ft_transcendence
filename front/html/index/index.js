@@ -160,6 +160,8 @@ function setWindowContent(uniqueId, customData = null) {
         fetch(cssUrl).then(response => response.text()),
         import(scriptUrl).then(module => module)
     ]).then(([html, css, javascript]) => {
+
+        //ORIGINAL
         // // Load html
         // window.innerHTML = html;
         // // Load css
@@ -174,10 +176,18 @@ function setWindowContent(uniqueId, customData = null) {
         // Load css
         let style = document.createElement('style');
         // Add a unique attribute to all selectors
-        css = css.replace(/(^|{|})\s*([^{}]+?)\s*{/g, (match, before, selectors) => {
-            const modifiedSelectors = selectors.split(',').map(selector => `#${uniqueId}-content ${selector.trim()}`).join(',');
+        css = css.replace(/(^|{|})\s*([^{}@#\d][^{}@]*?)\s*{/g, (match, before, selectors) => {
+            const modifiedSelectors = selectors.split(',').map(selector => {
+                const isClassIDOrElement = /^[.#]?[a-zA-Z][\w-]*$/;
+                if (isClassIDOrElement.test(selector.trim())) {
+                    return `#${uniqueId}-content ${selector.trim()}`;
+                } else {
+                    return selector.trim();
+                }
+            }).join(',');
             return `${before} ${modifiedSelectors} {`;
         });
+
         style.textContent = css;
         window.appendChild(style);
         // Load js
@@ -185,36 +195,7 @@ function setWindowContent(uniqueId, customData = null) {
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
-    //setWindowEvents(uniqueId)
 }
-
-// export function createWindow(appName) {
-//     var uniqueId = "myWindow" + appName;
-//     // Comprobar que la ventana no existe (prevenir abrir 2 veces una app)
-//     var windowExist = document.getElementById(uniqueId);
-//     if (windowExist)
-//         return;
-
-//     // Crear el HTML dinámico
-//     var htmlDinamico = `
-//         <div id="${uniqueId}" class="window">
-//             <div class="window-top">
-//                 <button class="round green"></button>
-//                 <button class="round yellow"></button>
-//                 <button class="round red" id="red-${uniqueId}"></button>
-//             </div>
-//             <div class="window-content" id="${uniqueId}-content">
-//             </div>
-//         </div>
-//     `;
-
-//     var divRow = document.querySelector('.row');
-//     divRow.innerHTML += htmlDinamico;
-//     document.querySelectorAll('.window').forEach(window => makeDraggable(window, '.window-top'));
-//     // No se la razón, pero solo por agregar el html los iconos dejan de ser movibles, asi que se setea de nuevo
-//     makeIconsDraggable();
-//     setWindowContent(uniqueId);
-// }
 
 export function createWindow(appName, customData = null) {
     var uniqueId = "myWindow" + appName;
