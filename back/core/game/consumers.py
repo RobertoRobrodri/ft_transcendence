@@ -533,6 +533,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         # Get oponent
         async with matchmaking_lock: # Block this section to prevent 2 or more users pop user and only have 1
             if data.get("message").get("ranked") is not False:
+                logger.warning('Ranked matchmaking')
                 rival = await matchmaking_queue.check_mmr(user, game_request)
                 if rival is None: # Anyway, let's check to prevent fails
                     self.enterMarchmaking(user, data)

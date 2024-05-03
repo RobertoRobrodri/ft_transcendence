@@ -222,43 +222,14 @@ async function getTournaments(customData = null) {
             profileTournamentsList.appendChild(listItem);
 
             listItem.addEventListener("click", function() {
-                const clickedId = this.id;
                 getTournamentTable(clickedId)
+                const clickedId = this.id;
             });
         });
         
 
     }
     catch (error) {
-        // Token error, try update jwt
-        renewJWT();
-    }
-}
-
-export async function getTournamentTable(tournament_id) {
-    // Esta funcion retorna la tabla amacenada en la blockchain del id del torneo especificado
-    const token = sessionStorage.getItem('token')
-    try {
-        let url = `api/blockchain/getTournamentTable/?tournament_id=${tournament_id}`;
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            }
-        }
-        );
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        if(!data.tournament)
-            return;
-        console.log(data)
-        drawTournament(data);
-    }
-    catch (error) {
-        console.error('Error:', error.message);
         // Token error, try update jwt
         renewJWT();
     }
@@ -380,6 +351,34 @@ function drawTournament(data) {
     }
     divTournament.appendChild(divRounds);
     divTournament.appendChild(tournamentDiv);
+}
+
+export async function getTournamentTable(tournament_id) {
+    // Esta funcion retorna la tabla amacenada en la blockchain del id del torneo especificado
+    const token = sessionStorage.getItem('token')
+    try {
+        let url = `api/blockchain/getTournamentTable/?tournament_id=${tournament_id}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }
+        }
+        );
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data)
+        // TODO: mostrar aqui la tabla y rellenarla con data
+        drawTournament(data);
+    }
+    catch (error) {
+        console.error('Error:', error.message);
+        // Token error, try update jwt
+        renewJWT();
+    }
 }
 
 export function loadEditProfilePage() {

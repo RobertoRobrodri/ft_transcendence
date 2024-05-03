@@ -1,5 +1,5 @@
 import { PongAI } from './PongAI.js';
-import { toggleView } from './pongScript.js';
+import { drawScore, toggleView } from './pongScript.js';
 
 export function endGame(closed = false) {
     let win = document.getElementById("myWindowGame-content");

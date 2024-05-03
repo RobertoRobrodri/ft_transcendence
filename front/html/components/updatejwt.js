@@ -46,10 +46,10 @@ export function renewJWT() {
         })
         .catch(error => {
             console.error('Error renewing token:', error);
-            //remove_session();
+            remove_session();
         });
     } else {
         console.log('There is no token stored in sessionStorage.');
-        //remove_session();
+        remove_session();
     }
 }
