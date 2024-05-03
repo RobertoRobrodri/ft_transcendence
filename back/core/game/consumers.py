@@ -433,9 +433,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 view = ContractPutView()
                 await view._add_tournament(tournament_id, self.extract_player_info(tournament_id))
                 
-            #     # Remove from tournament
-            #     del tournaments[tournament_id]
-            #     return
+                # Remove from tournament
+                del tournaments[tournament_id]
+                return
             
             # Notify tournament start
             await self.send_round_to_chat(pairings, tournament)

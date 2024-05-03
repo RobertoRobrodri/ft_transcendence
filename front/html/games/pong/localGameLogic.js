@@ -32,10 +32,11 @@ let gameState;
 let score = [0, 0];
 let paddleWidth = 10;
 let paddleLenght = 40;
+let paddle_margin = 2;
 let canvasWidth = 400;
 let canvasHeight = 200;
 let ballRadius = 5;
-let borderThickness = 5;
+let borderThickness = 0;
 let incBallSpeed = 1;
 let maxBallSpeed = 5;
 let paddleSpeed = 2;
@@ -69,21 +70,21 @@ export function initializeGame(multiplayer = false, realAI = true, use3D = false
     window.addEventListener("keyup", handleKeyUp);
     gameState = {
         ball: {
-            x: 200,
-            y: 100,
+            x: canvasWidth / 2,
+            y: canvasHeight / 2,
             speed_x: Math.random() < 0.5 ? -3 : 3,
             speed_y: getRandomYSpeed()
         },
         players: {
             left: {
-                paddle_x: 7,
-                paddle_y: 80,
+                paddle_x: 0 + borderThickness + paddle_margin,
+                paddle_y: (canvasHeight / 2) - (paddleLenght / 2),
                 nbr: 1,
                 score: 0
             },
             right: {
-                paddle_x: 383,
-                paddle_y: 80,
+                paddle_x: canvasWidth - borderThickness - paddleWidth - paddle_margin,
+                paddle_y: (canvasHeight / 2) - (paddleLenght / 2),
                 nbr: 2,
                 score: 0
             }
@@ -102,15 +103,15 @@ function startGame() {
         intervalId = null;
     }
     gameState.ball = {
-        x: 200,
-        y: 100,
+        x: canvasWidth / 2,
+        y: canvasHeight / 2,
         speed_x: Math.random() < 0.5 ? -3 : 3,
         speed_y: getRandomYSpeed()
     };
-    gameState.players.left.paddle_x = 7;
-    gameState.players.left.paddle_y = 80;
-    gameState.players.right.paddle_x = 383;
-    gameState.players.right.paddle_y = 80;
+    gameState.players.left.paddle_x = 0 + borderThickness + paddle_margin;
+    gameState.players.left.paddle_y = (canvasHeight / 2) - (paddleLenght / 2);
+    gameState.players.right.paddle_x = canvasWidth - borderThickness - paddleWidth - paddle_margin;
+    gameState.players.right.paddle_y = (canvasHeight / 2) - (paddleLenght / 2);
     score = [gameState.players.right.score, gameState.players.left.score];
     leftPlayerMovement = 0;
     rightPlayerMovement = 0;
@@ -146,7 +147,8 @@ function newFrame() {
             }
         }
     }
-    detectCollision();
+    if (!detectCollision())
+        return;
     moveBall(gameState.ball);
     updateGame(gameState);
 }
@@ -168,22 +170,27 @@ function detectCollision() {
         gameState.players.left.score += 1;
         if (gameState.players.left.score == pointsToWin) {
             endGame();
+            return false;
         } else {
             startGame();
+            return false;
         }
     }
     if (ball.x >= rightSize) {
         gameState.players.right.score += 1;
         if (gameState.players.right.score == pointsToWin) {
             endGame();
+            return false;
         } else {
             startGame();
+            return false;
         }
     }
 
-    if (ball.y <= topSize || ball.y >= bottomSize) {
+    if (ball.y <= topSize && ball.speed_y < 0 || ball.y >= bottomSize && ball.speed_y > 0) {
         ball.speed_y *= -1;
     }
+    return true
 }
 
 function checkPaddleCollision(ball, paddle) {

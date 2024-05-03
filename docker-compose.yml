@@ -18,6 +18,7 @@ services:
     volumes:
       - profile_pictures:/core/media
       - truffle:/core/contract/build/contracts
+      - /var/run/docker.sock:/var/run/docker.sock
     # Please only access directly to django if you want to go admin or swagger dashboard 
     ports:
       - 8000:8000
@@ -83,7 +84,7 @@ services:
       
 # Monitoring
   prometheus:
-    image: prom/prometheus:v2.49.1
+    image: prom/prometheus:v2.51.2
     container_name: prometheus
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -191,7 +192,7 @@ services:
 # Postgres  dashboard  9628
 # Nginx     dashboard     12708
   grafana:
-    image: grafana/grafana:10.3.1
+    image: grafana/grafana:10.4.2
     container_name: grafana
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
@@ -229,6 +230,15 @@ services:
     depends_on:
       - prometheus
       - nginx
+  
+  interactive_shell:
+    container_name: interactive_shell
+    networks:
+      - transcendence
+    image: alpine:latest
+    tty: true
+    command: sh -c "adduser -D non_root_user && su non_root_user"
+    # command: sh -c "adduser -D non_root_user && exec sh" # Maybe create a user withour privileges
 
 networks:
   transcendence:

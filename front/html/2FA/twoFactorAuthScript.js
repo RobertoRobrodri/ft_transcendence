@@ -10,9 +10,9 @@ async function handleSubmitOTP(e) {
     const userOTP = document.querySelector('#OTP').value;
     const UserData = {
         otp: userOTP,
-      };
-      try {
-            const response = await fetch('api/pong_auth/verify_otp/', {
+    };
+    try {
+        const response = await fetch('api/pong_auth/verify_otp/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -26,14 +26,14 @@ async function handleSubmitOTP(e) {
         sessionStorage.removeItem("verification_token");
         const data = await response.json();
         const new_token = data.token;
-		const refresh = data.refresh;
+        const refresh = data.refresh;
         sessionStorage.setItem('token', new_token);
-		sessionStorage.setItem('refresh', refresh);
+        sessionStorage.setItem('refresh', refresh);
         loadMainPage();
-        } catch (error) {
-            console.error('Error:', error.message);
-            displayMessage(error.message, 'small', 'SendOTPForm');
-        }
+    } catch (error) {
+        console.error('Error:', error.message);
+        displayMessage(error.message, 'small', 'SendOTPForm');
+    }
 }
 
 

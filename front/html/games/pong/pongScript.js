@@ -107,7 +107,10 @@ function gameEventHandler(e) {
         ranked = true;
         toggleView(onlineMenuView, false);
         toggleView(matchmakingView, true);
-        InitMatchmaking(ranked);
+        InitMatchmaking(true);
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "hidden";
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
         toggleView(matchmakingView, false);
@@ -230,6 +233,9 @@ gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
         toggleView(canvasDivView, true);
         toggleView(emparejamientoView, false);
         gameSM.send(GAME_TYPES.PLAYER_READY);
+        let win = document.getElementById("myWindowGame-content");
+        if(win)
+            win.style.overflow = "hidden";
     }
 });
 
@@ -290,7 +296,6 @@ gameSM.registerCallback(GAME_TYPES.LIST_TOURNAMENTS, data => {
 });
 
 gameSM.registerCallback(GAME_TYPES.LIST_GAMES, data => {
-    console.log(data)
     if (data.game == GAMES.PONG) {
         fillGames(data);
     }
@@ -355,8 +360,6 @@ gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
     if (data.game == GAMES.PONG) {
         if (isPlaying)
             return;
-        //el usuario está en un torneo
-        console.log(data.data)
         fillTournamentData(data.data)
         toggleView(optionsView, false);
         toggleView(tournamentReadyView, true);
@@ -403,13 +406,10 @@ function setMatchmaking(data) {
 
 // TODO, muestro la tabla de los emparejamientos
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
-    console.log("tournament table");
     setMatchmaking(data);
-    // console.log(data);
 });
 
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
-    console.log(`tournament players: ${data}`)
 });
 
 //////////////////////
@@ -583,10 +583,6 @@ function fillGames(data) {
 // ! ranked false by default
 function InitMatchmaking(ranked = false) {
     gameSM.send(GAME_TYPES.INITMATCHMAKING, {game : GAMES.PONG, ranked: ranked});
-}
-
-function InitMatchmakingTournament() {
-    gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.TOURNAMENT);
 }
 
 function CancelMatchmaking(ranked = false) {
