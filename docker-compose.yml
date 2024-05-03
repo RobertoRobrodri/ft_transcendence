@@ -84,7 +84,7 @@ services:
       
 # Monitoring
   prometheus:
-    image: prom/prometheus:v2.49.1
+    image: prom/prometheus:v2.51.2
     container_name: prometheus
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -192,7 +192,7 @@ services:
 # Postgres  dashboard  9628
 # Nginx     dashboard     12708
   grafana:
-    image: grafana/grafana:10.3.1
+    image: grafana/grafana:10.4.2
     container_name: grafana
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
