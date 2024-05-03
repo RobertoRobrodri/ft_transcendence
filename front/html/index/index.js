@@ -160,10 +160,24 @@ function setWindowContent(uniqueId, customData = null) {
         fetch(cssUrl).then(response => response.text()),
         import(scriptUrl).then(module => module)
     ]).then(([html, css, javascript]) => {
+        // // Load html
+        // window.innerHTML = html;
+        // // Load css
+        // let style = document.createElement('style');
+        // style.textContent = css;
+        // window.appendChild(style);
+        // // Load js
+        // javascript.init(customData);
+
         // Load html
         window.innerHTML = html;
         // Load css
         let style = document.createElement('style');
+        // Add a unique attribute to all selectors
+        css = css.replace(/(^|{|})\s*([^{}]+?)\s*{/g, (match, before, selectors) => {
+            const modifiedSelectors = selectors.split(',').map(selector => `#${uniqueId}-content ${selector.trim()}`).join(',');
+            return `${before} ${modifiedSelectors} {`;
+        });
         style.textContent = css;
         window.appendChild(style);
         // Load js
