@@ -12,6 +12,7 @@ let tournamentJoined = null;
 let canvas;
 let ctx;
 let score = [0, 0];
+let ranked = false;
 
 // Singleton socket instance
 let gameSM = new GameSocketManager();
@@ -94,6 +95,7 @@ function gameEventHandler(e) {
         CreateTournament();
     }
     else if (e.target.matches('#onlineGameButton_pong') === true) {
+        ranked = false;
         toggleView(onlineMenuView, false);
         toggleView(matchmakingView, true);
         InitMatchmaking();
@@ -102,16 +104,17 @@ function gameEventHandler(e) {
             win.style.overflow = "hidden";
     }
     else if (e.target.matches('#rankedGameButton_pong') === true) {
+        ranked = true;
         toggleView(onlineMenuView, false);
         toggleView(matchmakingView, true);
-        InitMatchmaking(true);
+        InitMatchmaking(ranked);
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
         toggleView(matchmakingView, false);
         toggleView(onlineMenuView, false);
         toggleView(tournamentView, false);
         toggleView(optionsView, true);
-        CancelMatchmaking();
+        CancelMatchmaking(ranked);
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "auto";
@@ -586,8 +589,8 @@ function InitMatchmakingTournament() {
     gameSM.send(GAME_TYPES.INITMATCHMAKING, GAMES.TOURNAMENT);
 }
 
-function CancelMatchmaking() {
-    gameSM.send(GAME_TYPES.CANCELMATCHMAKING);
+function CancelMatchmaking(ranked = false) {
+    gameSM.send(GAME_TYPES.CANCELMATCHMAKING, ranked);
 }
 
 function updateGame(gameState) {
