@@ -22,8 +22,7 @@ DOCKERIZED = os.environ.get('DOCKERIZED', "")
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#TODO Igual que OTP_SECRET_KEY
-SECRET_KEY = 'django-insecure-qfcaph4ab)-2t0nvaj_4tzndz!4@s1ej^^vb3b1gu@&j)r2c)a'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
