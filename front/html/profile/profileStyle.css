@@ -97,6 +97,9 @@
    border: 0;
  }
  
+ .history {
+    width: 100%;
+ }
  
  //
  // TOURNAMENT BRACKET
