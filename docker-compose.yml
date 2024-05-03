@@ -98,6 +98,8 @@ services:
       - '--web.external-url=https://localhost/monitoring/prometheus'
     networks:
       - transcendence
+    env_file:
+      - .grafana_env
   
   alertmanager:
     image: prom/alertmanager:v0.21.0
@@ -120,6 +122,8 @@ services:
       - transcendence
     depends_on:
       - elasticsearch
+    env_file:
+      - .elk_env
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
@@ -133,6 +137,8 @@ services:
       - ./elk-config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     networks:
       - transcendence
+    env_file:
+      - .elk_env
     #deploy:
     #  resources:
     #      limits:
@@ -152,6 +158,8 @@ services:
       - setup
     networks:
       - transcendence
+    env_file:
+      - .elk_env
     #deploy:
     #  resources:
     #      limits:
@@ -171,6 +179,8 @@ services:
       - XPACK_SECURITY_ENABLED=true
     networks:
       - transcendence
+    env_file:
+      - .elk_env
     #deploy:
     #  resources:
     #      limits:
@@ -191,6 +201,8 @@ services:
       - GF_SERVER_ROOT_URL=https://localhost/monitoring/grafana/
     depends_on:
       - prometheus
+    env_file:
+      - .grafana_env
 
   # Oficial exporters https://prometheus.io/docs/instrumenting/exporters/
   postgres_exporter:
