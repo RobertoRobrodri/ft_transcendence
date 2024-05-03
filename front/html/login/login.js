@@ -79,11 +79,11 @@ export function loadLoginPage(){
         fetch('./login/login.html').then(response => response.text()),
         fetch('./login/login.css').then(response => response.text())
     ]).then(([html, css]) => {
-        window.location.hash = '#/login';
-        loginPage.innerHTML = html;
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
+        window.location.hash = '#/login';
+        loginPage.innerHTML = html;
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

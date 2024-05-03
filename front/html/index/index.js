@@ -22,13 +22,13 @@ export function loadMainPage() {
         fetch('./index/styleIndex.css').then(response => response.text())
     ]).then(([html, css, css2]) => {
         // Importamos el estilo base y el de esta pagina
-        mainPage.innerHTML = html;
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
         let style2 = document.createElement('style');
         style2.textContent = css2;
         document.head.appendChild(style2);
+        mainPage.innerHTML = html;
         //clear hash
         if (!hashCleared){
             hashCleared = true;
@@ -160,12 +160,12 @@ function setWindowContent(uniqueId, customData = null) {
         fetch(cssUrl).then(response => response.text()),
         import(scriptUrl).then(module => module)
     ]).then(([html, css, javascript]) => {
-        // Load html
-        window.innerHTML = html;
         // Load css
         let style = document.createElement('style');
         style.textContent = css;
         window.appendChild(style);
+        // Load html
+        window.innerHTML = html;
         // Load js
         javascript.init(customData);
     }).catch(error => {

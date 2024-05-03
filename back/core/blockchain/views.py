@@ -25,6 +25,7 @@ class ContractView(generics.GenericAPIView):
             contract_abi = contract_json.get("abi", [])
             for network in contract_json["networks"]:
                 contract_address = contract_json["networks"][network]["address"]
+            logger.warning(f"contract_address: {contract_address}")
             # contract_address = contract_json["networks"]["5777"]["address"]
             contract = ContractView.w3.eth.contract(address=contract_address, abi=contract_abi)
             return contract
@@ -59,6 +60,8 @@ class ContractGetTableView(generics.GenericAPIView):
     def get(self, request):
         try:
             tournament_id = request.GET.get('tournament_id')
+            if tournament_id is None:
+                return JsonResponse({}, status=204)
             tournament = self._get_tournament(tournament_id)
             return JsonResponse({'tournament': tournament})
         except Exception as e:

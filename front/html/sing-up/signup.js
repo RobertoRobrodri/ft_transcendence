@@ -60,10 +60,10 @@ export function loadSignUpPage(e){
         fetch('./sing-up/sing_up.html').then(response => response.text()),
         fetch('./sing-up/sing_up.css').then(response => response.text())
     ]).then(([html, css]) => {
-        singUpPage.innerHTML = html;
         let style = document.createElement('style');
         style.textContent = css;
         document.head.appendChild(style);
+        singUpPage.innerHTML = html;
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
