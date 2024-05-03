@@ -1,0 +1,51 @@
+::selection {
+    background: #ff5e99;
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    width: 100%;
+}
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: Inconsolata,monospace;
+    font-size: 12px;
+}
+#container {
+    padding: 1em 1.5em 1em 1em;
+}
+#container output {
+    clear: both;
+    width: 100%;
+}
+#container output h3 {
+    margin: 0;
+}
+#container output pre {
+    margin: 0;
+}
+#prompt {
+    float: left;
+    color: green;
+    margin-right: 7px;
+}
+#cmdline {
+    float: left;
+    margin: 0;
+    width: 96%;
+    font: inherit;
+    border: none;
+    background-color: transparent;
+    outline: none;
+    color: inherit;  
+}
+#output .cmd-output .filesystem-ls span {
+    margin-right: 2%;
+}
+#output .cmd-output .filesystem-ls-l span {
+    display: block;
+}
+#output .cmd-output div .is-dir {
+    color: rgb(0, 82, 255);
+}

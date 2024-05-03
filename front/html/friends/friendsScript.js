@@ -60,7 +60,7 @@ async function loadUsersTable() {
             row.innerHTML = `
                     <td>${friend.username}</td>
                     <td>${friend.status}</td>
-                    <button type="button" class="btn btn-danger" id=DELETE_${friend.id}>Delete</button>
+                    <td><button type="button" class="btn btn-danger" id=DELETE_${friend.id}>Delete</button></td>
             `;
             userTableBody.appendChild(row);
         });
@@ -72,11 +72,11 @@ async function loadUsersTable() {
         requests.forEach(request => {
             const row = document.createElement("tr");
             row.innerHTML = `
+                <td>${request.username}</td>
                 <td>
                     <button type="button" class="btn btn-success" id=ACCEPT_${request.id}>Accept</button>
                     <button type="button" class="btn btn-danger" id=DECLINE_${request.id}>Decline</button>
                 </td>
-                <td>${request.username}</td>
             `;
             requestTableBody.appendChild(row);
         });

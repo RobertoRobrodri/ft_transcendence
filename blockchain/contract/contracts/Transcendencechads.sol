@@ -5,6 +5,25 @@ contract Transcendencechads {
 
     address public owner;
     
+    constructor() {
+        owner = msg.sender;
+    }
+    
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not authorized");
+        _;
+    }
+
+    mapping(string => string) private tournaments;
+
+    function addTournament(string calldata key, string calldata jsonArray) external onlyOwner {
+        tournaments[key] = jsonArray;
+    }
+
+    function getTournament(string calldata key) external view returns (string memory) {
+        return tournaments[key];
+    }
+    
     // struct Player {
     //     uint256 userid;
     //     string nickname;
@@ -22,24 +41,6 @@ contract Transcendencechads {
 
     // mapping(string => Round[]) private tournaments;
     
-    constructor() {
-        owner = msg.sender;
-    }
-    
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not authorized");
-        _;
-    }
-
-    mapping(string => string) private tournaments;
-
-    function addTournament(string calldata key, string calldata jsonArray) external {
-        tournaments[key] = jsonArray;
-    }
-
-    function getTournament(string calldata key) external view returns (string memory) {
-        return tournaments[key];
-    }
     
     // function addTournament(string calldata tournamentId, Player[][][] memory rounds) external onlyOwner {
     //     Round[] storage tournamentRounds = tournaments[tournamentId];
