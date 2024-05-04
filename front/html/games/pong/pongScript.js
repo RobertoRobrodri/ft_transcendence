@@ -1,6 +1,7 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
+import { initializeFourGame, endFourGame } from "./fourGameLogic.js";
 
 /////////////////
 // Global vars //
@@ -21,8 +22,8 @@ let gameSM = new GameSocketManager();
 
 let optionsView, matchmakingView, localgameView, onlineMenuView,
     tournamentView, tournamentJoinView, tournamentReadyView,
-    emparejamientoView, canvasDivView, resultadosView,
-    canvas3DDivView;
+    emparejamientoView, canvasDivView, canvasFourDivView, 
+    resultadosView, canvas3DDivView;
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -35,6 +36,7 @@ export function init(customData = null) {
     tournamentJoinView = document.getElementById("tournament_join");
     tournamentReadyView = document.getElementById("tournament_ready");
     canvasDivView = document.getElementById("canvasDiv");
+    canvasFourDivView = document.getElementById("canvasFourDiv");
     canvas3DDivView = document.getElementById("canvas3DDiv");
     emparejamientoView = document.getElementById("emparejamiento");
     resultadosView = document.getElementById("results");
@@ -154,6 +156,13 @@ function gameEventHandler(e) {
         toggleView(canvasDivView, true);
         initializeGame(true);
     }
+
+    // Multijugador local a 4
+    else if (e.target.matches('#fourGameButton_pong') === true) {
+        toggleView(localgameView, false);
+        toggleView(canvasFourDivView, true);
+        initializeFourGame(true);
+    }
     else if (e.target.matches('#goBackButton_pong') === true) {
         toggleView(optionsView, true);
         toggleView(localgameView, false);
@@ -164,6 +173,7 @@ function gameEventHandler(e) {
         gameSM.disconnect();
         // si está en una partida de un jugador, la termina
         endGame(true);
+        endFourGame(true);
         removeGameListener();
     }
 }
