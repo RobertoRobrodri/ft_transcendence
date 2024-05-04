@@ -135,10 +135,10 @@ main {
     top: 50px;
 }
 
-/* #terminal {
-    left: 38px;
-    top: 350px;
-} */
+#terminal {
+    left: 638px;
+    top: 50px;
+}
 
 #game {
     left: 338px;
@@ -166,6 +166,18 @@ main {
     justify-content: center;
     gap: 20px; /* Adjust gap between icons */
 
+}
+
+.logOut {
+    background-color: transparent;
+    height: 50px;
+    width: 50px;
+    border: none;
+}
+
+.logOut:hover {
+    cursor: pointer;
+    background-color: red;
 }
 
 .icon-content {

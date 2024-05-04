@@ -24,6 +24,18 @@ body {
     width: 100%;
 }
 
+.logOut {
+    background-color: transparent;
+    height: 50px;
+    width: 50px;
+    border: none;
+}
+
+.logOut:hover {
+    cursor: pointer;
+    background-color: red;
+}
+
 /* Estilo para la hora dentro de la barra del sistema */
 .current-time {
     float: right;

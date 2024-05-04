@@ -141,6 +141,18 @@ input {
     background-color: transparent !important;
 }
 
+.logOut {
+    background-color: transparent;
+    height: 50px;
+    width: 50px;
+    border: none;
+}
+
+.logOut:hover {
+    cursor: pointer;
+    background-color: red;
+}
+
 /* Estilo para el input de cargar archivo */
 .file-select {
     position: relative;
