@@ -90,8 +90,6 @@ class UserUpdateValidateOTPView(generics.GenericAPIView):
                 user.TwoFactorAuth = True
                 user.save()
                 return Response({'message': '2FA confirmed',},status=status.HTTP_200_OK)
-            else:
-                user.OTP_SECRET_KEY = None
         return Response({'error': 'Not valid code, please try again'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserListAllView(generics.ListAPIView):
