@@ -2,6 +2,7 @@ import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
 import { initializeFourGame, endFourGame } from "./fourGameLogic.js";
+import { drawTournament } from "../../components/tournamentTable.js"
 
 /////////////////
 // Global vars //
@@ -22,8 +23,8 @@ let gameSM = new GameSocketManager();
 
 let optionsView, matchmakingView, localgameView, onlineMenuView,
     tournamentView, tournamentJoinView, tournamentReadyView,
-    emparejamientoView, canvasDivView, canvasFourDivView, 
-    resultadosView, canvas3DDivView;
+    canvasDivView, canvasFourDivView, canvas3DDivView, 
+    tournamentHistory;
 
 export function init(customData = null) {
     document.getElementById('root').addEventListener('click', gameEventHandler);
@@ -38,8 +39,7 @@ export function init(customData = null) {
     canvasDivView = document.getElementById("canvasDiv");
     canvasFourDivView = document.getElementById("canvasFourDiv");
     canvas3DDivView = document.getElementById("canvas3DDiv");
-    emparejamientoView = document.getElementById("emparejamiento");
-    resultadosView = document.getElementById("results");
+    tournamentHistory = document.getElementById("tournamentHistory");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
     initGameListener();
@@ -222,8 +222,14 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if (data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
-        toggleView(canvasDivView, true);
+        toggleView(matchmakingView, false);
+        toggleView(onlineMenuView, false);
+        toggleView(tournamentView, false);
         toggleView(optionsView, false);
+        toggleView(tournamentReadyView, false);
+        toggleView(tournamentJoinView, false);
+        toggleView(localgameView, false);
+        toggleView(canvasDivView, true);
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
@@ -244,7 +250,7 @@ gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
         toggleView(tournamentJoinView, false);
         toggleView(localgameView, false);
         toggleView(canvasDivView, true);
-        toggleView(emparejamientoView, false);
+        toggleView(tournamentHistory, false);
         gameSM.send(GAME_TYPES.PLAYER_READY);
         let win = document.getElementById("myWindowGame-content");
         if(win)
@@ -291,7 +297,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
             leaveButton.remove();
         toggleView(canvasDivView, false);
         toggleView(optionsView, true);
-        toggleView(emparejamientoView, false);
+        toggleView(tournamentHistory, false);
         removeGameListener();
         let win = document.getElementById("myWindowGame-content");
         if(win)
@@ -381,45 +387,46 @@ gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
 });
 
 function setMatchmaking(data) {
-    console.log(data);
-    resultadosView.innerHTML = "";
-    resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
-    let tabla = "";
-    let player1 = "";
-    let player1Points = 0;
-    for (let ronda of data.data) {
-        console.log("________________________")
-        for (let jugadores of ronda) {
-            if (jugadores[1]) {
-                player1 = jugadores[1].nickname;
-                player1Points = jugadores[1].points;
-            }
-            else {
-                player1 = "Bye";
-                player1Points = 0;
-            }
-            tabla = `<table class='table table-dark'> \
-                            <tbody>\
-                                <tr>\
-                                    <td class='text-left score'>${jugadores[0].nickname}</td>\
-                                    <td class='text-center score'>${jugadores[0].points}</td>\
-                                    <td class='text-center score'>${player1Points}</td>\
-                                    <td class='text-right' score>${player1}</td>\
-                                </tr>\
-                            </tbody>\
-                        </table>`;
-            resultadosView.innerHTML = resultadosView.innerHTML + tabla; 
-        }
-        resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
-    }
+    drawTournament(data.data);
+    // console.log(data);
+    // resultadosView.innerHTML = "";
+    // resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
+    // let tabla = "";
+    // let player1 = "";
+    // let player1Points = 0;
+    // for (let ronda of data.data) {
+    //     console.log("________________________")
+    //     for (let jugadores of ronda) {
+    //         if (jugadores[1]) {
+    //             player1 = jugadores[1].nickname;
+    //             player1Points = jugadores[1].points;
+    //         }
+    //         else {
+    //             player1 = "Bye";
+    //             player1Points = 0;
+    //         }
+    //         tabla = `<table class='table table-dark'> \
+    //                         <tbody>\
+    //                             <tr>\
+    //                                 <td class='text-left score'>${jugadores[0].nickname}</td>\
+    //                                 <td class='text-center score'>${jugadores[0].points}</td>\
+    //                                 <td class='text-center score'>${player1Points}</td>\
+    //                                 <td class='text-right' score>${player1}</td>\
+    //                             </tr>\
+    //                         </tbody>\
+    //                     </table>`;
+    //         resultadosView.innerHTML = resultadosView.innerHTML + tabla; 
+    //     }
+    //     resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
+    // }
     toggleView(optionsView, false);
     toggleView(tournamentJoinView, false);
     toggleView(tournamentReadyView, false);
-    toggleView(emparejamientoView, true);
 }
 
 // TODO, muestro la tabla de los emparejamientos
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
+    toggleView(tournamentHistory, true);
     setMatchmaking(data);
 });
 

@@ -67,12 +67,6 @@ export function checkLoginStatus() {
 }
 
 export function loadLoginPage(){
-
-    // Remove previous styles
-    const existingStyles = document.head.querySelectorAll('style');
-    existingStyles.forEach(style => {
-        document.head.removeChild(style);
-    });
     
     let loginPage = document.getElementById("root");
     Promise.all([
@@ -80,10 +74,8 @@ export function loadLoginPage(){
         fetch('./login/login.css').then(response => response.text())
     ]).then(([html, css]) => {
         window.location.hash = '#/login';
+        html += `<style>${css}</style>`;
         loginPage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

@@ -125,6 +125,13 @@ main {
     top: 200px;
 }
 
+.browser-ico {
+    height: 70px;
+    width: 70px;
+    left: 38px;
+    top: 240px;
+}
+
 #profile {
     left: 38px;
     top: 50px;
@@ -135,11 +142,6 @@ main {
     top: 50px;
 }
 
-/* #terminal {
-    left: 38px;
-    top: 350px;
-} */
-
 #game {
     left: 338px;
     top: 50px;
@@ -147,6 +149,16 @@ main {
 
 #pool {
     left: 488px;
+    top: 50px;
+}
+
+#terminal {
+    left: 638px;
+    top: 50px;
+}
+
+#browser {
+    left: 788px;
     top: 50px;
 }
 

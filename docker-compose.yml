@@ -18,7 +18,6 @@ services:
     volumes:
       - profile_pictures:/core/media
       - truffle:/core/contract/build/contracts
-      - /var/run/docker.sock:/var/run/docker.sock
     # Please only access directly to django if you want to go admin or swagger dashboard 
     ports:
       - 8000:8000
@@ -227,11 +226,24 @@ services:
   
   interactive_shell:
     container_name: interactive_shell
+    build:
+      context: ./interactive-shell/
+      args:
+        SSH_USER: ${SSH_USER}
+        SSH_PASSWORD: ${SSH_PASSWORD}
     networks:
       - transcendence
-    image: alpine:latest
+    ports:
+      - "2222:2222"
     tty: true
-    command: sh -c "adduser -D non_root_user && su non_root_user"
+    # command: tail -f /dev/null
+
+    # container_name: interactive_shell
+    # networks:
+    #   - transcendence
+    # image: alpine:latest
+    # tty: true
+    # command: sh -c "adduser -D non_root_user && su non_root_user"
     # command: sh -c "adduser -D non_root_user && exec sh" # Maybe create a user withour privileges
 
 networks:

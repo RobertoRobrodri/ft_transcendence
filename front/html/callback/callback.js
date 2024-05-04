@@ -39,11 +39,10 @@ function load42UserWelcomePage() {
     let welcomePage = document.getElementById("root");
     Promise.all([
         fetch('./callback/callback.html').then(response => response.text()),
+        fetch('./callback/callback.css').then(response => response.text()),
     ]).then(([html, css]) => {
+        html += `<style>${css}</style>`;
         welcomePage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });

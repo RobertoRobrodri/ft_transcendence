@@ -9,26 +9,15 @@ export function loadMainPage() {
     // Renew jwt
     renewJWT();
 
-    // Remove previous styles
-    const existingStyles = document.head.querySelectorAll('style');
-    existingStyles.forEach(style => {
-        document.head.removeChild(style);
-    });
-
     let mainPage = document.getElementById("root");
     Promise.all([
         fetch('./index/index.html').then(response => response.text()),
         fetch('../styles.css').then(response => response.text()),
         fetch('./index/styleIndex.css').then(response => response.text())
     ]).then(([html, css, css2]) => {
-        // Importamos el estilo base y el de esta pagina
+        html += `<style>${css}</style>`;
+        html += `<style>${css2}</style>`;
         mainPage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
-        let style2 = document.createElement('style');
-        style2.textContent = css2;
-        document.head.appendChild(style2);
         //clear hash
         if (!hashCleared){
             hashCleared = true;
@@ -101,8 +90,9 @@ function openWindow(e) {
         createWindow('Game');
     } else if (parentIcon.id === 'pool') {
         createWindow('Pool');
+    } else if (parentIcon.id === 'browser') {
+        createWindow('Browser');
     }
-    
 }
 
 //TODO: Modificar que el modal salga cuando se está llamando a una API.
@@ -151,9 +141,14 @@ function setWindowContent(uniqueId, customData = null) {
         var scriptUrl = '../games/pool/poolScript.js';
     }
     else if (uniqueId == 'myWindowTerminal') {
-        var htmlUrl = '../terminal/terminal.html';
-        var cssUrl = '../terminal/terminal.css';
-        var scriptUrl = '../terminal/terminal.js';
+        var htmlUrl = '../gadgets/terminal/terminal.html';
+        var cssUrl = '../gadgets/terminal/terminal.css';
+        var scriptUrl = '../gadgets/terminal/terminal.js';
+    }
+    else if (uniqueId == 'myWindowBrowser') {
+        var htmlUrl = '../gadgets/browser/browser.html';
+        var cssUrl = '../gadgets/browser/browser.css';
+        var scriptUrl = '../gadgets/browser/browser.js';
     }
     else {
         return;
@@ -165,21 +160,6 @@ function setWindowContent(uniqueId, customData = null) {
         fetch(cssUrl).then(response => response.text()),
         import(scriptUrl).then(module => module)
     ]).then(([html, css, javascript]) => {
-
-        //ORIGINAL
-        // // Load html
-        // window.innerHTML = html;
-        // // Load css
-        // let style = document.createElement('style');
-        // style.textContent = css;
-        // window.appendChild(style);
-        // // Load js
-        // javascript.init(customData);
-
-        // Load html
-        window.innerHTML = html;
-        // Load css
-        let style = document.createElement('style');
         // Add a unique attribute to all selectors
         css = css.replace(/(^|{|})\s*([^{}@#\d][^{}@]*?)\s*{/g, (match, before, selectors) => {
             const modifiedSelectors = selectors.split(',').map(selector => {
@@ -192,9 +172,9 @@ function setWindowContent(uniqueId, customData = null) {
             }).join(',');
             return `${before} ${modifiedSelectors} {`;
         });
-
-        style.textContent = css;
-        window.appendChild(style);
+        
+        html += `<style>${css}</style>`;
+        window.innerHTML = html;
         // Load js
         javascript.init(customData);
     }).catch(error => {
