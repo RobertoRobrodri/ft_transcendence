@@ -211,9 +211,14 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if (data.game == GAMES.PONG) {
+        console.log("Se restaura juego: ");
+        console.log(data);
         gameSM.send(GAME_TYPES.PLAYER_READY);
         toggleView(canvasDivView, true);
         toggleView(optionsView, false);
+        toggleView(tournamentView, false);
+        toggleView(tournamentReadyView, false);
+        toggleView(tournamentJoinView, false);
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
@@ -377,6 +382,12 @@ function setMatchmaking(data) {
     let tabla = "";
     let player1 = "";
     let player1Points = 0;
+    var player1name = document.getElementById("player1");
+    var player2name = document.getElementById("player2");
+    
+    player1name.textContent = data.data[0][0][0].nickname;
+    player2name.textContent = data.data[0][0][1].nickname;
+
     for (let ronda of data.data) {
         console.log("________________________")
         for (let jugadores of ronda) {

@@ -13,18 +13,21 @@
     border-radius: 12px;
     transition-duration: 0.4s;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    outline: none; /* Remove default button focus */
+    outline: none;
+    /* Remove default button focus */
 }
 
 .game-button:hover {
     background-color: #aae0e4;
-    transform: scale(1.05); /* Scale button slightly on hover */
+    transform: scale(1.05);
+    /* Scale button slightly on hover */
 }
 
 .score {
     width: 25%;
 
 }
+
 .line {
     border-color: #ffffff;
 }
@@ -44,13 +47,15 @@
     border-radius: 12px;
     transition-duration: 0.4s;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    outline: none; /* Remove default button focus */
+    outline: none;
+    /* Remove default button focus */
 }
 
 .game-button-back:hover {
     background-color: #aae0e4;
     color: #28292d;
-    transform: scale(1.05); /* Scale button slightly on hover */
+    transform: scale(1.05);
+    /* Scale button slightly on hover */
 }
 
 /* Layout Styles */
@@ -59,31 +64,39 @@
     flex-wrap: wrap;
     justify-content: center;
     margin: 0 auto;
-    max-width: 800px; /*Adjust to your container width*/
+    max-width: 800px;
+    /*Adjust to your container width*/
 }
 
 .col-md-12 {
-    flex: 0 0 100%; /* Full width for smaller screens */
+    flex: 0 0 100%;
+    /* Full width for smaller screens */
 }
 
 .col-md-4 {
-    flex: 0 0 33.33%; /* 3 columns per row for larger screens */
+    flex: 0 0 33.33%;
+    /* 3 columns per row for larger screens */
 }
 
 
-h2 { /* Text Styles */
+h2 {
+    /* Text Styles */
     font-size: 24px;
     margin-bottom: 20px;
     color: #ffffff;
 }
 
-@keyframes pulse { /* Animation for Matchmaking */
+@keyframes pulse {
+
+    /* Animation for Matchmaking */
     0% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.1);
     }
+
     100% {
         transform: scale(1);
     }
@@ -101,26 +114,29 @@ h2 { /* Text Styles */
 #pongCanvas {
     display: block;
     margin: 50px auto;
-	align-content: center;
+    margin-top: -50px auto !important;
+    align-content: center;
     border-radius: 10px;
-	width: 700px;
-	height: 350px;
+    width: 700px;
+    height: 350px;
 }
 
 #pong3DCanvas {
     display: block;
     margin: 50px auto;
-	align-content: center;
+    align-content: center;
     border-radius: 10px;
-	width: 700px;
-	height: 350px;
+    width: 700px;
+    height: 350px;
 }
 
 
 /* Estilo de tabla de torneos */
 .tournament-table-container {
-    max-height: 20vh; /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */
-    overflow-y: auto; /* Agrega scroll vertical si es necesario */
+    max-height: 20vh;
+    /* Altura máxima de la tabla, ajustada para dejar espacio para otros elementos */
+    overflow-y: auto;
+    /* Agrega scroll vertical si es necesario */
 }
 
 /* Style for the list of matches */
@@ -138,15 +154,35 @@ h2 { /* Text Styles */
     display: flex;
     align-items: center;
 }
+
 /* Margin style for buttons */
 .ml-2 {
     margin-left: 5px;
 }
 
+.contador {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.Player {
+    margin: 0;
+}
+
 @keyframes countdownFade {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 0; }
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 .countdown-animation {
@@ -159,7 +195,7 @@ h2 { /* Text Styles */
 
 ::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 5px; 
+    border-radius: 5px;
 }
 
 ::-webkit-scrollbar-track {
