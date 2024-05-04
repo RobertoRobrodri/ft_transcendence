@@ -7,7 +7,7 @@ from pong_auth.models import CustomUser
 from .models import ChatModel
 from core.socket import *
 from jwt import ExpiredSignatureError
-from game.consumers import games, get_game_id, matchmaking_queue, MultiplayerConsumer
+from game.consumers import games, get_game_id, casual_queue, ranked_queue,MultiplayerConsumer
 from game.PongGame import PongGame
 import asyncio
 import base64
@@ -160,7 +160,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         
         # check if any of user is on matchmaking
-        if matchmaking_queue.is_user_in_queue(user.id) or matchmaking_queue.is_user_in_queue(rival):
+        if casual_queue.is_user_in_queue(user.id) or casual_queue.is_user_in_queue(rival) \
+            or ranked_queue.is_user_in_queue(user.id) or ranked_queue.is_user_in_queue(rival):
             return
         # check if any of users is playing any game
         if get_game_id(user.id) is not None or get_game_id(rival) is not None:
