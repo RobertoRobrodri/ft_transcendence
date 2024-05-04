@@ -237,7 +237,7 @@ services:
       - transcendence
     image: alpine:latest
     tty: true
-    command: sh -c "adduser -D non_root_user && su non_root_user"
+    # command: sh -c "adduser -D non_root_user && su non_root_user"
     # command: sh -c "adduser -D non_root_user && exec sh" # Maybe create a user withour privileges
 
 networks:

@@ -27,14 +27,23 @@ export function init(customData = null)
 function poolEventHandler(e) {
     if (e.target.matches('#onlineGameButton_pool') === true) {
         connectGame();
+        let win = document.getElementById("myWindowPool-content");
+        if(win)
+            win.style.overflow = "hidden";
     }
     else if (e.target.matches('#rankedGameButton_pool') === true) {
         connectGame(true);
+        let win = document.getElementById("myWindowPool-content");
+        if(win)
+            win.style.overflow = "hidden";
     }
     else if (e.target.matches('#cancelMatchmakingButton_pool') === true) {
         toggleView(matchmakingView, false);
         toggleView(optionsView, true);
-        CancelMatchmaking();
+        CancelMatchmaking(ranked);
+        let win = document.getElementById("myWindowPool-content");
+        if(win)
+            win.style.overflow = "auto";
     }
     else if (e.target.matches('#red-myWindowPool') === true) {
         gameSM.disconnect();
@@ -83,12 +92,16 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
     //gameSM.disconnect();
     if(data.game == GAMES.POOL) {
-        resetThreejs();
+        gameEnd();
     }
 });
 
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if(data.game == GAMES.POOL) {
+        let win = document.getElementById("myWindowPool-content");
+        if(win)
+            win.style.overflow = "hidden";
+        toggleView(renderViewDiv, true);
         toggleView(optionsView, false);
         toggleView(uiView, true);
         resetUI();
@@ -100,15 +113,13 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
 // MATCHMAKING
 gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
     if (data.game == GAMES.POOL) {
+        toggleView(renderViewDiv, true);
         toggleView(matchmakingView, false);
         toggleView(uiView, true);
         gameSM.send(GAME_TYPES.PLAYER_READY);
         resetUI();
         if (POOL == null)
             POOL = new Main(renderViewDiv, gameSM);
-        //Game matched! game started
-        // send ready request after open game, message to ask about ready etc
-        
     }
 });
 
@@ -226,9 +237,20 @@ gameSM.registerCallback("place_white", data => {
 gameSM.registerCallback("rival_leave", data => {
     console.log("The opponent leaves, the game ends in 10 seconds if he does not reconnect")
     //gameSM.disconnect();
+    gameEnd();
     resetThreejs();
 });
 
+function gameEnd() {
+    resetThreejs();
+    let win = document.getElementById("myWindowPool-content");
+    if(win)
+        win.style.overflow = "auto";
+    toggleView(optionsView, true);
+    toggleView(matchmakingView, false);
+    toggleView(uiView, false);
+    toggleView(renderViewDiv, false);
+}
 function resetThreejs() {
     //POOL.stop();
     // var renderViewDiv = document.getElementById("renderView");
@@ -270,6 +292,7 @@ function fillGamesPool(data) {
         joinButton.textContent = "View";
         joinButton.classList.add("btn", "btn-success", "btn-sm", "ml-2");
         joinButton.addEventListener('click', function () {
+            toggleView(renderViewDiv, true);
             gameSM.send(GAME_TYPES.SPECTATE_GAME, {
                 id: element.id
             })
@@ -287,7 +310,7 @@ function fillGamesPool(data) {
                 gameSM.send(GAME_TYPES.LEAVE_SPECTATE_GAME, {
                     id: element.id
                 })
-                resetThreejs();
+                gameEnd();
                 leaveButton.remove();
             });
             renderViewDiv.appendChild(leaveButton);

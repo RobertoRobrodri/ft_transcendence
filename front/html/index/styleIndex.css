@@ -134,11 +134,6 @@ main {
     top: 50px;
 }
 
-/* #terminal {
-    left: 38px;
-    top: 350px;
-} */
-
 #game {
     left: 338px;
     top: 50px;
@@ -146,6 +141,11 @@ main {
 
 #pool {
     left: 488px;
+    top: 50px;
+}
+
+#terminal {
+    left: 638px;
     top: 50px;
 }
 
