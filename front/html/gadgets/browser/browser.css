@@ -6,7 +6,6 @@ body, html {
 }
 
 #navbar {
-    position: fixed;
     top: 0;
     width: 100%;
     background-color: #333;
@@ -15,20 +14,35 @@ body, html {
     z-index: 1000;
 }
 
-#navbar button {
+#navigation {
+    display: flex;
+    align-items: center;
+}
+
+#navigation button {
     margin-right: 10px;
 }
 
 #iframe-container {
-    position: absolute;
-    top: 40px;
-    bottom: 0;
     width: 100%;
-    overflow: hidden;
+    height: 100%;
 }
 
 iframe {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 40px);
     border: none;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px; 
+}
+
+::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.1);
 }

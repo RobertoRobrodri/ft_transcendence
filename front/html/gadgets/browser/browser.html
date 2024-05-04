@@ -1,8 +1,10 @@
-<meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self'; default-src 'self' https://www.google.com">
-<div id="navbar">
-    <button onclick="goBack()">Atrás</button>
-    <button onclick="goForward()">Adelante</button>
-</div>
 <div id="iframe-container">
-    <iframe id="webview" src="https://www.google.com" frameborder="0"></iframe>
+    <div id="navbar">
+        <div id="navigation">
+            <button id="browserBack">Back</button>
+            <button id="browserForward">Forward</button>
+            <input type="text" id="urlInput" placeholder="Enter URL">
+        </div>
+    </div>
+    <iframe id="webview" sandbox="allow-scripts allow-same-origin"></iframe>
 </div>
