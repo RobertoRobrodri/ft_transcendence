@@ -12,6 +12,7 @@ class MatchmakingQueue:
         for user_info in self.queue:
             if user_info['userid'] == userid:
                 self.queue.remove(user_info)
+                return
                 
     async def check_mmr(self, user, game):
         pop_index = None

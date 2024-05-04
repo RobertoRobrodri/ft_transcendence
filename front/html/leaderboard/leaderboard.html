@@ -1,0 +1,50 @@
+<div class="row justify-content-end">
+	<div class="col-md-3 text-right">
+		<h2 class="commonText">Leaderboard</h2>
+		<div class="leader-table-container">
+			<table class="table table-dark">
+				<thead>
+					<tr>
+						<!-- <th scope="col">ID</th> -->
+						<th scope="col">Username</th>
+						<th scope="col">Pong</th>
+					</tr>
+				</thead>
+				<tbody id="pong-table-body">
+				</tbody>
+			</table>
+			<table class="table table-dark">
+				<thead>
+					<tr>
+						<!-- <th scope="col">ID</th> -->
+						<th scope="col">Username</th>
+						<th scope="col">Pool</th>
+					</tr>
+				</thead>
+				<tbody id="pool-table-body">
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<div class="system-bar fixed-bottom">
+	<div class="current-time" id="current-time"></div>
+	<div class="menu-icon" id="menu-icon">
+		<div class="menuContainer" id="menuContainer">
+			<img id="menuLogo" class="menuLogo" src="../assets/personBlue.svg" alt="Menu">
+		</div>
+	</div>
+    <div class="popup">
+        <span class="popuptext" id="myPopup"> New friend request has arrived</span>
+    </div>
+</div>
+<div class="menu" id="menu">
+	<!-- Aquí puedes poner los elementos de tu menú -->
+	<ul>
+		<li><a id="mainMenuBtn" href="#">Main menu</a></li>
+        <li><a id="friendListBtn" href="#/friends">Friend list</a></li>
+        <li><a id="editProfileBtn" href="#/edit-profile">Edit profile</a></li>
+        <li><a id="leaderboardBtn" href="#/leaderboard">Leaderboard</a></li>
+        <li><a id="usuariosBtn" class="usuarios" href="">Usuarios conectados</a></li>
+	</ul>
+</div>
