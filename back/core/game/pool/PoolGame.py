@@ -24,7 +24,8 @@ WALL_COLLISON   = 'wall_collison',
 PADDLE_COLLISON = 'paddle_collison',
 
 class PoolGame:
-    def __init__(self, game_id, consumer, tournament_id = None):
+    def __init__(self, game_id, consumer, tournament_id = None, ranked = False):
+        self.ranked = ranked
         self.game_id = game_id
         self.tps = 120
         self.ballRadious = 0.3075
@@ -270,10 +271,11 @@ class PoolGame:
             loser   = user2 if winner == user1 else user1
         # Add match to db
         await Game.store_match(user1, user2, winner, self.scores, "Pool")
-        # Increment win in 1
-        await CustomUser.user_win_pool(winner, winner.elo_pool, loser.elo_pool, 1)
-        # Increment loss in 1
-        await CustomUser.user_lose_pool(loser, loser.elo_pool, winner.elo_pool, 0)
+        if self.ranked is True:
+            # Increment win in 1
+            await CustomUser.user_win_pool(winner, winner.elo_pool, loser.elo_pool, 1)
+            # Increment loss in 1
+            await CustomUser.user_lose_pool(loser, loser.elo_pool, winner.elo_pool, 0)
         # Stop game
         self.loop.running = False
         self.running = False

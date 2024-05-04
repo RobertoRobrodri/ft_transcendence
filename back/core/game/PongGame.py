@@ -18,7 +18,7 @@ PADDLE_COLLISON = 'paddle_collison'
 COUNTDOWN       = 'countdown'
 
 class PongGame:
-    def __init__(self, game_id, consumer, tournament_id = None):
+    def __init__(self, game_id, consumer, tournament_id = None, ranked = False):
 
         ##############################
         # ADJUST WITH FRONTEND SIZES #
@@ -54,6 +54,8 @@ class PongGame:
         self.player2_paddle_x = self.canvas_x - self.border_thickness - self.paddle_width - self.paddle_margin
         self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_height / 2)
         self.tournament_id = tournament_id
+        self.ranked = ranked
+        # del games[self.game_id]
 
     async def start_game(self):
         # Waiting 2 players set ready status
@@ -332,10 +334,11 @@ class PongGame:
         loser   = user2 if winner == user1 else user1
         # Add match to db
         await Game.store_match(user1, user2, winner, self.scores, "Pong")
-        # Increment win in 1
-        await CustomUser.user_win(winner, winner.elo, loser.elo, 1)
-        # Increment loss in 1
-        await CustomUser.user_lose(loser, loser.elo, winner.elo, 0)
+        if self.ranked is True:
+            # Increment win in 1
+            await CustomUser.user_win(winner, winner.elo, loser.elo, 1)
+            # Increment loss in 1
+            await CustomUser.user_lose(loser, loser.elo, winner.elo, 0)
     
     async def set_game_tournament_points(self):
         current_round = tournaments[self.tournament_id]['rounds'][-1]

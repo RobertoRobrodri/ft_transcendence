@@ -1,0 +1,5 @@
+ELASTIC_USER=elastic
+ELASTIC_PASS=123456
+KIBANA_SYSTEM_PASSWORD=mi_contrasena_kibana_system
+ELASTICSEARCH_USERNAME=kibana_system
+ELASTICSEARCH_PASSWORD=mi_contrasena_kibana_system

@@ -10,7 +10,7 @@ from core.socket import *
 from jwt import ExpiredSignatureError
 from .PongGame import PongGame
 from .pool.PoolGame import PoolGame
-from .game_state import games, tournaments, available_games, matchmaking_queue
+from .game_state import games, tournaments, available_games, ranked_queue, casual_queue #matchmaking_queue
 from blockchain.views import ContractPutView
 from blockchain.models import Participant, Tournament
 
@@ -112,7 +112,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 if type == INITMATCHMAKING:
                     await self.enterMarchmaking(user, data)
                 elif type == CANCELMATCHMAKING:
-                    await self.leaveMatchmaking(user)
+                    await self.leaveMatchmaking(user, data)
                 elif type == RESTORE_GAME:
                     await self.restoreTournament(user)
                     await self.restoreGame(user, data)
@@ -232,7 +232,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if alldata is None:
             return
         # If user is already in queue (any game)
-        if matchmaking_queue.is_user_in_queue(user.id):
+        if casual_queue.is_user_in_queue(user.id) or ranked_queue.is_user_in_queue(user.id):
             return
         # And prevent sockets if player is already in game
         game_id = get_game_id(user.id)
@@ -515,7 +515,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         if game_request is None or not any(game in game_request for game in available_games):
             return
         # If user is already in queue (any game)
-        if matchmaking_queue.is_user_in_queue(user.id):
+        if casual_queue.is_user_in_queue(user.id) or ranked_queue.is_user_in_queue(user.id):
             return
         # And prevent sockets if player is already in game
         game_id = get_game_id(user.id)
@@ -524,6 +524,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         
         room_size = 1 #5 if game_request == "Tournament" else 1 #If game it's tournament, then spect size is 5 to enter in match, (6 with self)
         # If queue have 0 users, join
+        isRanked = data.get("message").get("ranked")
+        matchmaking_queue = casual_queue if  isRanked is False else ranked_queue
         async with matchmaking_lock: # Block this section to prevent 2 or more users add self to queue
             if matchmaking_queue.get_queue_size(game_request) < room_size:
                 matchmaking_queue.add_user(self.channel_name, user.id, game_request)
@@ -532,7 +534,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             
         # Get oponent
         async with matchmaking_lock: # Block this section to prevent 2 or more users pop user and only have 1
-            if data.get("message").get("ranked") is not False:
+            if isRanked is not False:
                 logger.warning('Ranked matchmaking')
                 rival = await matchmaking_queue.check_mmr(user, game_request)
                 if rival is None: # Anyway, let's check to prevent fails
@@ -556,15 +558,21 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         # Add self to array
         rival.append({'channel_name': self.channel_name, 'userid': user.id, 'game': game_request})
         # Start game
-        await self.start_game(rival, room_name, game_request)
+        await self.start_game(rival, room_name, game_request, None, isRanked)
 
     async def player_ready(self, user):
         game_id = get_game_id(user.id)
         if game_id is not None:
             await games[game_id]["instance"].player_ready(user.id)
     
-    async def leaveMatchmaking(self, user):
-        matchmaking_queue.remove_user(user.id)
+    async def leaveMatchmaking(self, user, data = {}):
+        if data.get("message") is False:
+            casual_queue.remove_user(user.id)
+        elif data.get("message") is True:
+            ranked_queue.remove_user(user.id)
+        else: #check both in case user ragequits
+            casual_queue.remove_user(user.id)
+            ranked_queue.remove_user(user.id)
 
     async def restoreGame(self, user, data):
         # Restore game
@@ -592,17 +600,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         else:
             await send_to_group(self, game_id, USERS_PLAYING, {'game': games[game_id]["game"], 'users': games[game_id]["instance"].players})
 
-    async def start_game(self, players, game_id, game_request = "Pong", tournament_id = None):
+    async def start_game(self, players, game_id, game_request = "Pong", tournament_id = None, ranked = False):
         game = None
         if game_request == "Pong":
             game = {
                 "game": game_request,
-                "instance": PongGame(game_id, self, tournament_id)
+                "instance": PongGame(game_id, self, tournament_id, ranked)
             }
         elif game_request == "Pool":
             game = {
                 "game": game_request,
-                "instance": PoolGame(game_id, self, tournament_id)
+                "instance": PoolGame(game_id, self, tournament_id, ranked)
             }
         # Add players to game
         player_number = 1

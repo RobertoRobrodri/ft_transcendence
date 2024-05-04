@@ -4,6 +4,7 @@ import { GAME_TYPES, SOCKET, GAMES } from '../../socket/Constants.js';
 // Singleton socket instance
 let gameSM = new GameSocketManager();
 let POOL = null;
+let ranked = false;
 
 let optionsView, matchmakingView, uiView, renderViewDiv;
 
@@ -26,12 +27,14 @@ export function init(customData = null)
 
 function poolEventHandler(e) {
     if (e.target.matches('#onlineGameButton_pool') === true) {
+        ranked = false;
         connectGame();
         let win = document.getElementById("myWindowPool-content");
         if(win)
             win.style.overflow = "hidden";
     }
     else if (e.target.matches('#rankedGameButton_pool') === true) {
+        ranked = true;
         connectGame(true);
         let win = document.getElementById("myWindowPool-content");
         if(win)

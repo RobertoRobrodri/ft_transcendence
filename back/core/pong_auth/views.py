@@ -117,12 +117,13 @@ class User42Callback(generics.GenericAPIView):
         state         = request.data.get('state', None)
         client_id     = os.environ.get('CLIENT_ID')
         client_secret = os.environ.get('CLIENT_SECRET')
+        redirect_uri  = "https://{}:4043".format(os.environ.get('DOMAIN_NAME'))
         data = {
             'grant_type': 'authorization_code',
             'client_id': client_id,
             'client_secret': client_secret,
             'code': code,
-            'redirect_uri': "https://localhost:4043", ## If we set a domain, we need to change this variable
+            'redirect_uri': redirect_uri,
             'state': state
         }
         # Make request to get 42 credentials for more information
