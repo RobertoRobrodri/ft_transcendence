@@ -12,7 +12,7 @@ max_attempts=$((5 * 60))
 attempt=1
 
 while [ $attempt -le $max_attempts ]; do
-  curl -s -X GET "http://elasticsearch:9200" -u $ELASTIC_USER:$ELASTIC_PASS > /dev/null
+  curl -s -X GET "http://elasticsearch:9200" -u $ELASTIC_USER:$ELASTIC_PASSWORD > /dev/null
   if [ $? -eq 0 ]; then
     echo "Elasticsearch is up!"
     break
@@ -33,7 +33,7 @@ JSON_PAYLOAD=$(cat <<EOF
 }
 EOF
 )
-response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://elasticsearch:9200/_security/user/kibana_system/_password" -H "Content-Type: application/json" -u $ELASTIC_USER:$ELASTIC_PASS -d "$JSON_PAYLOAD")
+response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://elasticsearch:9200/_security/user/kibana_system/_password" -H "Content-Type: application/json" -u $ELASTIC_USER:$ELASTIC_PASSWORD -d "$JSON_PAYLOAD")
 if [ $response -eq 200 ]; then
   echo "Kibana system password updated!"
 else
@@ -42,7 +42,7 @@ else
 fi
 
 # Data policy to delete logs after 3 days
-curl -X PUT "http://elasticsearch:9200/_ilm/policy/three_days_policy" -H 'Content-Type: application/json' -u $ELASTIC_USER:$ELASTIC_PASS -d'
+curl -X PUT "http://elasticsearch:9200/_ilm/policy/three_days_policy" -H 'Content-Type: application/json' -u $ELASTIC_USER:$ELASTIC_PASSWORD -d'
 {
   "policy": {
     "phases": {
@@ -57,7 +57,7 @@ curl -X PUT "http://elasticsearch:9200/_ilm/policy/three_days_policy" -H 'Conten
 }'
 
 # Template logs creation to index with data policy
-curl -X PUT "http://elasticsearch:9200/_index_template/my_template" -H 'Content-Type: application/json' -u $ELASTIC_USER:$ELASTIC_PASS -d'
+curl -X PUT "http://elasticsearch:9200/_index_template/my_template" -H 'Content-Type: application/json' -u $ELASTIC_USER:$ELASTIC_PASSWORD -d'
 {
   "index_patterns": ["postgresql-*", "nginx-*", "django-*"],
   "template": {

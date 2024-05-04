@@ -1,0 +1,2 @@
+xpack.monitoring.elasticsearch.username: ${ELASTIC_USER}
+xpack.monitoring.elasticsearch.password: ${ELASTIC_PASSWORD}
