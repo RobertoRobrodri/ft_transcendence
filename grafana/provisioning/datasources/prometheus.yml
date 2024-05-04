@@ -7,11 +7,10 @@ datasources:
     # Access mode - proxy (server in the UI) or direct (browser in the UI).
     url: http://prometheus:9090
     basicAuth: true
-    #TODO secure this credentials
     basicAuthUser: admin
-    basicAuthPassword: test
+    basicAuthPassword: $PROMETHEUS_PASS
     secureJsonData:
-      basicAuthPassword: "test"
+      basicAuthPassword: $PROMETHEUS_PASS
     jsonData:
       httpMethod: POST
       manageAlerts: true

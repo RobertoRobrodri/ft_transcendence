@@ -13,7 +13,6 @@ async function handleSubmitUpdatedData(e) {
         username: username,
       };
       try {
-            // TODO probably we need to change localhost to domain
             const response = await fetch('api/user_management/user_update/', {
             method: 'PATCH',
             headers: {
@@ -74,7 +73,7 @@ export async function callback42() {
         var currentUrl = window.location.href;
         // Remove the query parameters
         var updatedUrl = currentUrl.split('?')[0];
-        // Replace the current URL with the updated URL
+        // EL historial muestra pero no volverá a cargar la página con el código
         window.history.replaceState({}, document.title, updatedUrl);
         // 2FA activated
         if (response.status === 308)
