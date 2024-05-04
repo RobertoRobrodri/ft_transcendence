@@ -1,15 +1,16 @@
 
 var Terminal = Terminal || {};
 var Command  = Command  || {};
+var input;
+var body;
 
 export function init(customData = null) {
-    new Terminal.Events('cmdline', 'output');
+    input = document.getElementById('cmdline');
+    body  = document.getElementById('myWindowTerminal-content');
+    new Terminal.Events('output');
 }
 
-Terminal.Events = function(inputElement, OutputElement) {
-    
-    var input = document.getElementById(inputElement);
-    var body  = document.getElementById('myWindowTerminal-content');
+Terminal.Events = function(OutputElement) {
       
     input.onkeydown = function(event) {
         if (event.which == 13 || event.keyCode == 13) {
@@ -38,9 +39,11 @@ Terminal.Events = function(inputElement, OutputElement) {
                 throw new Error('Error al ejecutar la solicitud POST');
             })
             .then(data => {
-                console.log(data);
                 preserveInput(OutputElement, cmd)
-                showOutput(OutputElement, data.output);
+                if (data.stdout)
+                    showOutput(OutputElement, data.stdout);
+                if (data.stderr)
+                    showOutput(OutputElement, data.stderr);
             })
             .catch(error => {
                 console.error('Error:', error);

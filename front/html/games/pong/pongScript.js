@@ -1,6 +1,7 @@
 import { GameSocketManager } from "../../socket/GameSocketManager.js";
 import { GAME_TYPES, SOCKET, GAMES, CHAT_TYPES } from '../../socket/Constants.js';
 import { initializeGame, endGame } from "./localGameLogic.js";
+import { drawTournament } from "../../components/tournamentTable.js"
 
 /////////////////
 // Global vars //
@@ -371,37 +372,38 @@ gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
 });
 
 function setMatchmaking(data) {
-    console.log(data);
-    resultadosView.innerHTML = "";
-    resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
-    let tabla = "";
-    let player1 = "";
-    let player1Points = 0;
-    for (let ronda of data.data) {
-        console.log("________________________")
-        for (let jugadores of ronda) {
-            if (jugadores[1]) {
-                player1 = jugadores[1].nickname;
-                player1Points = jugadores[1].points;
-            }
-            else {
-                player1 = "Bye";
-                player1Points = 0;
-            }
-            tabla = `<table class='table table-dark'> \
-                            <tbody>\
-                                <tr>\
-                                    <td class='text-left score'>${jugadores[0].nickname}</td>\
-                                    <td class='text-center score'>${jugadores[0].points}</td>\
-                                    <td class='text-center score'>${player1Points}</td>\
-                                    <td class='text-right' score>${player1}</td>\
-                                </tr>\
-                            </tbody>\
-                        </table>`;
-            resultadosView.innerHTML = resultadosView.innerHTML + tabla; 
-        }
-        resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
-    }
+    drawTournament(data);
+    // console.log(data);
+    // resultadosView.innerHTML = "";
+    // resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
+    // let tabla = "";
+    // let player1 = "";
+    // let player1Points = 0;
+    // for (let ronda of data.data) {
+    //     console.log("________________________")
+    //     for (let jugadores of ronda) {
+    //         if (jugadores[1]) {
+    //             player1 = jugadores[1].nickname;
+    //             player1Points = jugadores[1].points;
+    //         }
+    //         else {
+    //             player1 = "Bye";
+    //             player1Points = 0;
+    //         }
+    //         tabla = `<table class='table table-dark'> \
+    //                         <tbody>\
+    //                             <tr>\
+    //                                 <td class='text-left score'>${jugadores[0].nickname}</td>\
+    //                                 <td class='text-center score'>${jugadores[0].points}</td>\
+    //                                 <td class='text-center score'>${player1Points}</td>\
+    //                                 <td class='text-right' score>${player1}</td>\
+    //                             </tr>\
+    //                         </tbody>\
+    //                     </table>`;
+    //         resultadosView.innerHTML = resultadosView.innerHTML + tabla; 
+    //     }
+    //     resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
+    // }
     toggleView(optionsView, false);
     toggleView(tournamentJoinView, false);
     toggleView(tournamentReadyView, false);
