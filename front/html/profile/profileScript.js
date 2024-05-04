@@ -352,7 +352,13 @@ async function update2FA() {
         console.log(data.message);
         displayMessage(data.message, 'small', 'activateTwoFactorAuthForm', 'green');
         if (response.status === 307) {
+            // hacky way to clear previous errors :v
+            displayMessage('', 'small', 'confirmOTP');
             document.getElementById('qrCodeImg').src = 'data:image/png;base64,' + data.qr;
+            const buttons = document.querySelectorAll('.modal-footer button');
+            buttons.forEach(button => {
+                button.style.display = 'flex';
+            });
             // Show modal
             $('#twoFactorAuthModal').modal('show');
         }
@@ -448,10 +454,16 @@ async function TwoFactorAuthConfirmOTPUpdate() {
             body: JSON.stringify(UserData),
         });
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            const error = await response.json();
+            throw new Error(JSON.stringify(error));
         }
         const data = await response.json();
-        console.log(response)
+        document.getElementById('qrCodeImg').src = '../assets/condom.svg';
+        const buttons = document.querySelectorAll('.modal-footer button');
+        buttons.forEach(button => {
+            button.style.display = 'none';
+        });
+        displayMessage(data.message, 'small', 'confirmOTP', 'green');
     } catch (error) {
         console.error('Error:', error.message);
         displayMessage(error.message, 'small', 'confirmOTP');
