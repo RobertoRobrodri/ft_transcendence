@@ -40,6 +40,7 @@ function load42UserWelcomePage() {
     let welcomePage = document.getElementById("root");
     Promise.all([
         fetch('./callback/callback.html').then(response => response.text()),
+        fetch('./callback/callback.css').then(response => response.text()),
     ]).then(([html, css]) => {
         html += `<style>${css}</style>`;
         welcomePage.innerHTML = html;
