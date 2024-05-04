@@ -45,25 +45,14 @@ export function register(e) {
 }
 
 export function loadSignUpPage(e){
-    // if (e.target.matches('#signupbutton') === false)
-    //     return ;
-    // e.preventDefault()
-    
-    // Remove previous styles
-    const existingStyles = document.head.querySelectorAll('style');
-    existingStyles.forEach(style => {
-        document.head.removeChild(style);
-    });
 
     let singUpPage = document.getElementById("root");
     Promise.all([
         fetch('./sing-up/sing_up.html').then(response => response.text()),
         fetch('./sing-up/sing_up.css').then(response => response.text())
     ]).then(([html, css]) => {
+        html += `<style>${css}</style>`;
         singUpPage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
