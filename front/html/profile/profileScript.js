@@ -257,7 +257,7 @@ export async function getTournamentTable(tournament_id) {
         // Show table
         let UserInfo = document.getElementById("user_info");
         UserInfo.classList.add("mshide");
-        drawTournament(data);
+        drawTournament(data["tournament"]);
     }
     catch (error) {
         console.error('Error:', error.message);
