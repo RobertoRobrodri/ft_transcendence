@@ -46,10 +46,8 @@ export function load2FApage() {
     Promise.all([
         fetch('./2FA/twoFactorAuth.html').then(response => response.text()),
     ]).then(([html, css]) => {
+        html += `<style>${css}</style>`;
         welcomePage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
         RegisterOTPSubmitEvent();
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);

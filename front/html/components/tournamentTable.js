@@ -1,6 +1,6 @@
 export function drawTournament(data) {
     
-    let totalRondas = data["tournament"].length;
+    let totalRondas = data.length;
     let cont = 0;
     // console.log("Dibujamos torneo:");
     // console.log(data);
@@ -16,9 +16,10 @@ export function drawTournament(data) {
     // tournamentDiv.textContent = "Test";
     var divRounds = document.createElement("div");
     divRounds.classList.add("tournament-bracket__round");
-    for (let ronda of data["tournament"]) {
-        if (cont === totalRondas - 1)
-            break;
+    for (let ronda of data) {
+        if(totalRondas != 1)
+            if (cont === totalRondas - 1)
+                break;
 
         var ulRound = document.createElement("ul");
         ulRound.classList.add("tournament-bracket__list");
