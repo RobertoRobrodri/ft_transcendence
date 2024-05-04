@@ -2,17 +2,18 @@ import { renewJWT } from "../components/updatejwt.js"
 import { showNotification } from "../components/loader.js";
 import { displayErrorList, displayMessage } from "../components/loader.js"
 import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
-import { connectNotifications } from '../index/index.js';
+import { connectNotifications, logOut } from '../index/index.js';
 
 let NotificationsSM = new NotificationsSocketManager();
 
 export function loadLeaderboardPage() {
+
     // Remove previous styles
     const existingStyles = document.head.querySelectorAll('style');
     existingStyles.forEach(style => {
         document.head.removeChild(style);
     });
-
+    
     let loginPage = document.getElementById("root");
     Promise.all([
         fetch('./leaderboard/leaderboard.html').then(response => response.text()),
@@ -26,9 +27,12 @@ export function loadLeaderboardPage() {
         document.head.appendChild(style);
         connectNotifications();
 		loadLeaderboardTable();
+        //Aqui gestionamos el logOut
+        document.getElementById('root').addEventListener('click', logOut);
     }).catch(error => {
         console.error('Error al cargar el formulario:', error);
     });
+    
 }
 
 async function loadLeaderboardTable() {

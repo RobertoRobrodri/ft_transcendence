@@ -3,7 +3,7 @@ import { showNotification } from "../components/loader.js";
 import { displayErrorList, displayMessage } from "../components/loader.js"
 import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
 import { CHAT_TYPES, FRIENDS } from '../socket/Constants.js';
-import { connectNotifications } from '../index/index.js';
+import { connectNotifications, logOut} from '../index/index.js';
 
 let NotificationsSM = new NotificationsSocketManager();
 
@@ -207,4 +207,5 @@ NotificationsSM.registerCallback(FRIENDS.FRIEND_REQUEST_DECLINED,  data => {
 function FriendRequestListener() {
     document.getElementById('root').addEventListener('submit', sendFriendRequest);
     document.getElementById('root').addEventListener('click', HandleClickEvent);
+    document.getElementById('root').addEventListener('click', logOut);
 }

@@ -2,6 +2,7 @@ import { renewJWT } from "../components/updatejwt.js"
 import { NotificationsSocketManager } from "../socket/NotificationsSocketManager.js"
 import { CHAT_TYPES, GAMES, GAME_TYPES, SOCKET } from '../socket/Constants.js';
 import { addSingleUser, removeSingleUser } from "../chat/chatScript.js";
+import { loadLoginPage } from "../login/login.js";
 
 let NotificationsSM = new NotificationsSocketManager();
 let hashCleared = false;
@@ -19,7 +20,7 @@ export function loadMainPage() {
         html += `<style>${css2}</style>`;
         mainPage.innerHTML = html;
         //clear hash
-        if (!hashCleared){
+        if (!hashCleared) {
             hashCleared = true;
             history.pushState("", document.title, window.location.pathname + window.location.search);
         }
@@ -41,6 +42,32 @@ function removeClassFromClass(classNameToRemove, classNameToFind) {
     });
 }
 
+export async function logOut(e) {
+    if (e.target.closest('.logOut')) {
+        const token = sessionStorage.getItem('token')
+        try {
+            const response = await fetch('/api/pong_auth/logout/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                console.log(error, error.message);
+                throw new Error(JSON.stringify(error));
+            }
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("refresh");
+            loadLoginPage();
+        } catch (error) {
+            console.log('error')
+            console.log("Es imposible que entre aquí, si esta saliendo esto en la correción, mala suerte, fue culpa de billy jean");
+        }
+    }
+}
+
 export function setClickEvents() {
     // Program selection
     document.getElementById('root').addEventListener('click', selectProgram);
@@ -48,13 +75,13 @@ export function setClickEvents() {
     document.getElementById('root').addEventListener('dblclick', openWindow);
     // Close window
     document.getElementById('root').addEventListener('click', closeWindow);
-
+    //Funcionalidad del logout
+    document.getElementById('root').addEventListener('click', logOut);
     // Make icons draggable
     makeIconsDraggable();
 }
 
-function makeIconsDraggable()
-{
+function makeIconsDraggable() {
     var iconClass = '.icon.text-center.col-md-1';
     document.querySelectorAll(iconClass).forEach(icon => makeDraggable(icon, iconClass));
 }
@@ -291,7 +318,7 @@ function makeDraggable(element, elementClick) {
                 // Calcular el nuevo z-index para la ventana actual
                 let originalIndex = parseInt(icon.style.zIndex);
                 if (originalIndex > 1)
-                icon.style.zIndex = originalIndex - 1;
+                    icon.style.zIndex = originalIndex - 1;
             }
         });
     }
@@ -311,24 +338,24 @@ function makeDraggable(element, elementClick) {
         // Calcula los límites de la pantalla
         const maxX = window.innerWidth - 40;
         const maxY = window.innerHeight - 40 - 50; // Guarda 50px adicionales en la parte inferior
-    
+
         // Calcula las nuevas coordenadas del elemento
         let newPosX = element.offsetLeft - (previousPosX - e.clientX);
         let newPosY = element.offsetTop - (previousPosY - e.clientY);
-    
+
         // Calcula los límites de la ventana
         const windowWidth = element.offsetWidth;
         const windowHeight = element.offsetHeight;
-        
+
         // Limita las coordenadas para que al menos 40px queden dentro de la pantalla en todas las direcciones,
         // y guarda 50px adicionales en la parte inferior
         newPosX = Math.max(-windowWidth + 40, Math.min(newPosX, maxX - 40)); // Resta windowWidth para considerar el ancho de la ventana
         newPosY = Math.max(0, Math.min(newPosY, maxY - 40)); // Resta windowHeight para considerar la altura de la ventana
-    
+
         // Actualiza la posición del elemento
         element.style.left = newPosX + 'px';
         element.style.top = newPosY + 'px';
-    
+
         // Actualiza las coordenadas anteriores para el próximo movimiento
         previousPosX = e.clientX;
         previousPosY = e.clientY;
@@ -341,7 +368,7 @@ function makeDraggable(element, elementClick) {
 }
 
 export function connectNotifications() {
-    if(NotificationsSM.connect() == NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED) {
+    if (NotificationsSM.connect() == NotificationsSM.SOCKETSTATUS.ALREADY_CONNECTED) {
         // NotificationsSM.send(CHAT_TYPES.USER_LIST);
     }
 }

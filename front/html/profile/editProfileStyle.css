@@ -6,7 +6,7 @@ body {
     height: 100vh;
     /* Altura del 100% de la ventana */
     cursor: url('../assets/cursor3.svg'), auto !important;
-    background-image: url('../assets/fondo.png');
+    background-image: url('../assets/Gigachad.gif');
     user-select: none;
     backdrop-filter: blur(25px);
 }
@@ -139,6 +139,18 @@ h1 {
 /* Estilo para los input del formulario */
 input {
     background-color: transparent !important;
+}
+
+.logOut {
+    background-color: transparent;
+    height: 50px;
+    width: 50px;
+    border: none;
+}
+
+.logOut:hover {
+    cursor: pointer;
+    background-color: red;
 }
 
 /* Estilo para el input de cargar archivo */
