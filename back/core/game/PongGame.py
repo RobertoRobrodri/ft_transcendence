@@ -54,7 +54,6 @@ class PongGame:
         self.player2_paddle_x = self.canvas_x - self.border_thickness - self.paddle_width - self.paddle_margin
         self.player2_paddle_y =  (self.canvas_y / 2) - (self.paddle_height / 2)
         self.tournament_id = tournament_id
-        # del games[self.game_id]
 
     async def start_game(self):
         # Waiting 2 players set ready status
