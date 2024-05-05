@@ -17,7 +17,7 @@ export function endFourGame(closed = false) {
         intervalId = null;
         if (closed === false)
         {
-            toggleView(canvasFourDivView, false)
+            toggleView(canvasDivView, false)
             toggleView(optionsView, true)
         }
     }
