@@ -97,6 +97,8 @@ export function initializeGame(multiplayer = false, realAI = true, use3D = false
     startGame() 
 }
 
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+
 function startGame() {
     if (intervalId != null) {
         clearInterval(intervalId);
@@ -116,13 +118,53 @@ function startGame() {
     leftPlayerMovement = 0;
     rightPlayerMovement = 0;
     updateGame(gameState);
+    countDown();
     // Delay starting the game interval by 3000 milliseconds
-    timeOutId = setTimeout(() => {
-        intervalId = setInterval(() => {
-            newFrame();
-        }, 16);
-        // intervalId = setInterval(() => newFrame(isMultiplayer), 32); // Uncomment for SLOWMO mode
-    }, 3000);
+    // timeOutId = setTimeout(() => {
+    //     intervalId = setInterval(() => {
+    //         newFrame();
+    //     }, 16);
+    //     // intervalId = setInterval(() => newFrame(isMultiplayer), 32); // Uncomment for SLOWMO mode
+    // }, 3000);
+}
+
+async function countDown() {
+    let countdownDiv = document.getElementById("countdown");
+    if (countdownDiv)
+        countdownDiv.parentNode.removeChild(countdownDiv);
+
+    countdownDiv = document.createElement("div");
+    countdownDiv.id = "countdown";
+    countdownDiv.style.position = "absolute";
+    countdownDiv.style.top = "50%";
+    countdownDiv.style.left = "50%";
+    countdownDiv.style.transform = "translate(-50%, -50%)";
+    countdownDiv.style.fontSize = "40px";
+    countdownDiv.style.color = "#fff";
+    countdownDiv.style.fontFamily = "Arial";
+    countdownDiv.style.textAlign = "center";
+    countdownDiv.style.opacity = "0";
+        
+    const canvasDiv = document.getElementById("canvasDiv");
+
+    canvasDiv.appendChild(countdownDiv);
+
+    let countdownValue = 3;
+    while (countdownValue > 0) {
+        countdownDiv.innerText = countdownValue.toString();
+        countdownDiv.style.opacity = "1";
+        countdownDiv.classList.add("countdown-animation");
+        countdownValue--;
+        await sleep(1000);
+    }
+    countdownDiv.innerText = "GO!";
+    countdownDiv.classList.remove("countdown-animation");
+    countdownDiv.style.opacity = "1";
+    // countdownDiv.classList.add("countdown-animation");
+    // countdownDiv.parentNode.removeChild(countdownDiv);
+    intervalId = setInterval(() => {
+        newFrame();
+    }, 16);
 }
 
 function newFrame() {
