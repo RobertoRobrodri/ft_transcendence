@@ -17,6 +17,7 @@ let score = [0, 0];
 let direction = null;
 let isSending = false;
 let ranked = false;
+let needRotate = false
 
 // Singleton socket instance
 let gameSM = new GameSocketManager();
@@ -27,6 +28,7 @@ let optionsView, matchmakingView, localgameView, onlineMenuView,
     tournamentHistory;
 
 export function init(customData = null) {
+    score = [0, 0];
     document.getElementById('root').addEventListener('click', gameEventHandler);
     document.getElementById('root').addEventListener('mouseover', showDescription);
     optionsView = document.getElementById("game_options_pong");
@@ -39,7 +41,7 @@ export function init(customData = null) {
     canvasDivView = document.getElementById("canvasDiv");
     canvasFourDivView = document.getElementById("canvasFourDiv");
     canvas3DDivView = document.getElementById("canvas3DDiv");
-    tournamentHistory = document.getElementById("tournamentHistory");
+    tournamentHistory = document.getElementById("tournamentHistory2");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
     initGameListener();
@@ -54,18 +56,15 @@ function gameEventHandler(e) {
     // multiplayer
     if (e.target.matches('#onlineGameMenu_pong') === true) {
         gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG);
-        toggleView(optionsView, false);
-        toggleView(onlineMenuView, true);
+        showOnlyView(onlineMenuView);
     }
     else if (e.target.matches('#tournamentButton_pong') === true) {
-        toggleView(optionsView, false);
-        toggleView(tournamentView, true);
+        showOnlyView(tournamentView);
         setTournaments();
     }
     else if (e.target.matches('#backToTournaments') === true) {
         tournamentJoined = null;
-        toggleView(tournamentJoinView, false);
-        toggleView(tournamentView, true);
+        showOnlyView(tournamentView);
     }
     else if (e.target.matches('#leaveTournament') === true) {
         // Llamamos a la funcion para salir de un torneo
@@ -74,9 +73,7 @@ function gameEventHandler(e) {
             game: GAMES.PONG
         })
         tournamentJoined = null;
-        toggleView(tournamentJoinView, false);
-        toggleView(tournamentReadyView, false);
-        toggleView(tournamentView, true);
+        showOnlyView(tournamentView);
     }
     else if (e.target.matches('#joinTournament') === true) {
         let nickname = document.getElementById("tournament-nickname").value;
@@ -90,18 +87,13 @@ function gameEventHandler(e) {
                 game: GAMES.PONG
             })
         }
-        // Comprobamos si el nickname es valido
-        // Llamamos a la funcion para entrar a un torneo
-        // toggleView(tournamentView, false);
-        // toggleView(tournamentReadyView, true);
     }
     else if (e.target.matches('#createTournament') === true) {
         CreateTournament();
     }
     else if (e.target.matches('#onlineGameButton_pong') === true) {
         ranked = false;
-        toggleView(onlineMenuView, false);
-        toggleView(matchmakingView, true);
+        showOnlyView(matchmakingView);
         InitMatchmaking();
         let win = document.getElementById("myWindowGame-content");
         if(win)
@@ -109,18 +101,14 @@ function gameEventHandler(e) {
     }
     else if (e.target.matches('#rankedGameButton_pong') === true) {
         ranked = true;
-        toggleView(onlineMenuView, false);
-        toggleView(matchmakingView, true);
+        showOnlyView(matchmakingView);
         InitMatchmaking(true);
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
-        toggleView(matchmakingView, false);
-        toggleView(onlineMenuView, false);
-        toggleView(tournamentView, false);
-        toggleView(optionsView, true);
+        showOnlyView(optionsView);
         CancelMatchmaking(ranked);
         let win = document.getElementById("myWindowGame-content");
         if(win)
@@ -128,32 +116,27 @@ function gameEventHandler(e) {
     }
     // juego local (2 players)
     else if (e.target.matches('#localGameButton_pong') === true) {
-        toggleView(optionsView, false);
-        toggleView(localgameView, true);
+        showOnlyView(localgameView);
     }
     // 1 jugador (with Neural network)
     else if (e.target.matches('#soloGameButton_pong') === true) {
-        toggleView(localgameView, false);
-        toggleView(canvasDivView, true);
+        showOnlyView(canvasDivView);
         initializeGame();
     }
     // 1 jugador (With Algorithm)
     else if (e.target.matches('#soloGameButtonAlgo_pong') === true) {
-        toggleView(localgameView, false);
-        toggleView(canvasDivView, true);
+        showOnlyView(canvasDivView);
         initializeGame(false, false)
     }
     // 3D
     else if (e.target.matches('#soloGameButton3D_pong') === true) {
-        toggleView(localgameView, false);
-        toggleView(canvas3DDivView, true);
+        showOnlyView(canvas3DDivView);
         initializeGame(false, false, true)
     }
 
     // Multijugador local
     else if (e.target.matches('#localMultiplayerButton_pong') === true) {
-        toggleView(localgameView, false);
-        toggleView(canvasDivView, true);
+        showOnlyView(canvasDivView);
         initializeGame(true);
     }
 
@@ -164,9 +147,7 @@ function gameEventHandler(e) {
         initializeFourGame(true);
     }
     else if (e.target.matches('#goBackButton_pong') === true) {
-        toggleView(optionsView, true);
-        toggleView(localgameView, false);
-        toggleView(onlineMenuView, false);
+        showOnlyView(optionsView);
     }
     else if (e.target.matches('#red-myWindowGame') === true) {
         // si está conectado el socket, lo desconecta
@@ -198,14 +179,21 @@ export function toggleView(view, visible = true) {
         view.classList.add("mshide");
 }
 
+export function showOnlyView(viewToShow) {
+    const viewsToHide = [optionsView, matchmakingView, localgameView, onlineMenuView, tournamentView, tournamentJoinView, tournamentReadyView, canvasDivView, canvas3DDivView, tournamentHistory];
+    
+    viewsToHide.forEach(view => {
+        if (view !== viewToShow) {
+            toggleView(view, false);
+        } else {
+            toggleView(view, true);
+        }
+    });
+}
+
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
-    //when game open, try restore any running game, i put here for test
     gameSM.send(GAME_TYPES.RESTORE_GAME, GAMES.PONG);
-    // When need get list of current tournaments
-    // gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, GAMES.PONG);
-    // When need get list of current tournaments
-    // gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG); 
 });
 
 // Callback socket disconnected
@@ -222,17 +210,16 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if (data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
-        toggleView(matchmakingView, false);
-        toggleView(onlineMenuView, false);
-        toggleView(tournamentView, false);
-        toggleView(optionsView, false);
-        toggleView(tournamentReadyView, false);
-        toggleView(tournamentJoinView, false);
-        toggleView(localgameView, false);
-        toggleView(canvasDivView, true);
+        showOnlyView(canvasDivView);
+        score = data.score
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
+        if (data.message[myUserId]["nbr"] == 2) {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            needRotate = true;
+        }
     }
 });
 
@@ -242,19 +229,16 @@ gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
 
     if (data.game == GAMES.PONG) {
         isPlaying = true;
-        toggleView(matchmakingView, false);
-        toggleView(onlineMenuView, false);
-        toggleView(tournamentView, false);
-        toggleView(optionsView, false);
-        toggleView(tournamentReadyView, false);
-        toggleView(tournamentJoinView, false);
-        toggleView(localgameView, false);
-        toggleView(canvasDivView, true);
-        toggleView(tournamentHistory, false);
+        showOnlyView(canvasDivView);
         gameSM.send(GAME_TYPES.PLAYER_READY);
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
+        if (data.message[myUserId]["nbr"] == 2) {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            needRotate = true;
+        }
     }
 });
 
@@ -264,8 +248,7 @@ gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
 
 gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
     if (data.game == GAMES.PONG) {
-        toggleView(matchmakingView, true);
-        toggleView(optionsView, false);
+        showOnlyView(matchmakingView);
     }
 });
 
@@ -295,13 +278,17 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         let leaveButton = document.getElementById("leaveButton-spectator")
         if (leaveButton)
             leaveButton.remove();
-        toggleView(canvasDivView, false);
-        toggleView(optionsView, true);
-        toggleView(tournamentHistory, false);
-        removeGameListener();
+        if(tournamentJoined != null)
+            showOnlyView(optionsView);
+        // removeGameListener();
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "auto";
+        if(needRotate) {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            needRotate = false;
+        }
     }
 });
 
@@ -352,7 +339,10 @@ gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
         countdownDiv.style.opacity = "1";
         countdownDiv.classList.add("countdown-animation");
     } else {
-        countdownDiv.parentNode.removeChild(countdownDiv);
+        countdownDiv.innerText = "GO!";
+        countdownDiv.style.opacity = "1";
+        countdownDiv.classList.add("countdown-animation");
+        // countdownDiv.parentNode.removeChild(countdownDiv);
     }
 });
 
@@ -370,8 +360,7 @@ gameSM.registerCallback(GAME_TYPES.TOURNAMENT_CREATED, data => {
     if (data.game == GAMES.PONG) {
         if (data.data.adminId == myUserId) {
             fillTournamentData(data.data)
-            toggleView(tournamentView, false);
-            toggleView(tournamentReadyView, true);
+            showOnlyView(tournamentReadyView);
         }
     }
 });
@@ -381,53 +370,14 @@ gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
         if (isPlaying)
             return;
         fillTournamentData(data.data)
-        toggleView(optionsView, false);
-        toggleView(tournamentReadyView, true);
+        showOnlyView(tournamentReadyView);
     }
 });
 
-function setMatchmaking(data) {
-    drawTournament(data.data);
-    // console.log(data);
-    // resultadosView.innerHTML = "";
-    // resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
-    // let tabla = "";
-    // let player1 = "";
-    // let player1Points = 0;
-    // for (let ronda of data.data) {
-    //     console.log("________________________")
-    //     for (let jugadores of ronda) {
-    //         if (jugadores[1]) {
-    //             player1 = jugadores[1].nickname;
-    //             player1Points = jugadores[1].points;
-    //         }
-    //         else {
-    //             player1 = "Bye";
-    //             player1Points = 0;
-    //         }
-    //         tabla = `<table class='table table-dark'> \
-    //                         <tbody>\
-    //                             <tr>\
-    //                                 <td class='text-left score'>${jugadores[0].nickname}</td>\
-    //                                 <td class='text-center score'>${jugadores[0].points}</td>\
-    //                                 <td class='text-center score'>${player1Points}</td>\
-    //                                 <td class='text-right' score>${player1}</td>\
-    //                             </tr>\
-    //                         </tbody>\
-    //                     </table>`;
-    //         resultadosView.innerHTML = resultadosView.innerHTML + tabla; 
-    //     }
-    //     resultadosView.innerHTML = resultadosView.innerHTML + "<hr class='line'>"; 
-    // }
-    toggleView(optionsView, false);
-    toggleView(tournamentJoinView, false);
-    toggleView(tournamentReadyView, false);
-}
-
 // TODO, muestro la tabla de los emparejamientos
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
-    toggleView(tournamentHistory, true);
-    setMatchmaking(data);
+    showOnlyView(tournamentHistory);
+    drawTournament(data.data, "tournamentCanva");
 });
 
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
@@ -468,11 +418,16 @@ function fillTournamentsList(data) {
         if (!currentTournamentExist && element.id == tournamentJoined) {
             currentTournamentExist = true;
         }
+        if (element.id == tournamentJoined)
+        {
+            fillTournamentData(element);
+        }
         const row = document.createElement("tr");
         row.addEventListener("click", function () {
             // Fill tournament_name_join data:
-            toggleView(tournamentView, false);
-            toggleView(tournamentJoinView, true);
+            // toggleView(tournamentView, false);
+            // toggleView(tournamentJoinView, true);
+            showOnlyView(tournamentJoinView);
             fillTournamentData(element);
         });
         row.innerHTML = `
@@ -482,9 +437,12 @@ function fillTournamentsList(data) {
         tournaments.appendChild(row);
     });
     if (!currentTournamentExist && tournamentJoined != null && !isPlaying) {
-        // toggleView(tournamentView, true);
-        toggleView(tournamentJoinView, false);
-        toggleView(tournamentReadyView, false);
+        tournamentJoined = null
+        //showOnlyView(tournamentHistory);
+        showOnlyView(optionsView);
+        // toggleView(optionsView, true);
+        // toggleView(tournamentJoinView, false);
+        // toggleView(tournamentReadyView, false);
     }
     // TODO Cambiar tambien en la tabla de waiting fot the tournament
 }
@@ -530,8 +488,7 @@ function fillGames(data) {
             gameSM.send(GAME_TYPES.SPECTATE_GAME, {
                 id: element.id
             })
-            toggleView(canvasDivView, true);
-            toggleView(onlineMenuView, false);
+            showOnlyView(canvasDivView);
             // Leave
             var leaveButton = document.createElement("button");
             leaveButton.textContent = "Leave";
@@ -543,8 +500,7 @@ function fillGames(data) {
                     id: element.id
                 })
                 leaveButton.remove();
-                toggleView(canvasDivView, false);
-                toggleView(onlineMenuView, true);
+                showOnlyView(onlineMenuView);
             });
             canvasDivView.appendChild(leaveButton);
         });
@@ -574,6 +530,7 @@ function updateGame(gameState) {
     // Black background
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     // Draw Score
     drawScore(score);
     // Draw lines
@@ -669,13 +626,24 @@ export function drawScore(scores) {
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
 
+    if(needRotate) {
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+    }
+    
     // Loop through the scores object
     for (const playerId in scores) {
         // Determine position based on player ID or index
-        const xPos = (playerId === "0") ? canvas.width / 4 : canvas.width * 3 / 4;
+        let xPos = (playerId === "0") ? canvas.width / 4 : canvas.width * 3 / 4;
         const yPos = 30; // Position at the top
-
+        if(needRotate)
+            xPos = (playerId === "1") ? canvas.width / 4 : canvas.width * 3 / 4;
         // Draw the score
         ctx.fillText(scores[playerId], xPos, yPos);
+    }
+    
+    if(needRotate) {
+        ctx.restore();
     }
 }

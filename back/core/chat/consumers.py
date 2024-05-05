@@ -56,6 +56,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         try:
             user = self.scope["user"]
+            user = await CustomUser.get_user_by_id(user.id)
             if user and user.is_authenticated and not user.is_anonymous:
                 # maybe throw an error
                 if user.connected is False:
@@ -84,6 +85,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         try:
             user = self.scope["user"]
+            user = await CustomUser.get_user_by_id(user.id)
             if user.is_authenticated and not user.is_anonymous:
                 await CustomUser.update_user_on_disconnect(user)
                 await send_to_group_exclude_self(self, GENERAL_CHANNEL, USER_DISCONNECTED, {'id': user.id, 'username': user.username})
@@ -97,6 +99,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             user = self.scope["user"]
+            user = await CustomUser.get_user_by_id(user.id)
             if user.is_authenticated and not user.is_anonymous:
                 data = json.loads(text_data)
                 type = data["type"]

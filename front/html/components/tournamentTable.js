@@ -1,10 +1,10 @@
-export function drawTournament(data) {
+export function drawTournament(data, Canvaid) {
     
     let totalRondas = data.length;
     let cont = 0;
     // console.log("Dibujamos torneo:");
     // console.log(data);
-    var divTournament = document.getElementById("tournamentCanva");
+    var divTournament = document.getElementById(Canvaid);
     // Eliminamos todo lo que haya dentro del div de los torneos
     // por si se ha cargado algún torneo antes
     while (divTournament.firstChild) {
