@@ -28,4 +28,4 @@ qrcode==7.4.2
 numpy==1.26.4
 numpy-quaternion==2023.0.0
 #Terminal
-docker>=7.0.0
+paramiko==3.4.0

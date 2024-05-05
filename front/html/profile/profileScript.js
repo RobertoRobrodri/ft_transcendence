@@ -257,7 +257,7 @@ export async function getTournamentTable(tournament_id) {
         // Show table
         let UserInfo = document.getElementById("user_info");
         UserInfo.classList.add("mshide");
-        drawTournament(data);
+        drawTournament(data["tournament"]);
     }
     catch (error) {
         console.error('Error:', error.message);
@@ -267,23 +267,20 @@ export async function getTournamentTable(tournament_id) {
 }
 
 export function loadEditProfilePage() {
-    // Remove previous styles
-    const existingStyles = document.head.querySelectorAll('style');
-    existingStyles.forEach(style => {
-        document.head.removeChild(style);
-    });
-
-    let loginPage = document.getElementById("root");
+    
+    let profile = document.getElementById("root");
     Promise.all([
         fetch('./profile/editProfile.html').then(response => response.text()),
         fetch('./profile/editProfileStyle.css').then(response => response.text()),
         import('./profileScript.js').then(module => module)
     ]).then(([html, css, javascript]) => {
         window.location.hash = '#/edit-profile';
-        loginPage.innerHTML = html;
-        let style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
+        html += `<style>${css}</style>`;
+        profile.innerHTML = html;
+        // loginPage.innerHTML = html;
+        // let style = document.createElement('style');
+        // style.textContent = css;
+        // document.head.appendChild(style);
         connectNotifications();
 
         javascript.initDivs();

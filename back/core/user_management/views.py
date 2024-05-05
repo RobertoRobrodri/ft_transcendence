@@ -10,8 +10,9 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from pong_auth.utils import GenerateQR
 import base64, pyotp
-import docker
+import paramiko
 import logging
+import os
 logger = logging.getLogger(__name__)
 
 class UserUpdateView(generics.GenericAPIView):
@@ -158,13 +159,43 @@ class ExecuteCmdView(generics.GenericAPIView):
     def post(self, request):
         command = request.data.get('command', None)
         if command is None:
-            return Response({'error'}, status=status.HTTP_400_BAD_REQUEST)
-        client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+            return Response({'error': 'Command not provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            container = client.containers.get('interactive_shell')
-            result = container.exec_run(cmd=f'/bin/sh -c "{command}"', stdout=True, stderr=True)
-            return Response({'output': result.output.decode('utf-8')}, status=status.HTTP_200_OK)
-        except docker.errors.NotFound:
-            return Response({'error': 'Contenedor no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
-        except docker.errors.APIError as e:
+            SSH_USER = os.environ.get('SSH_USER', None)
+            SSH_PASSWORD = os.environ.get('SSH_PASSWORD', None)
+            logger.warning(f"{SSH_USER}  {SSH_PASSWORD}")
+            if SSH_USER is None or SSH_PASSWORD is None:
+                return Response({'error': 'SSH credentials not provided'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect('interactive_shell', port=22, username=SSH_USER, password=SSH_PASSWORD)
+            stdin, stdout, stderr = ssh.exec_command(f'/bin/sh -c "{command}"')
+            
+            output_stdout = stdout.read().decode('utf-8')
+            output_stderr = stderr.read().decode('utf-8')
+            
+            ssh.close()
+            
+            response_data = {}
+            if output_stdout:
+                response_data['stdout'] = output_stdout
+            if output_stderr:
+                response_data['stderr'] = output_stderr
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            logger.warning(f"{e}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+        # try:
+        #     container = client.containers.get('interactive_shell')
+        #     result = container.exec_run(cmd=f'/bin/sh -c "{command}"', stdout=True, stderr=True)
+        #     return Response({'output': result.output.decode('utf-8')}, status=status.HTTP_200_OK)
+        # except docker.errors.NotFound:
+        #     return Response({'error': 'Contenedor no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        # except docker.errors.APIError as e:
+        #     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

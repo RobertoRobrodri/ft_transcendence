@@ -243,11 +243,13 @@ class PoolGame:
         async def finishGameTimeout():
             await asyncio.sleep(10)
             if self.playerCount == 1:
-                self.stopGame()
                 await send_to_group(self.consumer, self.game_id, "rival_leave", "Rival leave")
+                self.stopGame()
+                await self.consumer.sendlistGamesToAll("Pool")
             return
         if self.playerCount == 0:
             self.stopGame()
+            await self.consumer.sendlistGamesToAll("Pool")
         elif self.playerCount == 1:
             await finishGameTimeout()
 
@@ -283,6 +285,7 @@ class PoolGame:
             "winner": winner.username,
             "loser": loser.username
         })
+        await self.consumer.sendlistGamesToAll("Pool")
     
     async def checkGame(self, ball):
         players_list = list(self.players.values())
