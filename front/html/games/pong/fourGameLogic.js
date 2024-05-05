@@ -374,16 +374,16 @@ function handleKeyDown(event) {
         case 98: // 2
             rightPlayerMovement = paddleSpeed;
             break;
-        case 67: // C
+        case 79: // O
             upPlayerMovement = -paddleSpeed;
             break;
-        case 86: // V
+        case 80: // P
             upPlayerMovement = paddleSpeed;
             break;
-        case 79: // O
+        case 67: // C
             downPlayerMovement = -paddleSpeed;
             break;
-        case 80: // P
+        case 86: // V
             downPlayerMovement = paddleSpeed;
             break;
         default:;
@@ -404,16 +404,16 @@ function handleKeyUp(event) {
         case 98: // 2
             rightPlayerMovement = 0;
             break;
-        case 67: // C
-            upPlayerMovement = 0;
-            break;
-        case 86: // V
-            upPlayerMovement = 0;
-            break;
         case 79: // O
-            downPlayerMovement = 0;
+            upPlayerMovement = 0;
             break;
         case 80: // P
+            upPlayerMovement = 0;
+            break;
+        case 67: // C
+            downPlayerMovement = 0;
+            break;
+        case 86: // V
             downPlayerMovement = 0;
             break;
         default:;
