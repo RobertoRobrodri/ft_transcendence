@@ -16,6 +16,7 @@ let score = [0, 0];
 let direction = null;
 let isSending = false;
 let ranked = false;
+let needRotate = false
 
 // Singleton socket instance
 let gameSM = new GameSocketManager();
@@ -201,6 +202,11 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
+        if (data.message[1]["userid"] == myUserId) {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            needRotate = true;
+        }
     }
 });
 
@@ -215,6 +221,11 @@ gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
+        if (data.message[1]["userid"] == myUserId) {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            needRotate = true;
+        }
     }
 });
 
@@ -259,6 +270,11 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "auto";
+        if(needRotate) {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            needRotate = false;
+        }
     }
 });
 
@@ -496,6 +512,7 @@ function updateGame(gameState) {
     // Black background
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     // Draw Score
     drawScore(score);
     // Draw lines
@@ -591,13 +608,24 @@ export function drawScore(scores) {
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
 
+    if(needRotate) {
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+    }
+    
     // Loop through the scores object
     for (const playerId in scores) {
         // Determine position based on player ID or index
-        const xPos = (playerId === "0") ? canvas.width / 4 : canvas.width * 3 / 4;
+        let xPos = (playerId === "0") ? canvas.width / 4 : canvas.width * 3 / 4;
         const yPos = 30; // Position at the top
-
+        if(needRotate)
+            xPos = (playerId === "1") ? canvas.width / 4 : canvas.width * 3 / 4;
         // Draw the score
         ctx.fillText(scores[playerId], xPos, yPos);
+    }
+    
+    if(needRotate) {
+        ctx.restore();
     }
 }
