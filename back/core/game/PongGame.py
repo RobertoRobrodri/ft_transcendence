@@ -24,19 +24,20 @@ class PongGame:
         # ADJUST WITH FRONTEND SIZES #
         ##############################
 
-        self.paddle_width       = 10  # Paddle Width
-        self.paddle_height      = 40  # Paddle Height
-        self.paddle_margin      = 2   # Paddle margin to edge
-        self.canvas_x           = 400 # Canvas Width 
-        self.canvas_y           = 200 # Canvas Height 
-        self.ball_radius        = 5   # Ball Radious
-        self.border_thickness   = 0   # Canvas frame border thickness (always 1/2 of lineWidth)
-        self.sleep_match        = 5   # Seconds of pause at start of game
-        self.sleep              = 1   # Seconds of pause between each point
-        self.ball_speed         = 3   # Base ball speed
-        self.inc_ball_speed     = 1   # Increment of ball speed
-        self.max_ball_speed     = 6   # Base ball speed
-        self.paddle_speed       = 2   # Speed of paddles
+        self.paddle_width       = 10    # Paddle Width
+        self.paddle_height      = 40    # Paddle Height
+        self.paddle_margin      = 2     # Paddle margin to edge
+        self.canvas_x           = 400   # Canvas Width 
+        self.canvas_y           = 200   # Canvas Height 
+        self.ball_radius        = 5     # Ball Radious
+        self.border_thickness   = 0     # Canvas frame border thickness (always 1/2 of lineWidth)
+        self.sleep_match        = 3     # Seconds of pause at start of game
+        self.sleep              = 1     # Seconds of pause between each point
+        self.ball_speed         = 3     # Base ball speed
+        self.inc_ball_speed     = 1     # Increment of ball speed
+        self.max_ball_speed     = 6     # Base ball speed
+        self.paddle_speed       = 2     # Speed of paddles
+        self.is_blocked         = True  # Movement blocking variable
 
         self.points_to_win      = 6
         ######
@@ -76,6 +77,7 @@ class PongGame:
             return
             
         # Main Game while
+        self.is_blocked = False
         while self.running:
             await self.detect_collisions()
             # If game finish, exit
@@ -140,7 +142,8 @@ class PongGame:
             player_info['paddle_x'] = self.player1_paddle_x if player_info['nbr'] == 1 else self.player2_paddle_x
             player_info['paddle_y'] = self.player1_paddle_y if player_info['nbr'] == 1 else self.player2_paddle_y
         
-        await asyncio.sleep(self.sleep)
+        await asyncio.wait_for(self.countdown(), timeout=self.sleep_match + 3)
+        self.is_blocked = False
 
     def move_ball(self):
         self.ball['x'] += self.ball['speed_x']
@@ -167,6 +170,7 @@ class PongGame:
 
         # Collision with one of the sides of a player
         if ball['x'] <= left_side or ball['x'] >= right_side:
+            self.is_blocked = True
             players_list = list(self.players.values())
             # Determine winner
             if ball['x'] <= left_side:
@@ -303,7 +307,7 @@ class PongGame:
             self.players[userid]['ready'] = True
 
     async def execute_action(self, userid, action):
-        if userid in self.players:
+        if not self.is_blocked and userid in self.players:
             player = self.players[userid]
             paddle_y = player['paddle_y']
             # Prevent move out of bounds

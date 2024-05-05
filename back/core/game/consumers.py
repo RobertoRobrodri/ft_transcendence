@@ -590,7 +590,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 if games[game_id]["instance"].consumer == None:
                     games[game_id]["instance"].consumer = self
                 message = {'message': f'Game restored {game_id}'}
-                await send_to_me(self, GAME_RESTORED, {'game': game_req, 'message': games[game_id]["instance"].players})
+                await send_to_me(self, GAME_RESTORED, {'game': game_req, 'message': games[game_id]["instance"].players, 'score': games[game_id]["instance"].scores})
                 await self.channel_layer.group_add(game_id, self.channel_name)
                 await games[game_id]["instance"].restore()
                 await self.send_game_players(game_id, True)

@@ -26,6 +26,7 @@ let optionsView, matchmakingView, localgameView, onlineMenuView,
     canvasDivView, canvas3DDivView, tournamentHistory;
 
 export function init(customData = null) {
+    score = [0, 0];
     document.getElementById('root').addEventListener('click', gameEventHandler);
     document.getElementById('root').addEventListener('mouseover', showDescription);
     optionsView = document.getElementById("game_options_pong");
@@ -199,10 +200,11 @@ gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if (data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
         showOnlyView(canvasDivView);
+        score = data.score
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
-        if (data.message[1]["userid"] == myUserId) {
+        if (data.message[myUserId]["nbr"] == 2) {
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             needRotate = true;
@@ -221,7 +223,7 @@ gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
-        if (data.message[1]["userid"] == myUserId) {
+        if (data.message[myUserId]["nbr"] == 2) {
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             needRotate = true;
@@ -325,7 +327,10 @@ gameSM.registerCallback(GAME_TYPES.COUNTDOWN, data => {
         countdownDiv.style.opacity = "1";
         countdownDiv.classList.add("countdown-animation");
     } else {
-        countdownDiv.parentNode.removeChild(countdownDiv);
+        countdownDiv.innerText = "GO!";
+        countdownDiv.style.opacity = "1";
+        countdownDiv.classList.add("countdown-animation");
+        // countdownDiv.parentNode.removeChild(countdownDiv);
     }
 });
 
