@@ -67,6 +67,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         try:
             user = self.scope["user"]
+            user = await CustomUser.get_user_by_id(user.id)
             if user.is_authenticated and not user.is_anonymous:
                 if user.id in self.connected_users:
                     await self.close(code=4001)
@@ -87,6 +88,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         try:
             user = self.scope["user"]
+            user = await CustomUser.get_user_by_id(user.id)
             if user.is_authenticated and not user.is_anonymous:
                 if user.id in self.connected_users:
                     del self.connected_users[user.id]
@@ -104,6 +106,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             user = self.scope["user"]
+            user = await CustomUser.get_user_by_id(user.id)
             if user.is_authenticated and not user.is_anonymous:
                 data = json.loads(text_data)
                 type = data["type"]
@@ -396,15 +399,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             for pairing in current_round:
                 winner = [player for player in pairing if player['winner']][0]  # Get the first player with winner=True
                 winners.append(winner)
-                
-            # Remove not winners from group
-            for pairing in current_round:
-                for player in pairing:
-                    if not player['winner']:
-                        for participant in tournaments[tournament_id]['participants']:
-                            if participant['userid'] == player['userid']:
-                                participant['active'] = False
-                        await self.channel_layer.group_discard(tournament_id, player["channel_name"])
 
             # Set winner to False to next round
             # for winner in winners:
@@ -427,6 +421,16 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
             # Send tournament table
             await send_to_group(self, tournament_id, TOURNAMENT_TABLE, {'game': tournament['game_request'], 'data': self.extract_player_info(tournament_id)})
+
+            # Remove not winners from group
+            for pairing in current_round:
+                for player in pairing:
+                    if not player['winner']:
+                        for participant in tournaments[tournament_id]['participants']:
+                            if participant['userid'] == player['userid']:
+                                participant['active'] = False
+                        await self.channel_layer.group_discard(tournament_id, player["channel_name"])
+                        
             # If winner have only 1 element, player win!
             if len(participants) == 1:
                 

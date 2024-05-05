@@ -38,7 +38,7 @@ export function init(customData = null) {
     tournamentReadyView = document.getElementById("tournament_ready");
     canvasDivView = document.getElementById("canvasDiv");
     canvas3DDivView = document.getElementById("canvas3DDiv");
-    tournamentHistory = document.getElementById("tournamentHistory");
+    tournamentHistory = document.getElementById("tournamentHistory2");
     canvas = document.getElementById("pongCanvas");
     ctx = canvas.getContext("2d");
     initGameListener();
@@ -267,7 +267,8 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         let leaveButton = document.getElementById("leaveButton-spectator")
         if (leaveButton)
             leaveButton.remove();
-        showOnlyView(optionsView);
+        if(tournamentJoined != null)
+            showOnlyView(optionsView);
         // removeGameListener();
         let win = document.getElementById("myWindowGame-content");
         if(win)
@@ -365,7 +366,7 @@ gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
 // TODO, muestro la tabla de los emparejamientos
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
     showOnlyView(tournamentHistory);
-    drawTournament(data.data);
+    drawTournament(data.data, "tournamentCanva");
 });
 
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
@@ -426,7 +427,8 @@ function fillTournamentsList(data) {
     });
     if (!currentTournamentExist && tournamentJoined != null && !isPlaying) {
         tournamentJoined = null
-        showOnlyView(tournamentHistory);
+        //showOnlyView(tournamentHistory);
+        showOnlyView(optionsView);
         // toggleView(optionsView, true);
         // toggleView(tournamentJoinView, false);
         // toggleView(tournamentReadyView, false);

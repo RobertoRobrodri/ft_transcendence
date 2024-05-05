@@ -5,8 +5,12 @@ import { loadEditProfilePage } from "../profile/profileScript.js"
 import { loadLeaderboardPage } from "../leaderboard/leaderboardScript.js"
 import { displayLoginOrMenu } from "../components/loader.js"
 import { renewJWT, remove_session } from "../components/updatejwt.js"
+import { ChatSocketManager } from "../socket/ChatSocketManager.js"
+import { GameSocketManager } from "../socket/GameSocketManager.js";
 
 let menuLoaded = false;
+let ChatSM = new ChatSocketManager();
+let GameSM = new GameSocketManager();
 
 export function router() {
     let { hash } = location;
@@ -18,12 +22,18 @@ export function router() {
         loadSignUpPage();
     }
     else if (hash === '#/friends' && checkLoginStatus() === true) {
+        ChatSM.disconnect();
+        GameSM.disconnect();
         loadFriendsPage();
     }
     else if (hash === '#/edit-profile' && checkLoginStatus() === true) {
+        ChatSM.disconnect();
+        GameSM.disconnect();
         loadEditProfilePage();
     }
     else if (hash === '#/leaderboard' && checkLoginStatus() === true) {
+        ChatSM.disconnect();
+        GameSM.disconnect();
         loadLeaderboardPage();
     }
     else {

@@ -257,7 +257,7 @@ export async function getTournamentTable(tournament_id) {
         // Show table
         let UserInfo = document.getElementById("user_info");
         UserInfo.classList.add("mshide");
-        drawTournament(data["tournament"]);
+        drawTournament(data["tournament"], "tournamentCanva2");
     }
     catch (error) {
         console.error('Error:', error.message);
@@ -378,6 +378,7 @@ async function updateProfile() {
             formData.append('profile_picture', file);
         } catch (error) {
             displayMessage(error.message, 'small', 'editProfileForm')
+            return;
         }
     }
     try {
