@@ -404,6 +404,7 @@ function fillTournamentsList(data) {
         tournaments.appendChild(row);
     });
     if (!currentTournamentExist && tournamentJoined != null && !isPlaying) {
+        tournamentJoined = null
         showOnlyView(optionsView);
         // toggleView(optionsView, true);
         // toggleView(tournamentJoinView, false);
