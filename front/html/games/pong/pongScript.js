@@ -255,7 +255,7 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         if (leaveButton)
             leaveButton.remove();
         showOnlyView(optionsView);
-        removeGameListener();
+        // removeGameListener();
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "auto";
