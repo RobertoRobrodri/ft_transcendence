@@ -107,6 +107,15 @@ h2 { /* Text Styles */
 	height: 350px;
 }
 
+#fourPongCanvas {
+    display: block;
+    margin: 50px auto;
+	align-content: center;
+    border-radius: 10px;
+	width: 700px;
+	height: 700px;
+}
+
 #pong3DCanvas {
     display: block;
     margin: 50px auto;

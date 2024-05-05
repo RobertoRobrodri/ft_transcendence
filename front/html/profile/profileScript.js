@@ -1,6 +1,6 @@
 import { renewJWT } from "../components/updatejwt.js"
 import { displayErrorList, displayMessage } from "../components/loader.js"
-import { connectNotifications } from "../index/index.js"
+import { connectNotifications, logOut } from "../index/index.js"
 import { toggleView } from "../games/pong/pongScript.js"
 import { drawTournament } from "../components/tournamentTable.js"
 
@@ -257,7 +257,7 @@ export async function getTournamentTable(tournament_id) {
         // Show table
         let UserInfo = document.getElementById("user_info");
         UserInfo.classList.add("mshide");
-        drawTournament(data["tournament"]);
+        drawTournament(data["tournament"], "tournamentCanva2");
     }
     catch (error) {
         console.error('Error:', error.message);
@@ -378,6 +378,7 @@ async function updateProfile() {
             formData.append('profile_picture', file);
         } catch (error) {
             displayMessage(error.message, 'small', 'editProfileForm')
+            return;
         }
     }
     try {
@@ -470,4 +471,5 @@ async function TwoFactorAuthConfirmOTPUpdate() {
 function editProfileListener() {
 	document.getElementById('root').addEventListener('submit', updateUser);
     document.getElementById('root').addEventListener('click', deleteProfilePicture);
+    document.getElementById('root').addEventListener('click', logOut);
 }

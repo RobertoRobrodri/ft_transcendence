@@ -5,7 +5,7 @@ body {
     padding: 0;
     height: 100vh; /* Altura del 100% de la ventana */
     cursor: url('../assets/cursor3.svg'), auto !important;
-    background-image: url('../assets/fondo.png');
+    background-image: url('../assets/Gigachad.gif');
     background-size: 100%;
     user-select: none;
 }
@@ -142,6 +142,11 @@ main {
     top: 50px;
 }
 
+#terminal {
+    left: 638px;
+    top: 50px;
+}
+
 #game {
     left: 338px;
     top: 50px;
@@ -177,7 +182,21 @@ main {
     display: flex;
     justify-content: center;
     gap: 20px; /* Adjust gap between icons */
+    height: 125px;
+    width: 125px;
 
+}
+
+.logOut {
+    background-color: transparent;
+    height: 50px;
+    width: 50px;
+    border: none;
+}
+
+.logOut:hover {
+    cursor: pointer;
+    background-color: red;
 }
 
 .icon-content {

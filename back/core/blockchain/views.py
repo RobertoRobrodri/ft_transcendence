@@ -24,8 +24,11 @@ class ContractView(generics.GenericAPIView):
             contract_json = json.load(deploy_file)
             contract_abi = contract_json.get("abi", [])
             for network in contract_json["networks"]:
+                logger.warning(f"{network}")
                 contract_address = contract_json["networks"][network]["address"]
             # contract_address = contract_json["networks"]["5777"]["address"]
+            if contract_address is None:
+                return None
             contract = ContractView.w3.eth.contract(address=contract_address, abi=contract_abi)
             return contract
 
@@ -33,9 +36,11 @@ class ContractPutView(generics.GenericAPIView):
 
     @staticmethod
     async def _add_tournament(tournament_id, rounds):
-        contract = ContractView._get_contract()
-        sender_address = ContractView.w3.eth.accounts[0]
         try:
+            contract = ContractView._get_contract()
+            if contract is None:
+                return
+            sender_address = ContractView.w3.eth.accounts[0]
             # logger.warning(f"{rounds}")
             json_rounds = json.dumps(rounds)
             tx_hash = contract.functions.addTournament(tournament_id, json_rounds).transact({'from': sender_address})
@@ -47,8 +52,10 @@ class ContractPutView(generics.GenericAPIView):
 class ContractGetTableView(generics.GenericAPIView):
 
     def _get_tournament(self, tournament_id):
-        contract = ContractView._get_contract()
         try:
+            contract = ContractView._get_contract()
+            if contract is None:
+                return
             tournament_json = contract.functions.getTournament(tournament_id).call()
             tournament = json.loads(tournament_json)
             return tournament
