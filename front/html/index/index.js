@@ -60,6 +60,7 @@ export async function logOut(e) {
             }
             sessionStorage.removeItem("token");
             sessionStorage.removeItem("refresh");
+            NotificationsSM.disconnect();
             loadLoginPage();
         } catch (error) {
             console.log('error')
