@@ -155,7 +155,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
         for tournament_id, tournament_info in tournaments.items():
             participants = tournament_info.get('participants', [])
             for participant in participants:
-                if participant['userid'] == userid:
+                if participant['userid'] == userid and participant["active"] == True:
                     participant['channel_name'] = self.channel_name
                     await self.channel_layer.group_add(tournament_id, self.channel_name)
                     await send_to_me(self, IN_TOURNAMENT, {"game": tournament_info['game_request'], "data": self.getSingleTournament(tournament_id)})
@@ -278,7 +278,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                 'userid': user.id,
                 'nickname': nickname,
                 'winner': False,
-                'points': 0
+                'points': 0,
+                'active': True
             }]
         }
         # Add to group
@@ -337,7 +338,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                     'userid': user.id,
                     'nickname': nickname,
                     'winner': False,
-                    'points': 0
+                    'points': 0,
+                    'active': True
                 })
                 await self.channel_layer.group_add(tournament_id, self.channel_name)
                 await send_to_me(self, IN_TOURNAMENT, {"game": "Pong", "data": self.getSingleTournament(tournament_id)})
@@ -399,6 +401,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
             for pairing in current_round:
                 for player in pairing:
                     if not player['winner']:
+                        for participant in tournaments[tournament_id]['participants']:
+                            if participant['userid'] == player['userid']:
+                                participant['active'] = False
+                        logger.warning(f"rm player {player['nickname']}")
                         await self.channel_layer.group_discard(tournament_id, player["channel_name"])
 
             # Set winner to False to next round
