@@ -52,20 +52,14 @@ function gameEventHandler(e) {
     if (e.target.matches('#onlineGameMenu_pong') === true) {
         gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG);
         showOnlyView(onlineMenuView);
-        // toggleView(optionsView, false);
-        // toggleView(onlineMenuView, true);
     }
     else if (e.target.matches('#tournamentButton_pong') === true) {
         showOnlyView(tournamentView);
-        // toggleView(optionsView, false);
-        // toggleView(tournamentView, true);
         setTournaments();
     }
     else if (e.target.matches('#backToTournaments') === true) {
         tournamentJoined = null;
         showOnlyView(tournamentView);
-        // toggleView(tournamentJoinView, false);
-        // toggleView(tournamentView, true);
     }
     else if (e.target.matches('#leaveTournament') === true) {
         // Llamamos a la funcion para salir de un torneo
@@ -74,9 +68,6 @@ function gameEventHandler(e) {
             game: GAMES.PONG
         })
         tournamentJoined = null;
-        // toggleView(tournamentJoinView, false);
-        // toggleView(tournamentReadyView, false);
-        // toggleView(tournamentView, true);
         showOnlyView(tournamentView);
     }
     else if (e.target.matches('#joinTournament') === true) {
@@ -91,10 +82,6 @@ function gameEventHandler(e) {
                 game: GAMES.PONG
             })
         }
-        // Comprobamos si el nickname es valido
-        // Llamamos a la funcion para entrar a un torneo
-        // toggleView(tournamentView, false);
-        // toggleView(tournamentReadyView, true);
     }
     else if (e.target.matches('#createTournament') === true) {
         CreateTournament();
@@ -102,8 +89,6 @@ function gameEventHandler(e) {
     else if (e.target.matches('#onlineGameButton_pong') === true) {
         ranked = false;
         showOnlyView(matchmakingView);
-        // toggleView(onlineMenuView, false);
-        // toggleView(matchmakingView, true);
         InitMatchmaking();
         let win = document.getElementById("myWindowGame-content");
         if(win)
@@ -112,18 +97,12 @@ function gameEventHandler(e) {
     else if (e.target.matches('#rankedGameButton_pong') === true) {
         ranked = true;
         showOnlyView(matchmakingView);
-        // toggleView(onlineMenuView, false);
-        // toggleView(matchmakingView, true);
         InitMatchmaking(true);
         let win = document.getElementById("myWindowGame-content");
         if(win)
             win.style.overflow = "hidden";
     }
     else if (e.target.matches('#cancelMatchmakingButton_pong') === true) {
-        // toggleView(matchmakingView, false);
-        // toggleView(onlineMenuView, false);
-        // toggleView(tournamentView, false);
-        // toggleView(optionsView, true);
         showOnlyView(optionsView);
         CancelMatchmaking(ranked);
         let win = document.getElementById("myWindowGame-content");
@@ -132,43 +111,30 @@ function gameEventHandler(e) {
     }
     // juego local (2 players)
     else if (e.target.matches('#localGameButton_pong') === true) {
-        // toggleView(optionsView, false);
-        // toggleView(localgameView, true);
         showOnlyView(localgameView);
     }
     // 1 jugador (with Neural network)
     else if (e.target.matches('#soloGameButton_pong') === true) {
-        // toggleView(localgameView, false);
-        // toggleView(canvasDivView, true);
         showOnlyView(canvasDivView);
         initializeGame();
     }
     // 1 jugador (With Algorithm)
     else if (e.target.matches('#soloGameButtonAlgo_pong') === true) {
-        // toggleView(localgameView, false);
-        // toggleView(canvasDivView, true);
         showOnlyView(canvasDivView);
         initializeGame(false, false)
     }
     // 3D
     else if (e.target.matches('#soloGameButton3D_pong') === true) {
-        // toggleView(localgameView, false);
-        // toggleView(canvas3DDivView, true);
         showOnlyView(canvas3DDivView);
         initializeGame(false, false, true)
     }
 
     // Multijugador local
     else if (e.target.matches('#localMultiplayerButton_pong') === true) {
-        // toggleView(localgameView, false);
-        // toggleView(canvasDivView, true);
         showOnlyView(canvasDivView);
         initializeGame(true);
     }
     else if (e.target.matches('#goBackButton_pong') === true) {
-        // toggleView(optionsView, true);
-        // toggleView(localgameView, false);
-        // toggleView(onlineMenuView, false);
         showOnlyView(optionsView);
     }
     else if (e.target.matches('#red-myWindowGame') === true) {
@@ -214,12 +180,7 @@ export function showOnlyView(viewToShow) {
 
 // Callback socket connected
 gameSM.registerCallback(SOCKET.CONNECTED, event => {
-    //when game open, try restore any running game, i put here for test
     gameSM.send(GAME_TYPES.RESTORE_GAME, GAMES.PONG);
-    // When need get list of current tournaments
-    // gameSM.send(GAME_TYPES.LIST_TOURNAMENTS, GAMES.PONG);
-    // When need get list of current tournaments
-    // gameSM.send(GAME_TYPES.LIST_GAMES, GAMES.PONG); 
 });
 
 // Callback socket disconnected
@@ -236,14 +197,6 @@ gameSM.registerCallback(SOCKET.ERROR, event => {
 gameSM.registerCallback(GAME_TYPES.GAME_RESTORED, data => {
     if (data.game == GAMES.PONG) {
         gameSM.send(GAME_TYPES.PLAYER_READY);
-        // toggleView(matchmakingView, false);
-        // toggleView(onlineMenuView, false);
-        // toggleView(tournamentView, false);
-        // toggleView(optionsView, false);
-        // toggleView(tournamentReadyView, false);
-        // toggleView(tournamentJoinView, false);
-        // toggleView(localgameView, false);
-        // toggleView(canvasDivView, true);
         showOnlyView(canvasDivView);
         let win = document.getElementById("myWindowGame-content");
         if(win)
@@ -257,15 +210,6 @@ gameSM.registerCallback(GAME_TYPES.INITMATCHMAKING, data => {
 
     if (data.game == GAMES.PONG) {
         isPlaying = true;
-        // toggleView(matchmakingView, false);
-        // toggleView(onlineMenuView, false);
-        // toggleView(tournamentView, false);
-        // toggleView(optionsView, false);
-        // toggleView(tournamentReadyView, false);
-        // toggleView(tournamentJoinView, false);
-        // toggleView(localgameView, false);
-        // toggleView(canvasDivView, true);
-        // toggleView(tournamentHistory, false);
         showOnlyView(canvasDivView);
         gameSM.send(GAME_TYPES.PLAYER_READY);
         let win = document.getElementById("myWindowGame-content");
@@ -280,8 +224,6 @@ gameSM.registerCallback(GAME_TYPES.CANCELMATCHMAKING, data => {
 
 gameSM.registerCallback(GAME_TYPES.INQUEUE, data => {
     if (data.game == GAMES.PONG) {
-        // toggleView(matchmakingView, true);
-        // toggleView(optionsView, false);
         showOnlyView(matchmakingView);
     }
 });
@@ -312,9 +254,6 @@ gameSM.registerCallback(GAME_TYPES.GAME_END, data => {
         let leaveButton = document.getElementById("leaveButton-spectator")
         if (leaveButton)
             leaveButton.remove();
-        // toggleView(canvasDivView, false);
-        // toggleView(optionsView, true);
-        // toggleView(tournamentHistory, false);
         showOnlyView(optionsView);
         removeGameListener();
         let win = document.getElementById("myWindowGame-content");
@@ -388,8 +327,6 @@ gameSM.registerCallback(GAME_TYPES.TOURNAMENT_CREATED, data => {
     if (data.game == GAMES.PONG) {
         if (data.data.adminId == myUserId) {
             fillTournamentData(data.data)
-            // toggleView(tournamentView, false);
-            // toggleView(tournamentReadyView, true);
             showOnlyView(tournamentReadyView);
         }
     }
@@ -400,23 +337,14 @@ gameSM.registerCallback(GAME_TYPES.IN_TOURNAMENT, data => {
         if (isPlaying)
             return;
         fillTournamentData(data.data)
-        // toggleView(optionsView, false);
-        // toggleView(tournamentReadyView, true);
         showOnlyView(tournamentReadyView);
     }
 });
 
-function setMatchmaking(data) {
-    drawTournament(data.data);
-    toggleView(optionsView, false);
-    toggleView(tournamentJoinView, false);
-    toggleView(tournamentReadyView, false);
-}
-
 // TODO, muestro la tabla de los emparejamientos
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_TABLE, data => {
-    toggleView(tournamentHistory, true);
-    setMatchmaking(data);
+    showOnlyView(tournamentHistory);
+    drawTournament(data.data);
 });
 
 gameSM.registerCallback(GAME_TYPES.TOURNAMENT_PLAYERS, data => {
@@ -526,8 +454,6 @@ function fillGames(data) {
                 id: element.id
             })
             showOnlyView(canvasDivView);
-            // toggleView(canvasDivView, true);
-            // toggleView(onlineMenuView, false);
             // Leave
             var leaveButton = document.createElement("button");
             leaveButton.textContent = "Leave";
@@ -540,8 +466,6 @@ function fillGames(data) {
                 })
                 leaveButton.remove();
                 showOnlyView(onlineMenuView);
-                // toggleView(canvasDivView, false);
-                // toggleView(onlineMenuView, true);
             });
             canvasDivView.appendChild(leaveButton);
         });
