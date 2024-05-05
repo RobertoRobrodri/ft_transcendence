@@ -85,7 +85,7 @@ function rellenarParticipantes(participantes, tbodyTable) {
         points: participantes[0].points
     }
     let player2 = {
-        nickname: "Bye",
+        nickname: "-",
         points: 0
     }
     if (participantes.length === 2) {

@@ -404,7 +404,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
                         for participant in tournaments[tournament_id]['participants']:
                             if participant['userid'] == player['userid']:
                                 participant['active'] = False
-                        logger.warning(f"rm player {player['nickname']}")
                         await self.channel_layer.group_discard(tournament_id, player["channel_name"])
 
             # Set winner to False to next round
