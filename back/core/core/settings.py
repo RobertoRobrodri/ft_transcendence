@@ -30,7 +30,7 @@ DEBUG = True
 # Development
 #ALLOWED_HOSTS = ['*']
 # Production all containers that should be able to call django endpoints
-ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db', os.environ.get('DOMAIN_NAME')]
+ALLOWED_HOSTS = ['localhost','django','prometheus', 'nginx', 'db', *]
 
 MEDIA_ROOT = '/core/media/'
 MEDIA_URL = '/media/'
