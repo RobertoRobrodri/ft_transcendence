@@ -185,6 +185,4 @@ Any user can talk to any other user through chat, they can also block, view thei
 ### More things
 
 
-There are many more things that our project is capable of handling, like edit profile, add friends, see leaderboard, etc.
-Unfortunately, actually I doesnt have enought time to document all. If you want to know more, I encourage you to try the game yourself and if you have any questions,
-contact me or anyone of my mates :D
+There are many more things that our project is capable of handling, such as editing profiles, adding friends, viewing the leaderboard, etc. Unfortunately, I don't have enough time to document all of them at the moment. If you want to know more, I encourage you to try the game yourself. If you have any questions, feel free to contact me or any of my teammates! 😊
